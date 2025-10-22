@@ -45,7 +45,8 @@ public class AuthController : ControllerBase
             user.Id,
             user.Email,
             user.Token,
-            user.Type
+            user.Type,
+            user.Name
         });
     }
 }

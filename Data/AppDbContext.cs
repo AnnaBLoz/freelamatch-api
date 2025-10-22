@@ -10,5 +10,18 @@ namespace FreelaMatchAPI.Data
         public DbSet<User> Users { get; set; }
         public DbSet<Freelancer> Freelancers { get; set; }
         public DbSet<Company> Companies { get; set; }
+        public DbSet<Profile> Profiles { get; set; }
+        public DbSet<Skill> Skills { get; set; }
+        public DbSet<UserSkill> UserSkills { get; set; }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+
+            modelBuilder.Entity<Profile>()
+                .HasOne(p => p.User)          
+                .WithOne(u => u.Profile)      
+                .HasForeignKey<Profile>(p => p.UserId); 
+        }
     }
 }

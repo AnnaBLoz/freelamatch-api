@@ -66,10 +66,60 @@
           }
         }
       }
+    },
+    "/api/Profile": {
+      "get": {
+        "tags": [
+          "Profile"
+        ],
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "query",
+            "style": "form",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/Profile"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Profile"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Profile"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
     "schemas": {
+      "ExperienceLevel": {
+        "enum": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "type": "integer",
+        "format": "int32"
+      },
       "LoginDto": {
         "type": "object",
         "properties": {
@@ -79,6 +129,41 @@
           },
           "password": {
             "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "Profile": {
+        "type": "object",
+        "properties": {
+          "profileId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "user": {
+            "$ref": "#/components/schemas/User"
+          },
+          "userId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "biography": {
+            "type": "string",
+            "nullable": true
+          },
+          "experienceLevel": {
+            "$ref": "#/components/schemas/ExperienceLevel"
+          },
+          "pricePerHour": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "userSkills": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UserSkill"
+            },
             "nullable": true
           }
         },
@@ -97,6 +182,83 @@
           },
           "type": {
             "$ref": "#/components/schemas/UserType"
+          }
+        },
+        "additionalProperties": false
+      },
+      "Skill": {
+        "type": "object",
+        "properties": {
+          "skillId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "User": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "email": {
+            "type": "string",
+            "nullable": true
+          },
+          "password": {
+            "type": "string",
+            "nullable": true
+          },
+          "type": {
+            "$ref": "#/components/schemas/UserType"
+          },
+          "token": {
+            "type": "string",
+            "nullable": true
+          },
+          "profile": {
+            "$ref": "#/components/schemas/Profile"
+          },
+          "userSkills": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UserSkill"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "UserSkill": {
+        "type": "object",
+        "properties": {
+          "userSkillId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "userId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "user": {
+            "$ref": "#/components/schemas/User"
+          },
+          "skillId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "skill": {
+            "$ref": "#/components/schemas/Skill"
           }
         },
         "additionalProperties": false
