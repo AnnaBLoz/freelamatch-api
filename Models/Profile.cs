@@ -4,7 +4,7 @@ namespace FreelaMatchAPI.Models
 {
     public enum ExperienceLevel
     {
-        Junior,
+        Junior = 1,
         Pleno,
         Senior,
         Especialista
@@ -14,6 +14,7 @@ namespace FreelaMatchAPI.Models
     {
         public int ProfileId { get; set; }
 
+        [JsonIgnore]
         public User User { get; set; } 
 
         public int UserId { get; set; }
@@ -26,6 +27,18 @@ namespace FreelaMatchAPI.Models
 
         public ICollection<UserSkill> UserSkills { get; set; } = new List<UserSkill>();
     }
+
+    public class UpdateProfile
+    {
+        public string? Biography { get; set; }
+
+        public ExperienceLevel ExperienceLevel { get; set; }
+
+        public int PricePerHour { get; set; }
+
+        public ICollection<UserSkill> UserSkills { get; set; } = new List<UserSkill>();
+    }
+
     public class Skill
     {
         public int SkillId { get; set; }
@@ -38,10 +51,21 @@ namespace FreelaMatchAPI.Models
     public class UserSkill
     {
         public int UserSkillId { get; set; }
+
         public int UserId { get; set; }
+
+        public int ProfileId { get; set; }
+
+        [JsonIgnore]
+        public Profile? Profile { get; set; }
+
+        [JsonIgnore]
         public User? User { get; set; }
 
         public int SkillId { get; set; }
+
         public Skill? Skill { get; set; }
+
+        public bool IsActive { get; set; }
     }
 }

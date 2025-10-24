@@ -26,4 +26,29 @@ public class ProfileController : ControllerBase
         return Ok(profile);
     }
 
+    [HttpPut("{userId}")]
+    public async Task<IActionResult> UpdateProfile(int userId, [FromBody] UpdateProfile updatedProfile)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        var result = await _profileService.UpdateProfileAsync(userId, updatedProfile);
+
+        if (!result.Success)
+            return NotFound(new { message = result.Message });
+
+        return Ok(result.Profile);
+    }
+
+    [HttpGet("skills")]
+    public async Task<ActionResult<List<Skill>>> GetSkills()
+    {
+        var skills = await _profileService.GetSkills();
+
+        if (skills == null || !skills.Any())
+            return NotFound(new { message = "Skills not found" });
+
+        return Ok(skills);
+    }
+
 }
