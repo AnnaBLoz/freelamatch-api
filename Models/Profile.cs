@@ -68,4 +68,15 @@ namespace FreelaMatchAPI.Models
 
         public bool IsActive { get; set; }
     }
+
+    public class Portfolio
+    {
+        public int PortfolioId { get; set; }
+
+        public int UserId { get; set; }
+
+        public User? User { get; set; }
+
+        public string URL { get; set; }
+    }
 }

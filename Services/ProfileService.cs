@@ -38,6 +38,7 @@ public class ProfileService
         var user = await _context.Users
             .Include(u => u.Profile)
             .Include(u => u.UserSkills)
+            .ThenInclude(u => u.Skill)
             .FirstOrDefaultAsync(u => u.Id == userId);
 
         if (user == null || user.Profile == null)

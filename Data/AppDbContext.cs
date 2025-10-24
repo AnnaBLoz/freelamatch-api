@@ -13,6 +13,7 @@ namespace FreelaMatchAPI.Data
         public DbSet<Profile> Profiles { get; set; }
         public DbSet<Skill> Skills { get; set; }
         public DbSet<UserSkill> UserSkills { get; set; }
+        public DbSet<Portfolio> Portfolio { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

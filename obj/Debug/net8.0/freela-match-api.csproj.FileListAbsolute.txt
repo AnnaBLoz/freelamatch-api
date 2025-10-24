@@ -7,6 +7,7 @@ D:\TCC\freela-match-api\bin\Debug\net8.0\freela-match-api.runtimeconfig.json
 D:\TCC\freela-match-api\bin\Debug\net8.0\freela-match-api.dll
 D:\TCC\freela-match-api\bin\Debug\net8.0\freela-match-api.pdb
 D:\TCC\freela-match-api\bin\Debug\net8.0\Humanizer.dll
+D:\TCC\freela-match-api\bin\Debug\net8.0\Microsoft.AspNetCore.Authentication.JwtBearer.dll
 D:\TCC\freela-match-api\bin\Debug\net8.0\Microsoft.AspNetCore.OpenApi.dll
 D:\TCC\freela-match-api\bin\Debug\net8.0\Microsoft.Bcl.AsyncInterfaces.dll
 D:\TCC\freela-match-api\bin\Debug\net8.0\Microsoft.Build.Locator.dll
@@ -30,6 +31,12 @@ D:\TCC\freela-match-api\bin\Debug\net8.0\Microsoft.Extensions.Logging.dll
 D:\TCC\freela-match-api\bin\Debug\net8.0\Microsoft.Extensions.Logging.Abstractions.dll
 D:\TCC\freela-match-api\bin\Debug\net8.0\Microsoft.Extensions.Options.dll
 D:\TCC\freela-match-api\bin\Debug\net8.0\Microsoft.Extensions.Primitives.dll
+D:\TCC\freela-match-api\bin\Debug\net8.0\Microsoft.IdentityModel.Abstractions.dll
+D:\TCC\freela-match-api\bin\Debug\net8.0\Microsoft.IdentityModel.JsonWebTokens.dll
+D:\TCC\freela-match-api\bin\Debug\net8.0\Microsoft.IdentityModel.Logging.dll
+D:\TCC\freela-match-api\bin\Debug\net8.0\Microsoft.IdentityModel.Protocols.dll
+D:\TCC\freela-match-api\bin\Debug\net8.0\Microsoft.IdentityModel.Protocols.OpenIdConnect.dll
+D:\TCC\freela-match-api\bin\Debug\net8.0\Microsoft.IdentityModel.Tokens.dll
 D:\TCC\freela-match-api\bin\Debug\net8.0\Microsoft.OpenApi.dll
 D:\TCC\freela-match-api\bin\Debug\net8.0\Mono.TextTemplating.dll
 D:\TCC\freela-match-api\bin\Debug\net8.0\MySqlConnector.dll
@@ -44,6 +51,7 @@ D:\TCC\freela-match-api\bin\Debug\net8.0\System.Composition.Hosting.dll
 D:\TCC\freela-match-api\bin\Debug\net8.0\System.Composition.Runtime.dll
 D:\TCC\freela-match-api\bin\Debug\net8.0\System.Composition.TypedParts.dll
 D:\TCC\freela-match-api\bin\Debug\net8.0\System.Diagnostics.DiagnosticSource.dll
+D:\TCC\freela-match-api\bin\Debug\net8.0\System.IdentityModel.Tokens.Jwt.dll
 D:\TCC\freela-match-api\bin\Debug\net8.0\System.IO.Pipelines.dll
 D:\TCC\freela-match-api\bin\Debug\net8.0\System.Text.Encodings.Web.dll
 D:\TCC\freela-match-api\bin\Debug\net8.0\System.Text.Json.dll
@@ -121,6 +129,7 @@ D:\TCC\freela-match-api\obj\Debug\net8.0\freela-match-api.AssemblyInfo.cs
 D:\TCC\freela-match-api\obj\Debug\net8.0\freela-match-api.csproj.CoreCompileInputs.cache
 D:\TCC\freela-match-api\obj\Debug\net8.0\freela-match-api.MvcApplicationPartsAssemblyInfo.cs
 D:\TCC\freela-match-api\obj\Debug\net8.0\freela-match-api.MvcApplicationPartsAssemblyInfo.cache
+D:\TCC\freela-match-api\obj\Debug\net8.0\freela-match-api.sourcelink.json
 D:\TCC\freela-match-api\obj\Debug\net8.0\rjimswa.dswa.cache.json
 D:\TCC\freela-match-api\obj\Debug\net8.0\rjsmrazor.dswa.cache.json
 D:\TCC\freela-match-api\obj\Debug\net8.0\rjsmcshtml.dswa.cache.json
@@ -135,13 +144,3 @@ D:\TCC\freela-match-api\obj\Debug\net8.0\refint\freela-match-api.dll
 D:\TCC\freela-match-api\obj\Debug\net8.0\freela-match-api.pdb
 D:\TCC\freela-match-api\obj\Debug\net8.0\freela-match-api.genruntimeconfig.cache
 D:\TCC\freela-match-api\obj\Debug\net8.0\ref\freela-match-api.dll
-D:\TCC\freela-match-api\bin\Debug\net8.0\Microsoft.IdentityModel.Abstractions.dll
-D:\TCC\freela-match-api\bin\Debug\net8.0\Microsoft.IdentityModel.JsonWebTokens.dll
-D:\TCC\freela-match-api\bin\Debug\net8.0\Microsoft.IdentityModel.Logging.dll
-D:\TCC\freela-match-api\bin\Debug\net8.0\Microsoft.IdentityModel.Tokens.dll
-D:\TCC\freela-match-api\bin\Debug\net8.0\System.IdentityModel.Tokens.Jwt.dll
-D:\TCC\freela-match-api\bin\Debug\net8.0\Microsoft.AspNetCore.Authentication.JwtBearer.dll
-D:\TCC\freela-match-api\bin\Debug\net8.0\Microsoft.IdentityModel.Protocols.dll
-D:\TCC\freela-match-api\bin\Debug\net8.0\Microsoft.IdentityModel.Protocols.OpenIdConnect.dll
-D:\TCC\freela-match-api\obj\Debug\net8.0\freela-match-api.sourcelink.json
-D:\TCC\freela-match-api\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt
