@@ -1,0 +1,26 @@
+# Visual Studio
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Build outputs
+bin/
+obj/
+out/
+
+# Rider
+.idea/
+
+# Logs
+*.log
+
+# Arquivos temporários do Windows
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Configurações do NuGet
+*.nupkg
+packages/

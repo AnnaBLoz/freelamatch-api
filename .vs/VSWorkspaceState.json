@@ -2,11 +2,9 @@
   "ExpandedNodes": [
     "",
     "\\Controllers",
-    "\\Data",
     "\\DTOs",
-    "\\Migrations",
-    "\\Models",
-    "\\Services"
+    "\\Solution1"
   ],
+  "SelectedNode": "\\DTOs\\RegisterDto.cs",
   "PreviewInSolutionExplorer": false
 }

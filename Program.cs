@@ -31,6 +31,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 // Registra serviços
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
+builder.Services.AddScoped<ProfileService>();
 
 // Adiciona controllers e Swagger
 builder.Services.AddControllers();
