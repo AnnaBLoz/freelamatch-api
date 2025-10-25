@@ -11,8 +11,14 @@ namespace FreelaMatchAPI.Models
         public UserType Type { get; set; }
         public string Token { get; set; }
         public Profile? Profile { get; set; }
+        public bool IsAvailable { get; set; }
 
         public ICollection<UserSkill> UserSkills { get; set; } = new List<UserSkill>();
+    }
+    public class UpdateUser
+    {
+        public string Name { get; set; }
+        public bool IsAvailable { get; set; }
     }
 
     public class Freelancer
