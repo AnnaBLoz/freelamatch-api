@@ -138,10 +138,10 @@ D:\TCC\freela-match-api\obj\Debug\net8.0\staticwebassets.build.json
 D:\TCC\freela-match-api\obj\Debug\net8.0\staticwebassets.build.json.cache
 D:\TCC\freela-match-api\obj\Debug\net8.0\staticwebassets.development.json
 D:\TCC\freela-match-api\obj\Debug\net8.0\staticwebassets.build.endpoints.json
-D:\TCC\freela-match-api\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt
 D:\TCC\freela-match-api\obj\Debug\net8.0\freela-m.A222B2D1.Up2Date
 D:\TCC\freela-match-api\obj\Debug\net8.0\freela-match-api.dll
 D:\TCC\freela-match-api\obj\Debug\net8.0\refint\freela-match-api.dll
 D:\TCC\freela-match-api\obj\Debug\net8.0\freela-match-api.pdb
 D:\TCC\freela-match-api\obj\Debug\net8.0\freela-match-api.genruntimeconfig.cache
 D:\TCC\freela-match-api\obj\Debug\net8.0\ref\freela-match-api.dll
+D:\TCC\freela-match-api\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt

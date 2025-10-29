@@ -26,7 +26,14 @@ namespace FreelaMatchAPI.Models
         public int PricePerHour { get; set; }
 
         public ICollection<UserSkill> UserSkills { get; set; } = new List<UserSkill>();
+
+        public string? Website { get; set; }
+
+        public int? SectorId { get; set; }
+
+        public Sector? Sector { get; set; }
     }
+
     public class ProfileResume
     {
         public int ProfileId { get; set; }
@@ -117,5 +124,11 @@ namespace FreelaMatchAPI.Models
         public string URL { get; set; }
         public bool IsActive { get; set; }
         public int UserId { get; set; }
+    }
+
+    public class Sector
+    {
+        public int SectorId { get; set; }
+        public string Name { get; set; } = string.Empty;
     }
 }

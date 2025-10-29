@@ -27,4 +27,15 @@ public class GeneralController : ControllerBase
 
         return Ok(freelancers);
     }
+
+    [HttpGet("Sectors")]
+    public async Task<ActionResult<List<Sector>>> GetSectors()
+    {
+        var sectors = await _generalService.GetSectors();
+
+        if (sectors == null)
+            return NotFound(new { message = "Sectors not found" });
+
+        return Ok(sectors);
+    }
 }

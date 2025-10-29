@@ -27,9 +27,9 @@ public class GeneralService
             .ToListAsync();
     }
 
-    public async Task<User?> GetUserByUserIdAsync(int userId)
+    public Task<List<Sector?>> GetSectors()
     {
-        return await _context.Users
-            .FirstOrDefaultAsync(p => p.Id == userId);
+        return _context.Sector
+            .ToListAsync();
     }
 }

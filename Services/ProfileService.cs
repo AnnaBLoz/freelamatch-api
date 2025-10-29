@@ -22,8 +22,7 @@ public class ProfileService
     public async Task<Profile?> GetProfileByUserIdAsync(int userId)
     {
         return await _context.Profiles
-            .Include(p => p.UserSkills.Where(us => us.IsActive))
-            .ThenInclude(us => us.Skill)
+            .Include(p => p.UserSkills.Where(us => us.IsActive)).ThenInclude(us => us.Skill).Include(p => p.Sector)
             .FirstOrDefaultAsync(p => p.UserId == userId);
     }
 
