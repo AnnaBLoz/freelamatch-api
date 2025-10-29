@@ -8,35 +8,28 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 
-public class UserService
+public class GeneralService
 {
     private readonly AppDbContext _context;
     private readonly IConfiguration _config;
 
-    public UserService(AppDbContext context, IConfiguration config)
+    public GeneralService(AppDbContext context, IConfiguration config)
     {
         _context = context;
         _config = config;
     }
 
+    public Task<List<User?>> GetFreelancers()
+    {
+        return _context.Users
+            .Where(f => f.Type == UserType.Freelancer)
+            //.Include(f => f.Profile).ThenInclude(f => f.UserSkills).ThenInclude(f => f.Skill)
+            .ToListAsync();
+    }
+
     public async Task<User?> GetUserByUserIdAsync(int userId)
     {
         return await _context.Users
-            .Include(u => u.UserSkills).ThenInclude(u => u.Skill).Include(u => u.Profile)
             .FirstOrDefaultAsync(p => p.Id == userId);
     }
-
-    public async Task<(bool Success, string Message, User? User)> UpdateUserAsync(int userId, UpdateUser updatedUser)
-    {
-        var user = await _context.Users
-            .FirstOrDefaultAsync(u => u.Id == userId);
-
-        user.Name = updatedUser.Name;
-        user.IsAvailable = updatedUser.IsAvailable;
-
-        await _context.SaveChangesAsync();
-
-        return (true, "User updated successfully", user);
-    }    
-
 }

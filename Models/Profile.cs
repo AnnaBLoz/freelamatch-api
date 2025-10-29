@@ -27,6 +27,16 @@ namespace FreelaMatchAPI.Models
 
         public ICollection<UserSkill> UserSkills { get; set; } = new List<UserSkill>();
     }
+    public class ProfileResume
+    {
+        public int ProfileId { get; set; }
+
+        public string? Biography { get; set; }
+
+        public ExperienceLevel ExperienceLevel { get; set; }
+
+        public int PricePerHour { get; set; }
+    }
 
     public class UpdateProfile
     {
@@ -61,6 +71,18 @@ namespace FreelaMatchAPI.Models
 
         [JsonIgnore]
         public User? User { get; set; }
+
+        public int SkillId { get; set; }
+
+        public Skill? Skill { get; set; }
+
+        public bool IsActive { get; set; }
+    }
+    public class UserSkillResume
+    {
+        public string Name { get; set; }
+
+        public int UserSkillId { get; set; }
 
         public int SkillId { get; set; }
 

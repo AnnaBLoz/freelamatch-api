@@ -67,6 +67,44 @@
         }
       }
     },
+    "/api/General/Freelancers": {
+      "get": {
+        "tags": [
+          "General"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/User"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/User"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/User"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/Portfolio": {
       "get": {
         "tags": [
@@ -655,8 +693,8 @@
       },
       "UserType": {
         "enum": [
-          0,
-          1
+          1,
+          2
         ],
         "type": "integer",
         "format": "int32"

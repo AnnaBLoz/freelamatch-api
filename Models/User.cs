@@ -1,6 +1,6 @@
 namespace FreelaMatchAPI.Models
 {
-    public enum UserType { Freelancer, Company }
+    public enum UserType { Freelancer = 1, Company }
 
     public class User
     {
@@ -15,6 +15,17 @@ namespace FreelaMatchAPI.Models
 
         public ICollection<UserSkill> UserSkills { get; set; } = new List<UserSkill>();
     }
+    public class UserResume
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public UserType Type { get; set; }
+        public ProfileResume? Profile { get; set; }
+        public bool IsAvailable { get; set; }
+
+        public ICollection<UserSkillResume> UserSkills { get; set; } = new List<UserSkillResume>();
+    }
+
     public class UpdateUser
     {
         public string Name { get; set; }

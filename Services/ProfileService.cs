@@ -11,7 +11,6 @@ using System.Text;
 public class ProfileService
 {
     private readonly AppDbContext _context;
-    private readonly IPasswordHasher<User> _passwordHasher;
     private readonly IConfiguration _config;
 
     public ProfileService(AppDbContext context, IConfiguration config)
