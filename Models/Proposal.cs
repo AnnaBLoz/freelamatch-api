@@ -45,6 +45,14 @@ namespace FreelaMatchAPI.Models
         public int ProposalId { get; set; }
     }
 
+    public class CandidateProposal
+    {
+        public int UserId { get; set; }
+        public int ProposalId { get; set; }
+        public DateTime AppliedAt { get; set; }
+        //public int ProposedPrice { get; set; }
+    }
+
     public class ProposalSkill
     {
         public int ProposalSkillId { get; set; }

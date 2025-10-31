@@ -27,6 +27,16 @@ public class ProposalService
             .Include(p => p.Candidates).ThenInclude(p => p.User)
             .ToListAsync();
     }
+
+    public Task<List<Proposal?>> GetAllProposals()
+    {
+        return _context.Proposal
+            .Where(p => p.IsAvailable == true)
+            .Include(p => p.RequiredSkills).ThenInclude(p => p.Skill)
+            .Include(p => p.Candidates).ThenInclude(p => p.User)
+            .ToListAsync();
+    }
+
     public async Task<Proposal?> GetProposalById(int proposalId)
     {
         return await _context.Proposal
@@ -103,5 +113,21 @@ public class ProposalService
         {
             return (false, $"Error updating candidates: {ex.Message}", null);
         }
+    }
+
+    public async Task<Candidate> Candidate(CandidateProposal proposalCreated)
+    {
+        var candidate = new Candidate
+        {
+            ProposalId = proposalCreated.ProposalId,
+            AppliedAt = DateTime.Now,
+            UserId = proposalCreated.UserId,
+            Status = ProposalStatus.Pending
+        };
+
+        _context.Add(candidate);
+
+        await _context.SaveChangesAsync();
+        return candidate;
     }
 }

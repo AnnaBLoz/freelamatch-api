@@ -29,6 +29,18 @@ public class ProposalController : ControllerBase
         return Ok(proposals);
     }
 
+    [HttpGet("all")]
+    public async Task<ActionResult<List<Proposal>>> GetAllProposals()
+    {
+        var proposals = await _proposalService.GetAllProposals();
+
+        if (proposals == null || !proposals.Any())
+            return NotFound(new { message = "Proposals not found" });
+
+        return Ok(proposals);
+    }
+
+
     [HttpGet("proposalId/{proposalId}")]
     public async Task<ActionResult<Proposal>> GetProposalById(int proposalId)
     {
@@ -67,6 +79,23 @@ public class ProposalController : ControllerBase
             return Ok(new
             {
                 candidateApproved
+            });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
+    [HttpPost("candidate")]
+    public async Task<IActionResult> Candidate([FromBody] CandidateProposal proposalCreate)
+    {
+        try
+        {
+            var candidate = await _proposalService.Candidate(proposalCreate);
+            return Ok(new
+            {
+                candidate
             });
         }
         catch (InvalidOperationException ex)
