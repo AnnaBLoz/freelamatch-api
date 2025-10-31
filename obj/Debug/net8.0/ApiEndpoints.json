@@ -228,6 +228,22 @@
   },
   {
     "ContainingType": "ProposalController",
+    "Method": "ApproveCandidate",
+    "RelativePath": "api/Proposal/approve",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "candidateApprove",
+        "Type": "FreelaMatchAPI.Models.CandidateApprove",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ProposalController",
     "Method": "GetProposals",
     "RelativePath": "api/Proposal/company/{companyId}",
     "HttpMethod": "GET",

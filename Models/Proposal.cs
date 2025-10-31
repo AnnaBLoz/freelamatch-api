@@ -38,6 +38,13 @@ namespace FreelaMatchAPI.Models
         public ProposalStatus Status { get; set; }
     }
 
+    public class CandidateApprove
+    {
+        public int CandidateId { get; set; }
+        public ProposalStatus Status { get; set; }
+        public int ProposalId { get; set; }
+    }
+
     public class ProposalSkill
     {
         public int ProposalSkillId { get; set; }

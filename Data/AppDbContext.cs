@@ -17,6 +17,7 @@ namespace FreelaMatchAPI.Data
         public DbSet<Sector> Sector { get; set; }
         public DbSet<Proposal> Proposal { get; set; }
         public DbSet<ProposalSkill> ProposalSkill { get; set; }
+        public DbSet<Candidate> Candidate { get; set; }
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

@@ -57,4 +57,21 @@ public class ProposalController : ControllerBase
         }
     }
 
+
+    [HttpPut("approve")]
+    public async Task<IActionResult> ApproveCandidate([FromBody] CandidateApprove candidateApprove)
+    {
+        try
+        {
+            var candidateApproved = await _proposalService.ApproveCandidate(candidateApprove);
+            return Ok(new
+            {
+                candidateApproved
+            });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+    }
 }

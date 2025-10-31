@@ -555,6 +555,37 @@
         }
       }
     },
+    "/api/Proposal/approve": {
+      "put": {
+        "tags": [
+          "Proposal"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CandidateApprove"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CandidateApprove"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/CandidateApprove"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
     "/api/User": {
       "get": {
         "tags": [
@@ -669,6 +700,23 @@
           },
           "status": {
             "$ref": "#/components/schemas/ProposalStatus"
+          }
+        },
+        "additionalProperties": false
+      },
+      "CandidateApprove": {
+        "type": "object",
+        "properties": {
+          "candidateId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "status": {
+            "$ref": "#/components/schemas/ProposalStatus"
+          },
+          "proposalId": {
+            "type": "integer",
+            "format": "int32"
           }
         },
         "additionalProperties": false

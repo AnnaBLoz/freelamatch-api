@@ -67,4 +67,35 @@ public class ProposalService
         await _context.SaveChangesAsync();
         return proposal;
     }
+
+    public async Task<(bool Success, string Message, Candidate? Candidate)> ApproveCandidate(CandidateApprove candidateApprove)
+    {
+        var candidate = await _context.Candidate
+            .FirstOrDefaultAsync(u => u.CandidateId == candidateApprove.CandidateId);
+
+        if (candidate == null)
+            return (false, "Candidate not found", null);
+
+        candidate.Status = ProposalStatus.Accepted;
+
+        var otherCandidates = await _context.Candidate
+            .Where(u => u.CandidateId != candidateApprove.CandidateId
+                        && u.ProposalId == candidateApprove.ProposalId)
+            .ToListAsync();
+
+        foreach (var rejectedCandidate in otherCandidates)
+        {
+            rejectedCandidate.Status = ProposalStatus.Rejected;
+        }
+
+        try
+        {
+            await _context.SaveChangesAsync();
+            return (true, "Candidates updated successfully", candidate);
+        }
+        catch (Exception ex)
+        {
+            return (false, $"Error updating candidates: {ex.Message}", null);
+        }
+    }
 }
