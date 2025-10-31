@@ -88,6 +88,12 @@ public class ProposalService
             rejectedCandidate.Status = ProposalStatus.Rejected;
         }
 
+        var finishProposal = await _context.Proposal
+           .FirstOrDefaultAsync(u => u.ProposalId == candidateApprove.ProposalId);
+
+        if (finishProposal != null)
+            finishProposal.IsAvailable = false;
+
         try
         {
             await _context.SaveChangesAsync();
