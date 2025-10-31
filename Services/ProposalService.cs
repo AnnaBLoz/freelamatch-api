@@ -120,7 +120,7 @@ public class ProposalService
         var candidate = new Candidate
         {
             ProposalId = proposalCreated.ProposalId,
-            AppliedAt = DateTime.Now,
+            AppliedAt = DateTime.UtcNow,
             UserId = proposalCreated.UserId,
             Status = ProposalStatus.Pending
         };
@@ -129,5 +129,20 @@ public class ProposalService
 
         await _context.SaveChangesAsync();
         return candidate;
+    }
+
+    public async Task<List<Candidate>> GetFreelancersToReview(int userId)
+    {
+        return await _context.Candidate
+            .Include(r => r.User)
+            .Include(r => r.Proposal)
+            .Where(r =>
+                r.Proposal.OwnerId == userId &&
+                r.Proposal.MaxDate < DateTime.UtcNow &&
+                !r.Proposal.IsAvailable &&
+                r.Status == ProposalStatus.Accepted &&
+                !r.User.ReviewsReceived.Any(rc => rc.ReviewerId == userId)
+            )
+            .ToListAsync();
     }
 }

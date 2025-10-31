@@ -28,4 +28,21 @@ public class ReviewsService
             .Where(r => r.ReceiverId == userId) // pega as avaliações recebidas por esse usuário
             .ToListAsync();
     }
+
+    public async Task<Reviews> CreateReview(ReviewCreate reviewCreated)
+    {
+        var review = new Reviews
+        {
+            ReviewerId = reviewCreated.ReviewerId,
+            ReceiverId = reviewCreated.ReceiverId,
+            ReviewText = reviewCreated.ReviewText,
+            Rating = reviewCreated.Rating,
+            CreatedAt = DateTime.UtcNow
+        };
+
+        _context.Add(review);
+
+        await _context.SaveChangesAsync();
+        return review;
+    }
 }
