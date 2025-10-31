@@ -49,4 +49,15 @@ public class GeneralController : ControllerBase
 
         return Ok(skills);
     }
+
+    [HttpGet("CompletedProjects")]
+    public async Task<ActionResult<List<Candidate>>> CompletedProjects(int userId)
+    {
+        var completed = await _generalService.CompletedProjects(userId);
+
+        if (completed == null)
+            return NotFound(new { message = "Candidate not found" });
+
+        return Ok(completed);
+    }
 }

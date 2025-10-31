@@ -37,4 +37,10 @@ public class GeneralService
         return _context.Skills
             .ToListAsync();
     }
+
+    public Task<List<Candidate?>> CompletedProjects(int userId)
+    {
+        return _context.Candidate.Where(c => c.UserId == userId && c.Status == ProposalStatus.Accepted)
+            .ToListAsync();
+    }
 }

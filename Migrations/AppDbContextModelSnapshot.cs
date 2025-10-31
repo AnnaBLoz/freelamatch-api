@@ -51,7 +51,7 @@ namespace freela_match_api.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Candidate");
+                    b.ToTable("Candidate", (string)null);
                 });
 
             modelBuilder.Entity("FreelaMatchAPI.Models.Company", b =>
@@ -85,7 +85,7 @@ namespace freela_match_api.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Companies");
+                    b.ToTable("Companies", (string)null);
                 });
 
             modelBuilder.Entity("FreelaMatchAPI.Models.Freelancer", b =>
@@ -115,7 +115,7 @@ namespace freela_match_api.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Freelancers");
+                    b.ToTable("Freelancers", (string)null);
                 });
 
             modelBuilder.Entity("FreelaMatchAPI.Models.Portfolio", b =>
@@ -140,7 +140,7 @@ namespace freela_match_api.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Portfolio");
+                    b.ToTable("Portfolio", (string)null);
                 });
 
             modelBuilder.Entity("FreelaMatchAPI.Models.Profile", b =>
@@ -176,7 +176,7 @@ namespace freela_match_api.Migrations
                     b.HasIndex("UserId")
                         .IsUnique();
 
-                    b.ToTable("Profiles");
+                    b.ToTable("Profiles", (string)null);
                 });
 
             modelBuilder.Entity("FreelaMatchAPI.Models.Proposal", b =>
@@ -214,7 +214,7 @@ namespace freela_match_api.Migrations
 
                     b.HasIndex("OwnerId");
 
-                    b.ToTable("Proposal");
+                    b.ToTable("Proposal", (string)null);
                 });
 
             modelBuilder.Entity("FreelaMatchAPI.Models.ProposalSkill", b =>
@@ -240,7 +240,7 @@ namespace freela_match_api.Migrations
 
                     b.HasIndex("SkillId");
 
-                    b.ToTable("ProposalSkill");
+                    b.ToTable("ProposalSkill", (string)null);
                 });
 
             modelBuilder.Entity("FreelaMatchAPI.Models.Reviews", b =>
@@ -273,7 +273,7 @@ namespace freela_match_api.Migrations
 
                     b.HasIndex("ReviewerId");
 
-                    b.ToTable("Reviews");
+                    b.ToTable("Reviews", (string)null);
                 });
 
             modelBuilder.Entity("FreelaMatchAPI.Models.Sector", b =>
@@ -290,7 +290,7 @@ namespace freela_match_api.Migrations
 
                     b.HasKey("SectorId");
 
-                    b.ToTable("Sector");
+                    b.ToTable("Sector", (string)null);
                 });
 
             modelBuilder.Entity("FreelaMatchAPI.Models.Skill", b =>
@@ -307,7 +307,7 @@ namespace freela_match_api.Migrations
 
                     b.HasKey("SkillId");
 
-                    b.ToTable("Skills");
+                    b.ToTable("Skills", (string)null);
                 });
 
             modelBuilder.Entity("FreelaMatchAPI.Models.User", b =>
@@ -342,7 +342,7 @@ namespace freela_match_api.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Users");
+                    b.ToTable("Users", (string)null);
                 });
 
             modelBuilder.Entity("FreelaMatchAPI.Models.UserSkill", b =>
@@ -373,7 +373,7 @@ namespace freela_match_api.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("UserSkills");
+                    b.ToTable("UserSkills", (string)null);
                 });
 
             modelBuilder.Entity("FreelaMatchAPI.Models.Candidate", b =>
