@@ -655,6 +655,55 @@
         }
       }
     },
+    "/api/Reviews": {
+      "get": {
+        "tags": [
+          "Reviews"
+        ],
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "query",
+            "style": "form",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Reviews"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Reviews"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Reviews"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/User": {
       "get": {
         "tags": [
@@ -1075,6 +1124,36 @@
         },
         "additionalProperties": false
       },
+      "Reviews": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "reviewerId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "receiverId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "reviewText": {
+            "type": "string",
+            "nullable": true
+          },
+          "rating": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "additionalProperties": false
+      },
       "Sector": {
         "type": "object",
         "properties": {
@@ -1189,6 +1268,20 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/UserSkill"
+            },
+            "nullable": true
+          },
+          "reviewsGiven": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Reviews"
+            },
+            "nullable": true
+          },
+          "reviewsReceived": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Reviews"
             },
             "nullable": true
           }

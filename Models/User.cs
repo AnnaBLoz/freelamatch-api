@@ -14,6 +14,12 @@ namespace FreelaMatchAPI.Models
         public bool IsAvailable { get; set; }
 
         public ICollection<UserSkill> UserSkills { get; set; } = new List<UserSkill>();
+
+        // Avaliações feitas por esse usuário
+        public ICollection<Reviews> ReviewsGiven { get; set; }
+
+        // Avaliações recebidas por esse usuário
+        public ICollection<Reviews> ReviewsReceived { get; set; }
     }
     public class UserResume
     {
