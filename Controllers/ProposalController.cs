@@ -40,4 +40,21 @@ public class ProposalController : ControllerBase
         return Ok(proposal);
     }
 
+    [HttpPost("create")]
+    public async Task<IActionResult> Create([FromBody] CreateProposal proposalCreate)
+    {
+        try
+        {
+            var proposal = await _proposalService.CreateProposal(proposalCreate);
+            return Ok(new
+            {
+                proposal
+            });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
 }

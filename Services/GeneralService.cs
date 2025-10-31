@@ -32,4 +32,9 @@ public class GeneralService
         return _context.Sector
             .ToListAsync();
     }
+    public Task<List<Skill?>> GetSkills()
+    {
+        return _context.Skills
+            .ToListAsync();
+    }
 }

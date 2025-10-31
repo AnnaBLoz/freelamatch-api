@@ -47,6 +47,28 @@ namespace FreelaMatchAPI.Models
         public Proposal Proposal { get; set; }
 
         public int SkillId { get; set; }
-        public UserSkill Skill { get; set; }
+        public Skill Skill { get; set; }
+
+        public bool IsActive { get; set; }
     }
+
+    public class ProposalSkillCreate
+    {
+        public int ProposalSkillId { get; set; }
+        public int SkillId { get; set; }
+    }
+
+    public class CreateProposal
+    {
+        public string Title { get; set; }
+        public DateTime MaxDate { get; set; }
+        public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
+        public int OwnerId { get; set; }
+        public bool IsAvailable { get; set; } = true;
+        public int Price { get; set; }
+        public string Description { get; set; }
+
+        public ICollection<ProposalSkillCreate> RequiredSkills { get; set; } = new List<ProposalSkillCreate>();
+    }
+
 }

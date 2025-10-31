@@ -72,6 +72,26 @@
     ]
   },
   {
+    "ContainingType": "GeneralController",
+    "Method": "GetSkills",
+    "RelativePath": "api/General/Skills",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": [
+      {
+        "Type": "System.Collections.Generic.List\u00601[[FreelaMatchAPI.Models.Skill, freela-match-api, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
     "ContainingType": "PortfolioController",
     "Method": "GetPortfolios",
     "RelativePath": "api/Portfolio",
@@ -231,6 +251,22 @@
         "StatusCode": 200
       }
     ]
+  },
+  {
+    "ContainingType": "ProposalController",
+    "Method": "Create",
+    "RelativePath": "api/Proposal/create",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "proposalCreate",
+        "Type": "FreelaMatchAPI.Models.CreateProposal",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
   },
   {
     "ContainingType": "ProposalController",

@@ -38,4 +38,15 @@ public class GeneralController : ControllerBase
 
         return Ok(sectors);
     }
+
+    [HttpGet("Skills")]
+    public async Task<ActionResult<List<Skill>>> GetSkills()
+    {
+        var skills = await _generalService.GetSkills();
+
+        if (skills == null)
+            return NotFound(new { message = "Skills not found" });
+
+        return Ok(skills);
+    }
 }
