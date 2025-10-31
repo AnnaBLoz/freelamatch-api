@@ -624,6 +624,37 @@
         }
       }
     },
+    "/api/Proposal/disapprove": {
+      "put": {
+        "tags": [
+          "Proposal"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CandidateApprove"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CandidateApprove"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/CandidateApprove"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
     "/api/Proposal/candidate": {
       "post": {
         "tags": [

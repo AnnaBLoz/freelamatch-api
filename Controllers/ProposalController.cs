@@ -87,6 +87,20 @@ public class ProposalController : ControllerBase
         }
     }
 
+    [HttpPut("disapprove")]
+    public async Task<IActionResult> DisapproveCandidate([FromBody] CandidateApprove candidateDisapprove)
+    {
+        try
+        {
+            var candidateDisapproved = await _proposalService.DisapproveCandidate(candidateDisapprove);
+            return Ok(new { candidateDisapproved });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
     [HttpPost("candidate")]
     public async Task<IActionResult> Candidate([FromBody] CandidateProposal proposalCreate)
     {

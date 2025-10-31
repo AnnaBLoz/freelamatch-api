@@ -115,6 +115,27 @@ public class ProposalService
         }
     }
 
+    public async Task<(bool Success, string Message, Candidate? Candidate)> DisapproveCandidate(CandidateApprove candidateDisapprove)
+    {
+        var candidate = await _context.Candidate
+            .FirstOrDefaultAsync(u => u.CandidateId == candidateDisapprove.CandidateId);
+
+        if (candidate == null)
+            return (false, "Candidate not found", null);
+
+        candidate.Status = ProposalStatus.Rejected;
+
+        try
+        {
+            await _context.SaveChangesAsync();
+            return (true, "Candidate disapproved successfully", candidate);
+        }
+        catch (Exception ex)
+        {
+            return (false, $"Error disapproving candidate: {ex.Message}", null);
+        }
+    }
+
     public async Task<Candidate> Candidate(CandidateProposal proposalCreated)
     {
         var candidate = new Candidate
