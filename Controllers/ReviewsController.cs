@@ -42,6 +42,17 @@ public class ReviewsController : ControllerBase
         return Ok(proposal);
     }
 
+    [HttpGet("company")]
+    public async Task<ActionResult<List<Proposal>>> GetCompaniesToReview(int userId)
+    {
+        var proposal = await _proposalService.GetCompaniesToReview(userId);
+
+        if (proposal == null)
+            return NotFound(new { message = "Companies not found" });
+
+        return Ok(proposal);
+    }
+
     [HttpPost("create")]
     public async Task<IActionResult> CreateReview([FromBody] ReviewCreate reviewCreate)
     {

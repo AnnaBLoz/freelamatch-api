@@ -37,6 +37,7 @@ public class ReviewsService
             ReceiverId = reviewCreated.ReceiverId,
             ReviewText = reviewCreated.ReviewText,
             Rating = reviewCreated.Rating,
+            ProposalId = 0,
             CreatedAt = DateTime.UtcNow
         };
 

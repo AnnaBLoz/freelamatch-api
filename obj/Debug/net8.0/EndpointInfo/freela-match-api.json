@@ -833,6 +833,55 @@
         }
       }
     },
+    "/api/Reviews/company": {
+      "get": {
+        "tags": [
+          "Reviews"
+        ],
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "query",
+            "style": "form",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Proposal"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Proposal"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Proposal"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/Reviews/create": {
       "post": {
         "tags": [
@@ -1336,6 +1385,10 @@
           "createdAt": {
             "type": "string",
             "format": "date-time"
+          },
+          "proposalId": {
+            "type": "integer",
+            "format": "int32"
           }
         },
         "additionalProperties": false

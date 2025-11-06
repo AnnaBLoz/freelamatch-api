@@ -152,7 +152,7 @@ public class ProposalService
         return candidate;
     }
 
-    public async Task<List<Candidate>> GetFreelancersToReview(int userId)
+    public async Task<List<Candidate?>> GetFreelancersToReview(int userId)
     {
         return await _context.Candidate
             .Include(r => r.User)
@@ -164,6 +164,17 @@ public class ProposalService
                 r.Status == ProposalStatus.Accepted &&
                 !r.User.ReviewsReceived.Any(rc => rc.ReviewerId == userId)
             )
+            .ToListAsync();
+    }
+
+    public async Task<List<Proposal?>> GetCompaniesToReview(int userId)
+    {
+        return await _context.Proposal
+            .Where(r =>
+                r.Candidates.Any(c => c.UserId == userId) &&
+                r.MaxDate < DateTime.UtcNow &&
+                !r.IsAvailable
+            ).Include(r => r.Owner)
             .ToListAsync();
     }
 }

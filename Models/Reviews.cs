@@ -24,6 +24,10 @@ namespace FreelaMatchAPI.Models
 
         // Data opcional
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+        public int ProposalId { get; set; }
+        [JsonIgnore]
+        public Proposal Proposal { get; set; }
     }
 
     public class ReviewCreate
