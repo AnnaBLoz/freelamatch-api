@@ -11,7 +11,6 @@ using System.Text;
 public class ProfileService
 {
     private readonly AppDbContext _context;
-    private readonly IPasswordHasher<User> _passwordHasher;
     private readonly IConfiguration _config;
 
     public ProfileService(AppDbContext context, IConfiguration config)
@@ -23,8 +22,7 @@ public class ProfileService
     public async Task<Profile?> GetProfileByUserIdAsync(int userId)
     {
         return await _context.Profiles
-            .Include(p => p.UserSkills.Where(us => us.IsActive))
-            .ThenInclude(us => us.Skill)
+            .Include(p => p.UserSkills.Where(us => us.IsActive)).ThenInclude(us => us.Skill).Include(p => p.Sector)
             .FirstOrDefaultAsync(p => p.UserId == userId);
     }
 
@@ -38,6 +36,7 @@ public class ProfileService
         var user = await _context.Users
             .Include(u => u.Profile)
             .Include(u => u.UserSkills)
+            .ThenInclude(u => u.Skill)
             .FirstOrDefaultAsync(u => u.Id == userId);
 
         if (user == null || user.Profile == null)

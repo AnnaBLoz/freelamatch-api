@@ -10,13 +10,12 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAngular",
+    options.AddPolicy("AllowAll",
         policy =>
         {
-            policy.WithOrigins("http://localhost:4200") // origem do Angular
+            policy.AllowAnyOrigin()
                   .AllowAnyHeader()
-                  .AllowAnyMethod()
-                  .AllowCredentials();
+                  .AllowAnyMethod();
         });
 });
 
@@ -32,6 +31,11 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
 builder.Services.AddScoped<ProfileService>();
+builder.Services.AddScoped<UserService>();
+builder.Services.AddScoped<PortfolioService>();
+builder.Services.AddScoped<GeneralService>();
+builder.Services.AddScoped<ProposalService>();
+builder.Services.AddScoped<ReviewsService>();
 
 // Adiciona controllers e Swagger
 builder.Services.AddControllers();
@@ -65,6 +69,11 @@ builder.WebHost.UseUrls("https://localhost:5000", "http://localhost:5001");
 
 var app = builder.Build();
 
+app.UseCors("AllowAll");       
+app.UseHttpsRedirection();    
+app.UseAuthentication();       
+app.UseAuthorization();
+
 // Middlewares
 if (app.Environment.IsDevelopment())
 {
@@ -74,8 +83,6 @@ if (app.Environment.IsDevelopment())
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "API V1");
     });
 }
-
-app.UseCors("AllowAngular");
 
 app.UseHttpsRedirection();
 

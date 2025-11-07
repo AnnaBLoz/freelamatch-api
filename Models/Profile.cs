@@ -26,6 +26,23 @@ namespace FreelaMatchAPI.Models
         public int PricePerHour { get; set; }
 
         public ICollection<UserSkill> UserSkills { get; set; } = new List<UserSkill>();
+
+        public string? Website { get; set; }
+
+        public int? SectorId { get; set; }
+
+        public Sector? Sector { get; set; }
+    }
+
+    public class ProfileResume
+    {
+        public int ProfileId { get; set; }
+
+        public string? Biography { get; set; }
+
+        public ExperienceLevel ExperienceLevel { get; set; }
+
+        public int PricePerHour { get; set; }
     }
 
     public class UpdateProfile
@@ -67,5 +84,51 @@ namespace FreelaMatchAPI.Models
         public Skill? Skill { get; set; }
 
         public bool IsActive { get; set; }
+    }
+    public class UserSkillResume
+    {
+        public string Name { get; set; }
+
+        public int UserSkillId { get; set; }
+
+        public int SkillId { get; set; }
+
+        public Skill? Skill { get; set; }
+
+        public bool IsActive { get; set; }
+    }
+
+    public class Portfolio
+    {
+        public int PortfolioId { get; set; }
+
+        public int UserId { get; set; }
+
+        public User? User { get; set; }
+
+        public string URL { get; set; }
+
+        public bool IsActive { get; set; }
+
+    }
+
+    public class UpdatePortfolio
+    {
+        public string URL { get; set; }
+        public bool IsActive { get; set; }
+
+    }
+
+    public class CreatePortfolio
+    {
+        public string URL { get; set; }
+        public bool IsActive { get; set; }
+        public int UserId { get; set; }
+    }
+
+    public class Sector
+    {
+        public int SectorId { get; set; }
+        public string Name { get; set; } = string.Empty;
     }
 }

@@ -46,7 +46,7 @@ public class ProfileController : ControllerBase
         var skills = await _profileService.GetSkills();
 
         if (skills == null || !skills.Any())
-            return NotFound(new { message = "Skills not found" });
+            return NotFound(new { message = "Profiles not found" });
 
         return Ok(skills);
     }
