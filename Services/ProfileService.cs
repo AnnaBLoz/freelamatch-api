@@ -7,6 +7,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 public class ProfileService
 {
@@ -29,6 +30,34 @@ public class ProfileService
     public async Task<List<Skill>> GetSkills()
     {
         return await _context.Skills.ToListAsync();
+    }
+
+    public async Task<(bool Success, string Message, Profile? Profile)> CreateProfileAsync(int userId, UpdateProfile updatedProfile)
+    {
+        var user = await _context.Users
+            .Include(u => u.Profile)
+            .FirstOrDefaultAsync(u => u.Id == userId);
+
+        if (user == null)
+            return (false, "Usuário não encontrado.", null);
+
+        if (user.Profile != null)
+            return (false, "Perfil já existe para este usuário.", null);
+
+        // Cria o perfil com valores vazios ou nulos
+        var profile = new Profile
+        {
+            UserId = userId,
+            Biography = string.Empty,
+            PricePerHour = 0,
+            ExperienceLevel = 0,
+            SectorId = null, // caso o setor seja opcional
+        };
+
+        _context.Profiles.Add(profile);
+        await _context.SaveChangesAsync();
+
+        return (true, "Perfil criado com sucesso.", profile);
     }
 
     public async Task<(bool Success, string Message, Profile? Profile)> UpdateProfileAsync(int userId, UpdateProfile updatedProfile)

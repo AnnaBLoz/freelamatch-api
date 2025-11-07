@@ -10,13 +10,13 @@ namespace freela_match_api.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropForeignKey(
-                name: "FK_Reviews_Users_ReceiverId",
-                table: "Reviews");
+            //migrationBuilder.DropForeignKey(
+            //    name: "FK_Reviews_Users_ReceiverId",
+            //    table: "Reviews");
 
-            migrationBuilder.DropForeignKey(
-                name: "FK_Reviews_Users_ReviewerId",
-                table: "Reviews");
+            //migrationBuilder.DropForeignKey(
+            //    name: "FK_Reviews_Users_ReviewerId",
+            //    table: "Reviews");
 
             migrationBuilder.AddColumn<int>(
                 name: "ProposalId",

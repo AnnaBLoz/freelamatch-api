@@ -31,7 +31,8 @@ public class AuthService
         var user = new User
         {
             Email = dto.Email,
-            Type = dto.Type
+            Type = dto.Type,
+            Name = dto.Name
         };
 
         // Hash da senha

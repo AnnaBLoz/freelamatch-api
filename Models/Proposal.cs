@@ -35,6 +35,8 @@ namespace FreelaMatchAPI.Models
         public Proposal Proposal { get; set; }
         public DateTime AppliedAt { get; set; }
         public int ProposedPrice { get; set; }
+        public string Message { get; set; }
+        public string EstimatedDate { get; set; }
         public ProposalStatus Status { get; set; }
     }
 

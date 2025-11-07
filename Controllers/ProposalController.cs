@@ -34,9 +34,6 @@ public class ProposalController : ControllerBase
     {
         var proposals = await _proposalService.GetAllProposals();
 
-        if (proposals == null || !proposals.Any())
-            return NotFound(new { message = "Proposals not found" });
-
         return Ok(proposals);
     }
 
