@@ -1070,6 +1070,18 @@
           "appliedAt": {
             "type": "string",
             "format": "date-time"
+          },
+          "proposedPrice": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "estimatedDate": {
+            "type": "string",
+            "nullable": true
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
           }
         },
         "additionalProperties": false

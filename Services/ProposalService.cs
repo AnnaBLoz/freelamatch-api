@@ -13,11 +13,13 @@ public class ProposalService
 {
     private readonly AppDbContext _context;
     private readonly IConfiguration _config;
+    private readonly EmailService _emailService;
 
-    public ProposalService(AppDbContext context, IConfiguration config)
+    public ProposalService(AppDbContext context, IConfiguration config, EmailService emailService)
     {
         _context = context;
         _config = config;
+        _emailService = emailService;
     }
 
     public Task<List<Proposal?>> GetProposals(int companyId)
@@ -143,12 +145,21 @@ public class ProposalService
             ProposalId = proposalCreated.ProposalId,
             AppliedAt = DateTime.UtcNow,
             UserId = proposalCreated.UserId,
-            Status = ProposalStatus.Pending
+            Status = ProposalStatus.Pending,
+            EstimatedDate = proposalCreated.EstimatedDate,
+            ProposedPrice = proposalCreated.ProposedPrice,
+            Message = proposalCreated.Message
         };
 
         _context.Add(candidate);
 
         await _context.SaveChangesAsync();
+
+        await _emailService.SendNewCandidateEmailAsync(
+           proposalCreated.ProposalId,
+           proposalCreated.UserId
+       );
+
         return candidate;
     }
 

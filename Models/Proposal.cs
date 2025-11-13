@@ -52,7 +52,9 @@ namespace FreelaMatchAPI.Models
         public int UserId { get; set; }
         public int ProposalId { get; set; }
         public DateTime AppliedAt { get; set; }
-        //public int ProposedPrice { get; set; }
+        public int ProposedPrice { get; set; }
+        public string EstimatedDate { get; set; }
+        public string Message { get; set; }
     }
 
     public class ProposalSkill

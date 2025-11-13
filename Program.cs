@@ -36,6 +36,7 @@ builder.Services.AddScoped<PortfolioService>();
 builder.Services.AddScoped<GeneralService>();
 builder.Services.AddScoped<ProposalService>();
 builder.Services.AddScoped<ReviewsService>();
+builder.Services.AddScoped<EmailService>();
 
 // Adiciona controllers e Swagger
 builder.Services.AddControllers();
