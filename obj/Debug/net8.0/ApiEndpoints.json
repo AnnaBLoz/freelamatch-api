@@ -332,6 +332,22 @@
   },
   {
     "ContainingType": "ProposalController",
+    "Method": "CounterProposal",
+    "RelativePath": "api/Proposal/counterproposal",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "counterProposal",
+        "Type": "FreelaMatchAPI.Models.CounterProposalCreate",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ProposalController",
     "Method": "Create",
     "RelativePath": "api/Proposal/create",
     "HttpMethod": "POST",

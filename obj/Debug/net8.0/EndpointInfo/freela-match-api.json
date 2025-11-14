@@ -735,6 +735,37 @@
         }
       }
     },
+    "/api/Proposal/counterproposal": {
+      "post": {
+        "tags": [
+          "Proposal"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CounterProposalCreate"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CounterProposalCreate"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/CounterProposalCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
     "/api/Reviews": {
       "get": {
         "tags": [
@@ -1078,6 +1109,32 @@
           "estimatedDate": {
             "type": "string",
             "nullable": true
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "CounterProposalCreate": {
+        "type": "object",
+        "properties": {
+          "freelancerId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "proposalId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "proposedPrice": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "estimatedDate": {
+            "type": "string",
+            "format": "date-time"
           },
           "message": {
             "type": "string",

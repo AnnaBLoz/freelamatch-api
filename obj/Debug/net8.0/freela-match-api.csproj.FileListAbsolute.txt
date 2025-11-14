@@ -144,9 +144,9 @@ D:\TCC\freela-match-api\obj\Debug\net8.0\refint\freela-match-api.dll
 D:\TCC\freela-match-api\obj\Debug\net8.0\freela-match-api.pdb
 D:\TCC\freela-match-api\obj\Debug\net8.0\freela-match-api.genruntimeconfig.cache
 D:\TCC\freela-match-api\obj\Debug\net8.0\ref\freela-match-api.dll
-D:\TCC\freela-match-api\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt
 D:\TCC\freela-match-api\bin\Debug\net8.0\BouncyCastle.Cryptography.dll
 D:\TCC\freela-match-api\bin\Debug\net8.0\MailKit.dll
 D:\TCC\freela-match-api\bin\Debug\net8.0\MimeKit.dll
 D:\TCC\freela-match-api\bin\Debug\net8.0\System.Security.Cryptography.Pkcs.dll
 D:\TCC\freela-match-api\bin\Debug\net8.0\runtimes\win\lib\net8.0\System.Security.Cryptography.Pkcs.dll
+D:\TCC\freela-match-api\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt

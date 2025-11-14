@@ -57,6 +57,30 @@ namespace FreelaMatchAPI.Models
         public string Message { get; set; }
     }
 
+    public class CounterProposal
+    {
+        public int CounterProposalId { get; set; }
+
+        public int ProposalId { get; set; }
+        public Proposal Proposal { get; set; }
+
+        public int FreelancerId { get; set; }
+        public User Freelancer { get; set; }
+
+        public int ProposedPrice { get; set; }
+        public DateTime EstimatedDate { get; set; }
+        public string Message { get; set; }
+    }
+
+    public class CounterProposalCreate
+    {
+        public int FreelancerId { get; set; }
+        public int ProposalId { get; set; }
+        public int ProposedPrice { get; set; }
+        public DateTime EstimatedDate { get; set; }
+        public string Message { get; set; }
+    }
+
     public class ProposalSkill
     {
         public int ProposalSkillId { get; set; }

@@ -4,6 +4,7 @@ using FreelaMatchAPI.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace freela_match_api.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251114011052_CounterProposal")]
+    partial class CounterProposal
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -104,8 +107,9 @@ namespace freela_match_api.Migrations
 
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("CounterProposalId"));
 
-                    b.Property<DateTime>("EstimatedDate")
-                        .HasColumnType("datetime(6)");
+                    b.Property<string>("EstimatedDate")
+                        .IsRequired()
+                        .HasColumnType("longtext");
 
                     b.Property<int>("FreelancerId")
                         .HasColumnType("int");

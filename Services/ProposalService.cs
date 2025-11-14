@@ -188,4 +188,42 @@ public class ProposalService
             ).Include(r => r.Owner)
             .ToListAsync();
     }
+
+    public async Task<(bool Success, string Message, Proposal? Proposal)> CounterProposal(CounterProposalCreate dto)
+    {
+        var proposal = await _context.Proposal
+            .FirstOrDefaultAsync(u => u.ProposalId == dto.ProposalId);
+
+        if (proposal == null)
+            return (false, "Proposal not found", null);
+
+        // Criar a contra proposta
+        var counterProposal = new CounterProposal
+        {
+            ProposalId = dto.ProposalId,
+            EstimatedDate = dto.EstimatedDate,
+            ProposedPrice = dto.ProposedPrice,
+            Message = dto.Message,
+            FreelancerId = dto.FreelancerId
+        };
+
+        try
+        {
+            _context.CounterProposal.Add(counterProposal);
+            await _context.SaveChangesAsync(); // aqui o ID é gerado
+
+            // Agora que o ID existe, podemos enviar o e-mail
+            await _emailService.SendCounterProposalEmailAsync(
+                proposal.ProposalId,
+                dto.FreelancerId,
+                counterProposal.CounterProposalId // ID real salvo
+            );
+
+            return (true, "Counter Proposal sent successfully", proposal);
+        }
+        catch (Exception ex)
+        {
+            return (false, $"Error sending counter proposal: {ex.Message}", null);
+        }
+    }
 }

@@ -80,4 +80,40 @@ Equipe FreelaMatch.
 
         await SendAsync(company.Email, subject, message);
     }
+
+    public async Task SendCounterProposalEmailAsync(int proposalId, int candidateUserId, int counteredProposalId)
+    {
+        var proposal = await _context.Proposal
+            .FirstOrDefaultAsync(p => p.ProposalId == proposalId);
+
+        var candidate = await _context.Users
+            .FirstOrDefaultAsync(u => u.Id == candidateUserId);
+
+        var company = await _context.Users
+            .FirstOrDefaultAsync(u => u.Id == proposal.OwnerId);
+
+        var counteredProposal = await _context.CounterProposal
+            .FirstOrDefaultAsync(p => p.CounterProposalId == counteredProposalId);
+
+        if (company == null || candidate == null || proposal == null || counteredProposal == null)
+            return;
+
+        string subject = "Nova contra proposta!";
+        string message = $@"
+Olá, {candidate.Name}!
+
+Você recebeu uma nova contraproposta para a vaga: {proposal.Title}
+
+➡ Entrega estimada: {(counteredProposal.EstimatedDate.ToString("dd/MM/yyyy") ?? "Não informado")}
+➡ Valor: R$ {counteredProposal.ProposedPrice}
+➡ Mensagem: {counteredProposal.Message ?? "Sem mensagem"}
+
+Acesse o FreelaMatch para visualizar os detalhes.
+
+Equipe FreelaMatch.
+";
+
+
+        await SendAsync(candidate.Email, subject, message);
+    }
 }

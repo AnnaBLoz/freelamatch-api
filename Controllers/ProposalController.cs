@@ -114,4 +114,20 @@ public class ProposalController : ControllerBase
             return BadRequest(new { message = ex.Message });
         }
     }
+
+    [HttpPost("counterproposal")]
+    public async Task<IActionResult> CounterProposal([FromBody] CounterProposalCreate counterProposal)
+    {
+        var result = await _proposalService.CounterProposal(counterProposal);
+
+        if (!result.Success)
+            return BadRequest(new { success = false, message = result.Message });
+
+        return Ok(new
+        {
+            success = true,
+            message = result.Message,
+            proposal = result.Proposal
+        });
+    }
 }

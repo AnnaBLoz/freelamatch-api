@@ -19,6 +19,7 @@ namespace FreelaMatchAPI.Data
         public DbSet<ProposalSkill> ProposalSkill { get; set; }
         public DbSet<Candidate> Candidate { get; set; }
         public DbSet<Reviews> Reviews { get; set; }
+        public DbSet<CounterProposal> CounterProposal { get; set; }
 
 
 
