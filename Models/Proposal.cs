@@ -70,6 +70,12 @@ namespace FreelaMatchAPI.Models
         public int ProposedPrice { get; set; }
         public DateTime EstimatedDate { get; set; }
         public string Message { get; set; }
+
+        public int? CompanyId { get; set; }
+        public User Company { get; set; }
+
+        public bool IsSendedByCompany { get; set; } = false;
+
     }
 
     public class CounterProposalCreate

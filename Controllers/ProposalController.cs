@@ -49,6 +49,17 @@ public class ProposalController : ControllerBase
         return Ok(proposal);
     }
 
+    [HttpGet("proposalId/{proposalId}/candidate/{candidateId}")]
+    public async Task<ActionResult<Proposal>> GetProposalByIdAndCandidate(int proposalId, int candidateId)
+    {
+        var proposal = await _proposalService.GetProposalByIdAndCandidate(proposalId, candidateId);
+
+        if (proposal == null)
+            return NotFound(new { message = "Proposal not found" });
+
+        return Ok(proposal);
+    }
+
     [HttpPost("create")]
     public async Task<IActionResult> Create([FromBody] CreateProposal proposalCreate)
     {
@@ -129,5 +140,27 @@ public class ProposalController : ControllerBase
             message = result.Message,
             proposal = result.Proposal
         });
+    }
+
+    [HttpGet("counterproposal/proposalId/{proposalId}")]
+    public async Task<ActionResult<List<CounterProposal>>> GetCounterProposalByProposalId(int proposalId)
+    {
+        var counterProposals = await _proposalService.GetCounterProposalByProposalId(proposalId);
+
+        if (counterProposals == null)
+            return NotFound(new { message = "No counter proposals found" });
+
+        return Ok(counterProposals);
+    }
+
+    [HttpGet("candidate/userId/{userId}")]
+    public async Task<ActionResult<List<Proposal>>> GetProposalsByUserId(int userId)
+    {
+        var candidateProposals = await _proposalService.GetProposalsByUserId(userId);
+
+        if (candidateProposals == null)
+            return NotFound(new { message = "No candidate proposals found" });
+
+        return Ok(candidateProposals);
     }
 }

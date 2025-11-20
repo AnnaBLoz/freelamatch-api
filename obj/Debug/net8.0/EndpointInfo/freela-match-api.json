@@ -611,6 +611,57 @@
         }
       }
     },
+    "/api/Proposal/proposalId/{proposalId}/candidate/{candidateId}": {
+      "get": {
+        "tags": [
+          "Proposal"
+        ],
+        "parameters": [
+          {
+            "name": "proposalId",
+            "in": "path",
+            "required": true,
+            "style": "simple",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "candidateId",
+            "in": "path",
+            "required": true,
+            "style": "simple",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/Proposal"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Proposal"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Proposal"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/Proposal/create": {
       "post": {
         "tags": [
@@ -762,6 +813,106 @@
         "responses": {
           "200": {
             "description": "Success"
+          }
+        }
+      }
+    },
+    "/api/Proposal/counterproposal/proposalId/{proposalId}": {
+      "get": {
+        "tags": [
+          "Proposal"
+        ],
+        "parameters": [
+          {
+            "name": "proposalId",
+            "in": "path",
+            "required": true,
+            "style": "simple",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CounterProposal"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CounterProposal"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CounterProposal"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Proposal/candidate/userId/{userId}": {
+      "get": {
+        "tags": [
+          "Proposal"
+        ],
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "style": "simple",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Proposal"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Proposal"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Proposal"
+                  }
+                }
+              }
+            }
           }
         }
       }
@@ -1113,6 +1264,53 @@
           "message": {
             "type": "string",
             "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "CounterProposal": {
+        "type": "object",
+        "properties": {
+          "counterProposalId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "proposalId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "proposal": {
+            "$ref": "#/components/schemas/Proposal"
+          },
+          "freelancerId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "freelancer": {
+            "$ref": "#/components/schemas/User"
+          },
+          "proposedPrice": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "estimatedDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "companyId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "company": {
+            "$ref": "#/components/schemas/User"
+          },
+          "isSendedByCompany": {
+            "type": "boolean"
           }
         },
         "additionalProperties": false

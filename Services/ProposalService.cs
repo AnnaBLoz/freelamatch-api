@@ -50,6 +50,19 @@ public class ProposalService
             .FirstOrDefaultAsync(p => p.ProposalId == proposalId);
     }
 
+    public async Task<Proposal?> GetProposalByIdAndCandidate(int proposalId, int candidateId)
+    {
+        return await _context.Proposal
+            .AsNoTracking()
+            .Where(p => p.ProposalId == proposalId)
+            .Include(p => p.RequiredSkills)
+                .ThenInclude(rs => rs.Skill)
+                .ThenInclude(s => s.UserSkills)
+            .Include(p => p.Candidates.Where(c => c.UserId == candidateId))
+                .ThenInclude(c => c.User)
+            .FirstOrDefaultAsync();
+    }
+
     public async Task<Proposal> CreateProposal(CreateProposal proposalCreated)
     {
         var proposal = new Proposal
@@ -225,5 +238,24 @@ public class ProposalService
         {
             return (false, $"Error sending counter proposal: {ex.Message}", null);
         }
+    }
+
+    public async Task<List<CounterProposal>> GetCounterProposalByProposalId(int proposalId)
+    {
+        return await _context.CounterProposal
+            .Where(p => p.ProposalId == proposalId)
+            .Include(p => p.Freelancer)
+            .Include(p => p.Company)
+            .ToListAsync();
+    }
+
+    public async Task<List<Proposal>> GetProposalsByUserId(int userId)
+    {
+        return await _context.Proposal
+            .AsNoTracking()
+            .Include(p => p.Candidates)
+                .ThenInclude(c => c.User)
+            .Where(p => p.Candidates.Any(c => c.UserId == userId))
+            .ToListAsync();
     }
 }

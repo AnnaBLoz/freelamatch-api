@@ -306,6 +306,32 @@
   },
   {
     "ContainingType": "ProposalController",
+    "Method": "GetProposalsByUserId",
+    "RelativePath": "api/Proposal/candidate/userId/{userId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "userId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Collections.Generic.List\u00601[[FreelaMatchAPI.Models.Proposal, freela-match-api, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "ProposalController",
     "Method": "GetProposals",
     "RelativePath": "api/Proposal/company/{companyId}",
     "HttpMethod": "GET",
@@ -345,6 +371,32 @@
       }
     ],
     "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ProposalController",
+    "Method": "GetCounterProposalByProposalId",
+    "RelativePath": "api/Proposal/counterproposal/proposalId/{proposalId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "proposalId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Collections.Generic.List\u00601[[FreelaMatchAPI.Models.CounterProposal, freela-match-api, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
   },
   {
     "ContainingType": "ProposalController",
@@ -388,6 +440,37 @@
     "Parameters": [
       {
         "Name": "proposalId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "FreelaMatchAPI.Models.Proposal",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "ProposalController",
+    "Method": "GetProposalByIdAndCandidate",
+    "RelativePath": "api/Proposal/proposalId/{proposalId}/candidate/{candidateId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "proposalId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "candidateId",
         "Type": "System.Int32",
         "IsRequired": true
       }

@@ -98,9 +98,14 @@ Equipe FreelaMatch.
         if (company == null || candidate == null || proposal == null || counteredProposal == null)
             return;
 
-        string subject = "Nova contra proposta!";
+        string name;
+        if (counteredProposal.IsSendedByCompany == true)
+            name = proposal.Owner.Name;
+        else name = candidate.Name;
+
+            string subject = "Nova contra proposta!";
         string message = $@"
-Olá, {candidate.Name}!
+Olá, {name}!
 
 Você recebeu uma nova contraproposta para a vaga: {proposal.Title}
 
@@ -113,7 +118,8 @@ Acesse o FreelaMatch para visualizar os detalhes.
 Equipe FreelaMatch.
 ";
 
-
+        if (counteredProposal.IsSendedByCompany == true)
         await SendAsync(candidate.Email, subject, message);
+        else await SendAsync(proposal.Owner.Email, subject, message);
     }
 }
