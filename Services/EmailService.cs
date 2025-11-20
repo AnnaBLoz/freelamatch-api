@@ -1,4 +1,5 @@
-﻿using FreelaMatchAPI.Data;
+﻿using freela_match_api.Migrations;
+using FreelaMatchAPI.Data;
 using FreelaMatchAPI.DTOs;
 using FreelaMatchAPI.Models;
 using MailKit.Net.Smtp;
@@ -103,8 +104,32 @@ Equipe FreelaMatch.
             name = proposal.Owner.Name;
         else name = candidate.Name;
 
+        if (counteredProposal.IsAccepted == false)
+        {
+            string subject = "Sua proposta foi aceita!";
+            string message = $@"
+Olá, {name}!
+
+Sua proposta foi aceita para a vaga: {proposal.Title}
+
+➡ Entrega estimada: {(counteredProposal.EstimatedDate.ToString("dd/MM/yyyy") ?? "Não informado")}
+➡ Valor: R$ {counteredProposal.ProposedPrice}
+➡ Mensagem: {counteredProposal.Message ?? "Sem mensagem"}
+
+Caso deseje seguir com este freelancer, não se esqueça de aceitá-lo.
+
+Acesse o FreelaMatch para visualizar os detalhes.
+
+Equipe FreelaMatch.
+";
+
+            if (counteredProposal.IsSendedByCompany == true)
+                await SendAsync(candidate.Email, subject, message);
+            else await SendAsync(proposal.Owner.Email, subject, message);
+        } else
+        {
             string subject = "Nova contra proposta!";
-        string message = $@"
+            string message = $@"
 Olá, {name}!
 
 Você recebeu uma nova contraproposta para a vaga: {proposal.Title}
@@ -118,8 +143,35 @@ Acesse o FreelaMatch para visualizar os detalhes.
 Equipe FreelaMatch.
 ";
 
-        if (counteredProposal.IsSendedByCompany == true)
+            if (counteredProposal.IsSendedByCompany == true)
+                await SendAsync(candidate.Email, subject, message);
+            else await SendAsync(proposal.Owner.Email, subject, message);
+        }            
+    }
+
+    public async Task SendApproveEmail(int proposalId, int candidateId)
+    {
+        var proposal = await _context.Proposal
+            .FirstOrDefaultAsync(p => p.ProposalId == proposalId);
+
+        var candidate = await _context.Users
+            .FirstOrDefaultAsync(u => u.Id == candidateId);
+
+        if (candidate == null || proposal == null)
+            return;
+
+        string subject = "Aprovação";
+
+        string message = $@"
+Olá, {candidate.Name}!
+
+Você foi aprovado para a vaga: {proposal.Title}
+
+Acesse o FreelaMatch para visualizar os detalhes.
+
+Equipe FreelaMatch.
+";
+
         await SendAsync(candidate.Email, subject, message);
-        else await SendAsync(proposal.Owner.Email, subject, message);
     }
 }

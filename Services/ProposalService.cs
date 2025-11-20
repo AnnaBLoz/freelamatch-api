@@ -1,4 +1,5 @@
-﻿using FreelaMatchAPI.Data;
+﻿using freela_match_api.Migrations;
+using FreelaMatchAPI.Data;
 using FreelaMatchAPI.DTOs;
 using FreelaMatchAPI.Models;
 using Microsoft.AspNetCore.Identity;
@@ -122,6 +123,10 @@ public class ProposalService
         try
         {
             await _context.SaveChangesAsync();
+            await _emailService.SendApproveEmail(
+                candidate.ProposalId,
+                candidate.UserId
+            );
             return (true, "Candidates updated successfully", candidate);
         }
         catch (Exception ex)
@@ -211,14 +216,16 @@ public class ProposalService
             return (false, "Proposal not found", null);
 
         // Criar a contra proposta
-        var counterProposal = new CounterProposal
+        var counterProposal = new FreelaMatchAPI.Models.CounterProposal
         {
             ProposalId = dto.ProposalId,
             EstimatedDate = dto.EstimatedDate,
             ProposedPrice = dto.ProposedPrice,
             Message = dto.Message,
             FreelancerId = dto.FreelancerId,
-            IsSendedByCompany = dto.IsSendedByCompany
+            CompanyId = dto.CompanyId,
+            IsSendedByCompany = dto.IsSendedByCompany,
+            IsAccepted = dto.IsAccepted
         };
 
         try
@@ -241,7 +248,7 @@ public class ProposalService
         }
     }
 
-    public async Task<List<CounterProposal>> GetCounterProposalByProposalId(int proposalId)
+    public async Task<List<FreelaMatchAPI.Models.CounterProposal>> GetCounterProposalByProposalId(int proposalId)
     {
         return await _context.CounterProposal
             .Where(p => p.ProposalId == proposalId)
