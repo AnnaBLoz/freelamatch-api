@@ -85,6 +85,8 @@ namespace FreelaMatchAPI.Models
         public int ProposedPrice { get; set; }
         public DateTime EstimatedDate { get; set; }
         public string Message { get; set; }
+
+        public bool IsSendedByCompany { get; set; }
     }
 
     public class ProposalSkill

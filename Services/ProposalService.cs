@@ -217,7 +217,8 @@ public class ProposalService
             EstimatedDate = dto.EstimatedDate,
             ProposedPrice = dto.ProposedPrice,
             Message = dto.Message,
-            FreelancerId = dto.FreelancerId
+            FreelancerId = dto.FreelancerId,
+            IsSendedByCompany = dto.IsSendedByCompany
         };
 
         try
