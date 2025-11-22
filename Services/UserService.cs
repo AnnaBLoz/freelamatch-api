@@ -23,7 +23,6 @@ public class UserService
     {
         return await _context.Users
             .Include(u => u.UserSkills).ThenInclude(u => u.Skill).Include(u => u.Profile)
-            .Include(u => u.ReviewsGiven).Include(u => u.ReviewsReceived)
             .FirstOrDefaultAsync(p => p.Id == userId);
     }
 

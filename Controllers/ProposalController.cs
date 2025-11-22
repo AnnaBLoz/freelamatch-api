@@ -1,5 +1,6 @@
 using FreelaMatchAPI.DTOs;
 using FreelaMatchAPI.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.Design;
@@ -7,6 +8,7 @@ using System.Linq;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize]
 public class ProposalController : ControllerBase
 {
     private readonly ProposalService _proposalService;
@@ -34,9 +36,6 @@ public class ProposalController : ControllerBase
     {
         var proposals = await _proposalService.GetAllProposals();
 
-        if (proposals == null || !proposals.Any())
-            return NotFound(new { message = "Proposals not found" });
-
         return Ok(proposals);
     }
 
@@ -45,6 +44,17 @@ public class ProposalController : ControllerBase
     public async Task<ActionResult<Proposal>> GetProposalById(int proposalId)
     {
         var proposal = await _proposalService.GetProposalById(proposalId);
+
+        if (proposal == null)
+            return NotFound(new { message = "Proposal not found" });
+
+        return Ok(proposal);
+    }
+
+    [HttpGet("proposalId/{proposalId}/candidate/{candidateId}")]
+    public async Task<ActionResult<Proposal>> GetProposalByIdAndCandidate(int proposalId, int candidateId)
+    {
+        var proposal = await _proposalService.GetProposalByIdAndCandidate(proposalId, candidateId);
 
         if (proposal == null)
             return NotFound(new { message = "Proposal not found" });
@@ -116,5 +126,43 @@ public class ProposalController : ControllerBase
         {
             return BadRequest(new { message = ex.Message });
         }
+    }
+
+    [HttpPost("counterproposal")]
+    public async Task<IActionResult> CounterProposal([FromBody] CounterProposalCreate counterProposal)
+    {
+        var result = await _proposalService.CounterProposal(counterProposal);
+
+        if (!result.Success)
+            return BadRequest(new { success = false, message = result.Message });
+
+        return Ok(new
+        {
+            success = true,
+            message = result.Message,
+            proposal = result.Proposal
+        });
+    }
+
+    [HttpGet("counterproposal/proposalId/{proposalId}")]
+    public async Task<ActionResult<List<CounterProposal>>> GetCounterProposalByProposalId(int proposalId)
+    {
+        var counterProposals = await _proposalService.GetCounterProposalByProposalId(proposalId);
+
+        if (counterProposals == null)
+            return NotFound(new { message = "No counter proposals found" });
+
+        return Ok(counterProposals);
+    }
+
+    [HttpGet("candidate/userId/{userId}")]
+    public async Task<ActionResult<List<Proposal>>> GetProposalsByUserId(int userId)
+    {
+        var candidateProposals = await _proposalService.GetProposalsByUserId(userId);
+
+        if (candidateProposals == null)
+            return NotFound(new { message = "No candidate proposals found" });
+
+        return Ok(candidateProposals);
     }
 }

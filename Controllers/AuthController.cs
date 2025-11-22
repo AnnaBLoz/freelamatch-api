@@ -8,10 +8,12 @@ using System.Linq;
 public class AuthController : ControllerBase
 {
     private readonly AuthService _authService;
+    private readonly ProfileService _profileService;
 
-    public AuthController(AuthService authService)
+    public AuthController(AuthService authService, ProfileService profileService)
     {
         _authService = authService;
+        _profileService = profileService;
     }
 
     [HttpPost("register")]
@@ -20,12 +22,15 @@ public class AuthController : ControllerBase
         try
         {
             var user = await _authService.RegisterAsync(dto);
+
+            await _profileService.CreateProfileAsync(user.Id, new UpdateProfile { });
             return Ok(new
             {
                 user.Id,
                 user.Email,
                 user.Token,
-                user.Type
+                user.Type,
+                user.Name
             });
         }
         catch (InvalidOperationException ex)

@@ -8,12 +8,10 @@ namespace FreelaMatchAPI.Models
 
         // Quem fez a avaliação
         public int ReviewerId { get; set; }
-        [JsonIgnore]
         public User Reviewer { get; set; }
 
         // Quem recebeu a avaliação
         public int ReceiverId { get; set; }
-        [JsonIgnore]
         public User Receiver { get; set; }
 
         // Conteúdo da avaliação
@@ -47,6 +45,9 @@ namespace FreelaMatchAPI.Models
 
         // Data opcional
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+        public int ProposalId { get; set; }
+
     }
 
 }

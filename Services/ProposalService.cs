@@ -1,4 +1,5 @@
-﻿using FreelaMatchAPI.Data;
+﻿using freela_match_api.Migrations;
+using FreelaMatchAPI.Data;
 using FreelaMatchAPI.DTOs;
 using FreelaMatchAPI.Models;
 using Microsoft.AspNetCore.Identity;
@@ -13,11 +14,13 @@ public class ProposalService
 {
     private readonly AppDbContext _context;
     private readonly IConfiguration _config;
+    private readonly EmailService _emailService;
 
-    public ProposalService(AppDbContext context, IConfiguration config)
+    public ProposalService(AppDbContext context, IConfiguration config, EmailService emailService)
     {
         _context = context;
         _config = config;
+        _emailService = emailService;
     }
 
     public Task<List<Proposal?>> GetProposals(int companyId)
@@ -46,6 +49,19 @@ public class ProposalService
             .Include(p => p.Candidates)
                 .ThenInclude(c => c.User)
             .FirstOrDefaultAsync(p => p.ProposalId == proposalId);
+    }
+
+    public async Task<Proposal?> GetProposalByIdAndCandidate(int proposalId, int candidateId)
+    {
+        return await _context.Proposal
+            .AsNoTracking()
+            .Where(p => p.ProposalId == proposalId)
+            .Include(p => p.RequiredSkills)
+                .ThenInclude(rs => rs.Skill)
+                .ThenInclude(s => s.UserSkills)
+            .Include(p => p.Candidates.Where(c => c.UserId == candidateId))
+                .ThenInclude(c => c.User)
+            .FirstOrDefaultAsync();
     }
 
     public async Task<Proposal> CreateProposal(CreateProposal proposalCreated)
@@ -107,6 +123,10 @@ public class ProposalService
         try
         {
             await _context.SaveChangesAsync();
+            await _emailService.SendApproveEmail(
+                candidate.ProposalId,
+                candidate.UserId
+            );
             return (true, "Candidates updated successfully", candidate);
         }
         catch (Exception ex)
@@ -143,12 +163,21 @@ public class ProposalService
             ProposalId = proposalCreated.ProposalId,
             AppliedAt = DateTime.UtcNow,
             UserId = proposalCreated.UserId,
-            Status = ProposalStatus.Pending
+            Status = ProposalStatus.Pending,
+            EstimatedDate = proposalCreated.EstimatedDate,
+            ProposedPrice = proposalCreated.ProposedPrice,
+            Message = proposalCreated.Message
         };
 
         _context.Add(candidate);
 
         await _context.SaveChangesAsync();
+
+        await _emailService.SendNewCandidateEmailAsync(
+           proposalCreated.ProposalId,
+           proposalCreated.UserId
+       );
+
         return candidate;
     }
 
@@ -161,20 +190,83 @@ public class ProposalService
                 r.Proposal.OwnerId == userId &&
                 r.Proposal.MaxDate < DateTime.UtcNow &&
                 !r.Proposal.IsAvailable &&
-                r.Status == ProposalStatus.Accepted &&
-                !r.User.ReviewsReceived.Any(rc => rc.ReviewerId == userId)
+                r.Status == ProposalStatus.Accepted && r.Status != ProposalStatus.Reviewed
             )
             .ToListAsync();
     }
 
-    public async Task<List<Proposal?>> GetCompaniesToReview(int userId)
+    public async Task<List<Proposal>> GetCompaniesToReview(int userId)
     {
         return await _context.Proposal
             .Where(r =>
-                r.Candidates.Any(c => c.UserId == userId) &&
+                r.Candidates.Any(c =>
+                    c.UserId == userId &&
+                    c.Status != ProposalStatus.Reviewed
+                ) &&
                 r.MaxDate < DateTime.UtcNow &&
                 !r.IsAvailable
-            ).Include(r => r.Owner)
+            )
+            .Include(r => r.Owner)
+            .ToListAsync();
+    }
+
+    public async Task<(bool Success, string Message, Proposal? Proposal)> CounterProposal(CounterProposalCreate dto)
+    {
+        var proposal = await _context.Proposal
+            .FirstOrDefaultAsync(u => u.ProposalId == dto.ProposalId);
+
+        if (proposal == null)
+            return (false, "Proposal not found", null);
+
+        // Criar a contra proposta
+        var counterProposal = new FreelaMatchAPI.Models.CounterProposal
+        {
+            ProposalId = dto.ProposalId,
+            EstimatedDate = dto.EstimatedDate,
+            ProposedPrice = dto.ProposedPrice,
+            Message = dto.Message,
+            FreelancerId = dto.FreelancerId,
+            CompanyId = dto.CompanyId,
+            IsSendedByCompany = dto.IsSendedByCompany,
+            IsAccepted = dto.IsAccepted
+        };
+
+        try
+        {
+            _context.CounterProposal.Add(counterProposal);
+            await _context.SaveChangesAsync(); // aqui o ID é gerado
+
+            // Agora que o ID existe, podemos enviar o e-mail
+            await _emailService.SendCounterProposalEmailAsync(
+                proposal.ProposalId,
+                dto.FreelancerId,
+                counterProposal.CounterProposalId // ID real salvo
+            );
+
+            return (true, "Counter Proposal sent successfully", proposal);
+        }
+        catch (Exception ex)
+        {
+            return (false, $"Error sending counter proposal: {ex.Message}", null);
+        }
+    }
+
+    public async Task<List<FreelaMatchAPI.Models.CounterProposal>> GetCounterProposalByProposalId(int proposalId)
+    {
+        return await _context.CounterProposal
+            .Where(p => p.ProposalId == proposalId)
+            .Include(p => p.Freelancer)
+            .Include(p => p.Company)
+            .ToListAsync();
+    }
+
+    public async Task<List<Proposal>> GetProposalsByUserId(int userId)
+    {
+        return await _context.Proposal
+            .AsNoTracking()
+            .Include(p => p.Candidates)
+                .ThenInclude(c => c.User)
+            .Where(p => p.Candidates.Any(c => c.UserId == userId))
             .ToListAsync();
     }
 }

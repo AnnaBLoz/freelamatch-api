@@ -19,6 +19,7 @@ namespace FreelaMatchAPI.Data
         public DbSet<ProposalSkill> ProposalSkill { get; set; }
         public DbSet<Candidate> Candidate { get; set; }
         public DbSet<Reviews> Reviews { get; set; }
+        public DbSet<CounterProposal> CounterProposal { get; set; }
 
 
 
@@ -31,17 +32,7 @@ namespace FreelaMatchAPI.Data
                 .WithOne(u => u.Profile)      
                 .HasForeignKey<Profile>(p => p.UserId);
 
-            modelBuilder.Entity<Reviews>()
-                .HasOne(r => r.Reviewer)
-                .WithMany(u => u.ReviewsGiven)
-                .HasForeignKey(r => r.ReviewerId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            modelBuilder.Entity<Reviews>()
-                .HasOne(r => r.Receiver)
-                .WithMany(u => u.ReviewsReceived)
-                .HasForeignKey(r => r.ReceiverId)
-                .OnDelete(DeleteBehavior.Restrict);
+           
         }
     }
 }

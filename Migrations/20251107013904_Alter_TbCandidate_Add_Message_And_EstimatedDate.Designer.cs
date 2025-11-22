@@ -4,6 +4,7 @@ using FreelaMatchAPI.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace freela_match_api.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251107013904_Alter_TbCandidate_Add_Message_And_EstimatedDate")]
+    partial class Alter_TbCandidate_Add_Message_And_EstimatedDate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -94,50 +97,6 @@ namespace freela_match_api.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("Companies");
-                });
-
-            modelBuilder.Entity("FreelaMatchAPI.Models.CounterProposal", b =>
-                {
-                    b.Property<int>("CounterProposalId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("CounterProposalId"));
-
-                    b.Property<int?>("CompanyId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("EstimatedDate")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<int>("FreelancerId")
-                        .HasColumnType("int");
-
-                    b.Property<bool>("IsAccepted")
-                        .HasColumnType("tinyint(1)");
-
-                    b.Property<bool>("IsSendedByCompany")
-                        .HasColumnType("tinyint(1)");
-
-                    b.Property<string>("Message")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.Property<int>("ProposalId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("ProposedPrice")
-                        .HasColumnType("int");
-
-                    b.HasKey("CounterProposalId");
-
-                    b.HasIndex("CompanyId");
-
-                    b.HasIndex("FreelancerId");
-
-                    b.HasIndex("ProposalId");
-
-                    b.ToTable("CounterProposal");
                 });
 
             modelBuilder.Entity("FreelaMatchAPI.Models.Freelancer", b =>
@@ -461,31 +420,6 @@ namespace freela_match_api.Migrations
                         .IsRequired();
 
                     b.Navigation("User");
-                });
-
-            modelBuilder.Entity("FreelaMatchAPI.Models.CounterProposal", b =>
-                {
-                    b.HasOne("FreelaMatchAPI.Models.User", "Company")
-                        .WithMany()
-                        .HasForeignKey("CompanyId");
-
-                    b.HasOne("FreelaMatchAPI.Models.User", "Freelancer")
-                        .WithMany()
-                        .HasForeignKey("FreelancerId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("FreelaMatchAPI.Models.Proposal", "Proposal")
-                        .WithMany()
-                        .HasForeignKey("ProposalId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Company");
-
-                    b.Navigation("Freelancer");
-
-                    b.Navigation("Proposal");
                 });
 
             modelBuilder.Entity("FreelaMatchAPI.Models.Freelancer", b =>

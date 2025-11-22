@@ -6,7 +6,8 @@ namespace FreelaMatchAPI.Models
     {
         Pending = 1,
         Accepted,
-        Rejected
+        Rejected,
+        Reviewed
     }
 
     public class Proposal
@@ -35,6 +36,8 @@ namespace FreelaMatchAPI.Models
         public Proposal Proposal { get; set; }
         public DateTime AppliedAt { get; set; }
         public int ProposedPrice { get; set; }
+        public string Message { get; set; }
+        public string EstimatedDate { get; set; }
         public ProposalStatus Status { get; set; }
     }
 
@@ -50,7 +53,43 @@ namespace FreelaMatchAPI.Models
         public int UserId { get; set; }
         public int ProposalId { get; set; }
         public DateTime AppliedAt { get; set; }
-        //public int ProposedPrice { get; set; }
+        public int ProposedPrice { get; set; }
+        public string EstimatedDate { get; set; }
+        public string Message { get; set; }
+    }
+
+    public class CounterProposal
+    {
+        public int CounterProposalId { get; set; }
+
+        public int ProposalId { get; set; }
+        public Proposal Proposal { get; set; }
+
+        public int FreelancerId { get; set; }
+        public User Freelancer { get; set; }
+
+        public int ProposedPrice { get; set; }
+        public DateTime EstimatedDate { get; set; }
+        public string Message { get; set; }
+
+        public int? CompanyId { get; set; }
+        public User Company { get; set; }
+
+        public bool IsSendedByCompany { get; set; } = false;
+        public bool IsAccepted { get; set; } = false;
+
+    }
+
+    public class CounterProposalCreate
+    {
+        public int FreelancerId { get; set; }
+        public int CompanyId { get; set; }
+        public int ProposalId { get; set; }
+        public int ProposedPrice { get; set; }
+        public DateTime EstimatedDate { get; set; }
+        public string Message { get; set; }
+        public bool IsSendedByCompany { get; set; }
+        public bool IsAccepted { get; set; } = false;
     }
 
     public class ProposalSkill

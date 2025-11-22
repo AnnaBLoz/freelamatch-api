@@ -4,6 +4,7 @@ using FreelaMatchAPI.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace freela_match_api.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251114012537_Alter_CounterProposal_Ajust_DateTime")]
+    partial class Alter_CounterProposal_Ajust_DateTime
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -104,20 +107,11 @@ namespace freela_match_api.Migrations
 
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("CounterProposalId"));
 
-                    b.Property<int?>("CompanyId")
-                        .HasColumnType("int");
-
                     b.Property<DateTime>("EstimatedDate")
                         .HasColumnType("datetime(6)");
 
                     b.Property<int>("FreelancerId")
                         .HasColumnType("int");
-
-                    b.Property<bool>("IsAccepted")
-                        .HasColumnType("tinyint(1)");
-
-                    b.Property<bool>("IsSendedByCompany")
-                        .HasColumnType("tinyint(1)");
 
                     b.Property<string>("Message")
                         .IsRequired()
@@ -130,8 +124,6 @@ namespace freela_match_api.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("CounterProposalId");
-
-                    b.HasIndex("CompanyId");
 
                     b.HasIndex("FreelancerId");
 
@@ -465,10 +457,6 @@ namespace freela_match_api.Migrations
 
             modelBuilder.Entity("FreelaMatchAPI.Models.CounterProposal", b =>
                 {
-                    b.HasOne("FreelaMatchAPI.Models.User", "Company")
-                        .WithMany()
-                        .HasForeignKey("CompanyId");
-
                     b.HasOne("FreelaMatchAPI.Models.User", "Freelancer")
                         .WithMany()
                         .HasForeignKey("FreelancerId")
@@ -480,8 +468,6 @@ namespace freela_match_api.Migrations
                         .HasForeignKey("ProposalId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Company");
 
                     b.Navigation("Freelancer");
 

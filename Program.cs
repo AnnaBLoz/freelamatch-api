@@ -8,6 +8,9 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// ----------------------------
+// CORS
+// ----------------------------
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll",
@@ -19,7 +22,9 @@ builder.Services.AddCors(options =>
         });
 });
 
-// Configura MySQL
+// ----------------------------
+// DATABASE (MySQL)
+// ----------------------------
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseMySql(
         builder.Configuration.GetConnectionString("DefaultConnection"),
@@ -27,7 +32,9 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     )
 );
 
-// Registra serviços
+// ----------------------------
+// SERVICES
+// ----------------------------
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
 builder.Services.AddScoped<ProfileService>();
@@ -36,14 +43,20 @@ builder.Services.AddScoped<PortfolioService>();
 builder.Services.AddScoped<GeneralService>();
 builder.Services.AddScoped<ProposalService>();
 builder.Services.AddScoped<ReviewsService>();
+builder.Services.AddScoped<EmailService>();
 
-// Adiciona controllers e Swagger
+// ----------------------------
+// CONTROLLERS + SWAGGER
+// ----------------------------
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// Configura JWT
+// ----------------------------
+// JWT CONFIGURATION
+// ----------------------------
 var jwtSettings = builder.Configuration.GetSection("Jwt");
+
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -60,21 +73,25 @@ builder.Services.AddAuthentication(options =>
         ValidIssuer = jwtSettings["Issuer"],
         ValidAudience = jwtSettings["Audience"],
         IssuerSigningKey = new SymmetricSecurityKey(
-            Encoding.UTF8.GetBytes(jwtSettings["Key"]!))
+            Encoding.UTF8.GetBytes(jwtSettings["Key"]!)
+        )
     };
 });
 
-// URLs customizadas
+// ----------------------------
+// CUSTOM URLS
+// ----------------------------
 builder.WebHost.UseUrls("https://localhost:5000", "http://localhost:5001");
 
 var app = builder.Build();
 
-app.UseCors("AllowAll");       
-app.UseHttpsRedirection();    
-app.UseAuthentication();       
-app.UseAuthorization();
+// ----------------------------
+// MIDDLEWARE
+// ----------------------------
 
-// Middlewares
+app.UseCors("AllowAll");
+app.UseHttpsRedirection();
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -84,10 +101,7 @@ if (app.Environment.IsDevelopment())
     });
 }
 
-app.UseHttpsRedirection();
-
-// **Ordem correta**
-app.UseAuthentication(); // precisa vir antes de Authorization
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
