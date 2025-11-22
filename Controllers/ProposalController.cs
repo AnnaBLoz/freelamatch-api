@@ -1,5 +1,6 @@
 using FreelaMatchAPI.DTOs;
 using FreelaMatchAPI.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.Design;
@@ -7,6 +8,7 @@ using System.Linq;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize]
 public class ProposalController : ControllerBase
 {
     private readonly ProposalService _proposalService;

@@ -1,11 +1,13 @@
 using FreelaMatchAPI.DTOs;
 using FreelaMatchAPI.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize]
 public class ProfileController : ControllerBase
 {
     private readonly ProfileService _profileService;
