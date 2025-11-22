@@ -1599,7 +1599,8 @@
         "enum": [
           1,
           2,
-          3
+          3,
+          4
         ],
         "type": "integer",
         "format": "int32"
@@ -1647,6 +1648,10 @@
           "createdAt": {
             "type": "string",
             "format": "date-time"
+          },
+          "proposalId": {
+            "type": "integer",
+            "format": "int32"
           }
         },
         "additionalProperties": false
@@ -1662,9 +1667,15 @@
             "type": "integer",
             "format": "int32"
           },
+          "reviewer": {
+            "$ref": "#/components/schemas/User"
+          },
           "receiverId": {
             "type": "integer",
             "format": "int32"
+          },
+          "receiver": {
+            "$ref": "#/components/schemas/User"
           },
           "reviewText": {
             "type": "string",
@@ -1799,20 +1810,6 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/UserSkill"
-            },
-            "nullable": true
-          },
-          "reviewsGiven": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/Reviews"
-            },
-            "nullable": true
-          },
-          "reviewsReceived": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/Reviews"
             },
             "nullable": true
           }

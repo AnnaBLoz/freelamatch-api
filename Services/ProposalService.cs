@@ -190,20 +190,23 @@ public class ProposalService
                 r.Proposal.OwnerId == userId &&
                 r.Proposal.MaxDate < DateTime.UtcNow &&
                 !r.Proposal.IsAvailable &&
-                r.Status == ProposalStatus.Accepted &&
-                !r.User.ReviewsReceived.Any(rc => rc.ReviewerId == userId)
+                r.Status == ProposalStatus.Accepted && r.Status != ProposalStatus.Reviewed
             )
             .ToListAsync();
     }
 
-    public async Task<List<Proposal?>> GetCompaniesToReview(int userId)
+    public async Task<List<Proposal>> GetCompaniesToReview(int userId)
     {
         return await _context.Proposal
             .Where(r =>
-                r.Candidates.Any(c => c.UserId == userId) &&
+                r.Candidates.Any(c =>
+                    c.UserId == userId &&
+                    c.Status != ProposalStatus.Reviewed
+                ) &&
                 r.MaxDate < DateTime.UtcNow &&
                 !r.IsAvailable
-            ).Include(r => r.Owner)
+            )
+            .Include(r => r.Owner)
             .ToListAsync();
     }
 

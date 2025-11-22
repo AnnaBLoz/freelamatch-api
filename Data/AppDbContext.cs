@@ -32,17 +32,7 @@ namespace FreelaMatchAPI.Data
                 .WithOne(u => u.Profile)      
                 .HasForeignKey<Profile>(p => p.UserId);
 
-            modelBuilder.Entity<Reviews>()
-                .HasOne(r => r.Reviewer)
-                .WithMany(u => u.ReviewsGiven)
-                .HasForeignKey(r => r.ReviewerId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            modelBuilder.Entity<Reviews>()
-                .HasOne(r => r.Receiver)
-                .WithMany(u => u.ReviewsReceived)
-                .HasForeignKey(r => r.ReceiverId)
-                .OnDelete(DeleteBehavior.Restrict);
+           
         }
     }
 }

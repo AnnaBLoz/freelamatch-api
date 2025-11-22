@@ -25,7 +25,7 @@ public class ReviewsService
         return await _context.Reviews
             .Include(r => r.Reviewer)
             .Include(r => r.Receiver)
-            .Where(r => r.ReceiverId == userId) // pega as avaliações recebidas por esse usuário
+            .Where(r => r.ReceiverId == userId || r.ReviewerId == userId)
             .ToListAsync();
     }
 
@@ -37,13 +37,27 @@ public class ReviewsService
             ReceiverId = reviewCreated.ReceiverId,
             ReviewText = reviewCreated.ReviewText,
             Rating = reviewCreated.Rating,
-            ProposalId = 0,
+            ProposalId = reviewCreated.ProposalId,
             CreatedAt = DateTime.UtcNow
         };
 
         _context.Add(review);
-
         await _context.SaveChangesAsync();
+
+        // Buscar o Candidate aceito
+        var candidate = await _context.Candidate
+            .Where(c => c.UserId == reviewCreated.ReceiverId
+                     && c.ProposalId == reviewCreated.ProposalId
+                     && c.Status == ProposalStatus.Accepted)
+            .FirstOrDefaultAsync();
+
+        if (candidate != null)
+        {
+            candidate.Status = ProposalStatus.Reviewed; // <-- corrigido
+            _context.Candidate.Update(candidate);
+            await _context.SaveChangesAsync();
+        }
+
         return review;
     }
 }

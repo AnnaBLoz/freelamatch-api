@@ -6,7 +6,8 @@ namespace FreelaMatchAPI.Models
     {
         Pending = 1,
         Accepted,
-        Rejected
+        Rejected,
+        Reviewed
     }
 
     public class Proposal
