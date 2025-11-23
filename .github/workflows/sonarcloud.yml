@@ -2,33 +2,30 @@ name: Analyze .NET Backend
 
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
   pull_request:
 
 jobs:
   build:
-    name: Build, Test, Coverage & SonarCloud
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '8.0.x'
+          dotnet-version: '8.0.303'
 
-      - name: Install SonarScanner for .NET
+      - name: Install SonarScanner
         run: dotnet tool install --global dotnet-sonarscanner
 
       - name: Add .NET global tools to PATH
         run: echo "$HOME/.dotnet/tools" >> $GITHUB_PATH
 
-      - name: Restore dependencies
+      - name: Restore
         run: dotnet restore
 
       - name: SonarCloud Begin
@@ -38,28 +35,27 @@ jobs:
             /o:"annabloz" \
             /d:sonar.host.url="https://sonarcloud.io" \
             /d:sonar.login="${{ secrets.SONAR_TOKEN }}" \
+            /d:sonar.cs.vscoveragexml.reportsPaths="$(pwd)/coverage.xml" \
             /d:sonar.coverage.exclusions="**/Migrations/**,**/Program.cs" \
-            /d:sonar.test.inclusions="**/*Tests.cs" \
-            /d:sonar.cs.vscoveragexml.reportsPaths="$(pwd)/coverage.xml"
+            /d:sonar.test.inclusions="**/*Tests.cs"
 
       - name: Build
         run: dotnet build --configuration Release --no-incremental
 
-      - name: Install dotnet-coverage tool
-        run: dotnet tool install --global dotnet-coverage
+      - name: Install coverage dependencies
+        run: sudo apt-get update && sudo apt-get install -y libxml2
 
-      - name: Run tests and collect coverage
+      - name: Collect coverage with dotnet-coverage
         run: |
+          dotnet tool install --global dotnet-coverage
           dotnet-coverage collect "dotnet test FreelaMatch.Tests/FreelaMatch.Tests.csproj --no-build --configuration Release" \
             -f xml \
             -o "$(pwd)/coverage.xml"
 
-      - name: Verify coverage report
+      - name: Verify coverage file
         run: |
-          echo "Coverage file generated at:"
           ls -la $(pwd)/coverage.xml
-          echo "Preview:"
-          head -n 20 $(pwd)/coverage.xml
+          head -n 20 $(pwd)/coverage.xml || echo "File not found!"
 
       - name: SonarCloud End
         run: dotnet sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
