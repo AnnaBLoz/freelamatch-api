@@ -1,5 +1,5 @@
+using Xunit;
 using FreelaMatchAPI.Controllers;
-using FreelaMatchAPI.DTOs;
 using FreelaMatchAPI.Interfaces;
 using FreelaMatchAPI.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -24,8 +24,9 @@ namespace FreelaMatch.Tests.Controllers
             var profile = new Profile
             {
                 UserId = 1,
-                FullName = "Anna",
-                Description = "Dev"
+                Biography = "Desenvolvedor experiente",
+                ExperienceLevel = ExperienceLevel.Senior,
+                PricePerHour = 150
             };
 
             _profileServiceMock
@@ -57,15 +58,17 @@ namespace FreelaMatch.Tests.Controllers
         {
             var updateDto = new UpdateProfile
             {
-                Description = "Nova bio",
-                FullName = "Novo Nome"
+                Biography = "Nova biografia",
+                ExperienceLevel = ExperienceLevel.Pleno,
+                PricePerHour = 120
             };
 
             var updated = new Profile
             {
                 UserId = 1,
-                FullName = updateDto.FullName,
-                Description = updateDto.Description
+                Biography = updateDto.Biography,
+                ExperienceLevel = updateDto.ExperienceLevel,
+                PricePerHour = updateDto.PricePerHour
             };
 
             _profileServiceMock
@@ -85,8 +88,9 @@ namespace FreelaMatch.Tests.Controllers
         {
             var updateDto = new UpdateProfile
             {
-                Description = "Test",
-                FullName = "User"
+                Biography = "Test",
+                ExperienceLevel = ExperienceLevel.Junior,
+                PricePerHour = 50
             };
 
             _profileServiceMock
@@ -103,8 +107,8 @@ namespace FreelaMatch.Tests.Controllers
         {
             var skills = new List<Skill>
             {
-                new Skill { Id = 1, Name = "C#" },
-                new Skill { Id = 2, Name = "Angular" }
+                new Skill { SkillId = 1, Name = "C#" },
+                new Skill { SkillId = 2, Name = "Angular" }
             };
 
             _profileServiceMock

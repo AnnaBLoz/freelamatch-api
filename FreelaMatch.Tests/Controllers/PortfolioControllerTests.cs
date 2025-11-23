@@ -1,5 +1,5 @@
-﻿using FreelaMatchAPI.Controllers;
-using FreelaMatchAPI.DTOs;
+using Xunit;
+using FreelaMatchAPI.Controllers;
 using FreelaMatchAPI.Interfaces;
 using FreelaMatchAPI.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -23,7 +23,7 @@ namespace FreelaMatch.Tests.Controllers
         {
             var portfolios = new List<Portfolio>
             {
-                new Portfolio { Id = 1, UserId = 1, Title = "Proj 1" }
+                new Portfolio { PortfolioId = 1, UserId = 1, URL = "http://example.com", IsActive = true }
             };
 
             _serviceMock
@@ -54,16 +54,16 @@ namespace FreelaMatch.Tests.Controllers
         {
             var updateDto = new UpdatePortfolio
             {
-                Description = "Editado",
-                Title = "Novo título"
+                URL = "http://newurl.com",
+                IsActive = true
             };
 
             var updated = new Portfolio
             {
-                Id = 1,
+                PortfolioId = 1,
                 UserId = 1,
-                Title = updateDto.Title,
-                Description = updateDto.Description
+                URL = updateDto.URL,
+                IsActive = updateDto.IsActive
             };
 
             _serviceMock
@@ -82,8 +82,8 @@ namespace FreelaMatch.Tests.Controllers
         {
             var updateDto = new UpdatePortfolio
             {
-                Description = "Teste",
-                Title = "X"
+                URL = "http://test.com",
+                IsActive = false
             };
 
             _serviceMock
@@ -100,17 +100,17 @@ namespace FreelaMatch.Tests.Controllers
         {
             var createDto = new CreatePortfolio
             {
-                Description = "Desc",
-                Title = "Título",
+                URL = "http://portfolio.com",
+                IsActive = true,
                 UserId = 1
             };
 
             var created = new Portfolio
             {
-                Id = 1,
+                PortfolioId = 1,
                 UserId = createDto.UserId,
-                Title = createDto.Title,
-                Description = createDto.Description
+                URL = createDto.URL,
+                IsActive = createDto.IsActive
             };
 
             _serviceMock

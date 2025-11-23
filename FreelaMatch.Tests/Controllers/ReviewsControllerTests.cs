@@ -21,7 +21,6 @@ public class ReviewsControllerTests
         _reviewsServiceMock = new Mock<IReviewsService>();
         _userServiceMock = new Mock<IUserService>();
         _proposalServiceMock = new Mock<IProposalService>();
-
         _controller = new ReviewsController(
             _reviewsServiceMock.Object,
             _userServiceMock.Object,
@@ -39,7 +38,6 @@ public class ReviewsControllerTests
 
         result.Result.Should().BeOfType<OkObjectResult>();
         var ok = result.Result as OkObjectResult;
-
         var data = ok!.Value.Should().BeAssignableTo<List<Reviews>>().Subject;
         data.Count.Should().Be(1);
     }
@@ -80,16 +78,26 @@ public class ReviewsControllerTests
     public async Task CreateReview_ShouldReturnOk_WhenSuccess()
     {
         var dto = new ReviewCreate { ReviewerId = 1, ReceiverId = 2, Rating = 5, ProposalId = 1 };
+        var createdReview = new Reviews { Id = 1, Rating = 5 };
 
         _reviewsServiceMock.Setup(s => s.CreateReview(dto))
-            .ReturnsAsync(new Reviews { Id = 1 });
+            .ReturnsAsync(createdReview);
 
         var result = await _controller.CreateReview(dto);
 
         result.Should().BeOfType<OkObjectResult>();
         var ok = result as OkObjectResult;
+        Assert.NotNull(ok);
+        Assert.NotNull(ok.Value);
 
-        ((dynamic)ok!.Value).review.Id.Should().Be(1);
+        // Usar reflexão para acessar propriedades de objetos anônimos
+        var valueType = ok.Value.GetType();
+        var reviewProperty = valueType.GetProperty("review");
+        Assert.NotNull(reviewProperty);
+
+        var review = reviewProperty.GetValue(ok.Value) as Reviews;
+        Assert.NotNull(review);
+        Assert.Equal(1, review.Id);
     }
 
     [Fact]

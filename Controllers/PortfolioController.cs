@@ -1,6 +1,5 @@
 using FreelaMatchAPI.Interfaces;
 using FreelaMatchAPI.Models;
-using FreelaMatchAPI.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FreelaMatchAPI.Controllers
@@ -17,43 +16,43 @@ namespace FreelaMatchAPI.Controllers
         }
 
         // ==========================================
-        // GET /api/portfolio/{freelancerId}
+        // GET /api/portfolio/{userId}
         // ==========================================
-        [HttpGet("{freelancerId}")]
-        public async Task<IActionResult> GetPortfolio(int freelancerId)
+        [HttpGet("{userId}")]
+        public async Task<ActionResult<List<Portfolio>>> GetPortfolio(int userId)
         {
-            var portfolio = await _portfolioService.GetPortfolioAsync(freelancerId);
+            var portfolios = await _portfolioService.GetPortfolioByUserIdAsync(userId);
 
-            if (portfolio == null)
+            if (portfolios == null || portfolios.Count == 0)
                 return NotFound(new { message = "Portfolios not found" });
 
-            return Ok(portfolio);
+            return Ok(portfolios);
         }
 
         // ==========================================
         // POST /api/portfolio
         // ==========================================
         [HttpPost]
-        public async Task<IActionResult> CreatePortfolio([FromBody] Portfolio portfolio)
+        public async Task<IActionResult> CreatePortfolio([FromBody] CreatePortfolio createPortfolio)
         {
-            var result = await _portfolioService.CreatePortfolioAsync(portfolio);
+            var portfolio = await _portfolioService.CreatePortfolio(createPortfolio);
 
-            if (!result.Success)
-                return BadRequest(new { message = result.Message });
+            if (portfolio == null)
+                return BadRequest(new { message = "Failed to create portfolio" });
 
-            return Ok(new { portfolio = result.Portfolio });
+            return Ok(portfolio);
         }
 
         // ==========================================
         // PUT /api/portfolio/{id}
         // ==========================================
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdatePortfolio(int id, [FromBody] Portfolio portfolio)
+        public async Task<IActionResult> UpdatePortfolio(int id, [FromBody] UpdatePortfolio updatePortfolio)
         {
-            var result = await _portfolioService.UpdatePortfolioAsync(id, portfolio);
+            var result = await _portfolioService.UpdatePortfolioAsync(id, updatePortfolio);
 
             if (!result.Success)
-                return BadRequest(new { message = result.Message });
+                return NotFound(new { message = result.Message });
 
             return Ok(result.Portfolio);
         }
