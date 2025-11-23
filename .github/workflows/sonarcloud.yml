@@ -30,13 +30,14 @@ jobs:
 
       - name: Test with coverage
         run: |
-          dotnet test --no-build --configuration Release \
+          dotnet test ./FreelaMatch.Tests/FreelaMatch.Tests.csproj \
+            --no-build --configuration Release \
             /p:CollectCoverage=true \
-            /p:CoverletOutputFormat=opencover \
-            /p:CoverletOutput=./coverage.xml
+            /p:CoverletOutput=TestResults/coverage.xml \
+            /p:CoverletOutputFormat=opencover
 
       - name: Show coverage file
-        run: cat ./coverage.xml
+        run: ls -R TestResults
 
       - name: SonarCloud Scan
         uses: SonarSource/sonarqube-scan-action@v4
@@ -47,6 +48,6 @@ jobs:
           args: >
             -Dsonar.projectKey=AnnaBLoz_freelamatch-api
             -Dsonar.organization=annabloz
-            -Dsonar.cs.opencover.reportsPaths=**/coverage.xml
+            -Dsonar.cs.opencover.reportsPaths=TestResults/coverage.xml
             -Dsonar.exclusions=**/Migrations/**
             -Dsonar.qualitygate.wait=true
