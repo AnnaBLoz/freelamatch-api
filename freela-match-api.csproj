@@ -8,6 +8,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="sonar-project.properties" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Include="Controllers\UserController.cs" />
   </ItemGroup>
 
