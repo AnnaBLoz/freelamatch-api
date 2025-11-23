@@ -8,30 +8,35 @@ on:
 
 jobs:
   build:
-    name: Build and Analyze
+    name: Build, Test and Analyze
     runs-on: ubuntu-latest
 
     steps:
+      # 1. Clonar o repositório
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
+      # 2. Instalar .NET
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: "8.0.x"
 
+      # 3. Restaurar dependências
       - name: Restore dependencies
-        working-directory: ./FreelaMatchAPI
+        working-directory: FreelaMatchAPI
         run: dotnet restore
 
+      # 4. Build da solução
       - name: Build solution
-        working-directory: ./FreelaMatchAPI
+        working-directory: FreelaMatchAPI
         run: dotnet build --no-restore --configuration Release
 
+      # 5. Executar testes com cobertura
       - name: Run tests with coverage
-        working-directory: ./FreelaMatchAPI
+        working-directory: FreelaMatchAPI
         run: |
           dotnet test \
             --configuration Release \
@@ -39,7 +44,8 @@ jobs:
             /p:CoverletOutputFormat=cobertura \
             --logger trx
 
-      - name: SonarCloud Scan with Quality Gate
+      # 6. Scan SonarCloud com Quality Gate
+      - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@v2
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
