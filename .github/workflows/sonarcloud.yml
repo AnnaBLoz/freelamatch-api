@@ -1,17 +1,20 @@
 name: SonarCloud Analysis
+
 on:
   push:
     branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
   workflow_dispatch:
+
 permissions:
   pull-requests: read
   contents: read
+
 jobs:
   Analysis:
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -29,10 +32,8 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
           
-      - name: Install tools
-        run: |
-          dotnet tool install --global dotnet-sonarscanner
-          dotnet tool install --global dotnet-coverage
+      - name: Install SonarScanner
+        run: dotnet tool install --global dotnet-sonarscanner
         
       - name: Restore dependencies
         run: dotnet restore
@@ -46,26 +47,24 @@ jobs:
             /o:"annabloz" \
             /d:sonar.host.url="https://sonarcloud.io" \
             /d:sonar.token="${{ secrets.SONAR_TOKEN }}" \
-            /d:sonar.cs.vscoveragexml.reportsPaths=coverage.xml \
             /d:sonar.exclusions="**/Migrations/**" \
-            /d:sonar.coverage.exclusions="**/*Tests.cs,**/Program.cs,**/Migrations/**"
+            /d:sonar.coverage.exclusions="**/*Tests.cs,**/Program.cs,**/Migrations/**" \
+            /d:sonar.cs.opencover.reportsPaths="./TestResults/**/coverage.cobertura.xml"
           
       - name: Build
         run: dotnet build --configuration Release --no-restore
         
       - name: Test with coverage
-        run: dotnet-coverage collect "dotnet test --configuration Release --no-build --verbosity minimal" -f xml -o coverage.xml
-            
-      - name: Verify coverage file
         run: |
-          if [ -f "coverage.xml" ]; then
-            echo "Coverage file generated!"
-            ls -lh coverage.xml
-            head -10 coverage.xml
-          else
-            echo "Coverage file NOT found"
-            exit 1
-          fi
+          dotnet test --configuration Release \
+            --collect:"XPlat Code Coverage" \
+            --results-directory ./TestResults \
+            --no-build
+        
+      - name: Verify coverage files
+        run: |
+          echo "Listing coverage files:"
+          find ./TestResults -name "*.cobertura.xml"
           
       - name: End SonarCloud analysis
         env:
