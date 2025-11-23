@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<RunSettings>
+  <DataCollectionRunSettings>
+    <DataCollectors>
+      <DataCollector friendlyName="XPlat Code Coverage">
+        <Configuration>
+          <Format>opencover</Format>
+          <!-- Exclui pastas e arquivos que não queremos no coverage -->
+          <Exclude>
+            [*]*Migrations*,[*]*Program.cs,[*]*Tests*
+          </Exclude>
+          <!-- Garante que cobre todos os projetos da solução -->
+          <IncludeDirectory>../</IncludeDirectory>
+        </Configuration>
+      </DataCollector>
+    </DataCollectors>
+  </DataCollectionRunSettings>
+</RunSettings>

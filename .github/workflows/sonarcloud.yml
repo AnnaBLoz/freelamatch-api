@@ -2,14 +2,13 @@ name: Analyze .NET Backend
 
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
   pull_request:
+    branches: [ main ]
 
 jobs:
-  build:
+  build-and-analyze:
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v4
         with:
@@ -18,12 +17,12 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '8.0.303'
+          dotnet-version: 8.0.x
 
       - name: Install SonarScanner
         run: dotnet tool install --global dotnet-sonarscanner
 
-      - name: Add .NET global tools to PATH
+      - name: Add tools to PATH
         run: echo "$HOME/.dotnet/tools" >> $GITHUB_PATH
 
       - name: Restore dependencies
@@ -36,28 +35,23 @@ jobs:
             /o:"annabloz" \
             /d:sonar.host.url="https://sonarcloud.io" \
             /d:sonar.login="${{ secrets.SONAR_TOKEN }}" \
-            /d:sonar.coverage.exclusions="**/Migrations/**,**/Program.cs" \
-            /d:sonar.cs.opencover.reportsPaths="$(pwd)/FreelaMatch.Tests/coverage.opencover.xml" \
-            /d:sonar.test.inclusions="**/*Tests.cs"
+            /d:sonar.coverage.exclusions="**/Migrations/**,**/Program.cs,**/*Tests.csproj"
 
       - name: Build
-        run: dotnet build --configuration Release --no-incremental
+        run: dotnet build --configuration Release --no-restore
 
-      - name: Run tests and collect coverage
+      - name: Run tests with coverage
         run: |
           dotnet test FreelaMatch.Tests/FreelaMatch.Tests.csproj \
-            --configuration Release \
             --no-build \
-            /p:CollectCoverage=true \
-            /p:CoverletOutputFormat=opencover \
-            /p:CoverletOutput=$(pwd)/FreelaMatch.Tests/coverage
+            --configuration Release \
+            --collect:"XPlat Code Coverage" \
+            --settings coverlet.runsettings
 
-      - name: Verify coverage file
+      - name: Debug - Show coverage file
         run: |
-          echo "Coverage file generated:"
-          find FreelaMatch.Tests -name "*.xml"
-          echo "Preview:"
-          head -n 20 FreelaMatch.Tests/coverage.opencover.xml || echo "File not found!"
+          echo "=== Looking for coverage files ==="
+          find . -name "coverage.opencover.xml" -o -name "coverage.*" | head -20
 
       - name: SonarCloud End
         run: dotnet sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
