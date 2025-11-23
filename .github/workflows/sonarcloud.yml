@@ -32,9 +32,11 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
           
-      - name: Install SonarScanner
-        run: dotnet tool install --global dotnet-sonarscanner
-        
+      - name: Install global tools
+        run: |
+          dotnet tool install --global dotnet-sonarscanner
+          dotnet tool install --global dotnet-coverage
+          
       - name: Restore dependencies
         run: dotnet restore
         
@@ -49,22 +51,24 @@ jobs:
             /d:sonar.token="${{ secrets.SONAR_TOKEN }}" \
             /d:sonar.exclusions="**/Migrations/**" \
             /d:sonar.coverage.exclusions="**/*Tests.cs,**/Program.cs,**/Migrations/**" \
-            /d:sonar.cs.opencover.reportsPaths="./TestResults/**/coverage.cobertura.xml"
+            /d:sonar.cs.vscoveragexml.reportsPaths=coverage.xml
           
       - name: Build
         run: dotnet build --configuration Release --no-restore
         
-      - name: Test with coverage
+      - name: Run tests with coverage
+        run: dotnet-coverage collect "dotnet test --configuration Release --no-build --verbosity minimal" -f xml -o coverage.xml
+          
+      - name: Verify coverage file
         run: |
-          dotnet test --configuration Release \
-            --collect:"XPlat Code Coverage" \
-            --results-directory ./TestResults \
-            --no-build
-        
-      - name: Verify coverage files
-        run: |
-          echo "Listing coverage files:"
-          find ./TestResults -name "*.cobertura.xml"
+          if [ -f "coverage.xml" ]; then
+            echo "Coverage file generated!"
+            ls -lh coverage.xml
+            head -10 coverage.xml
+          else
+            echo "Coverage file NOT found"
+            exit 1
+          fi
           
       - name: End SonarCloud analysis
         env:
