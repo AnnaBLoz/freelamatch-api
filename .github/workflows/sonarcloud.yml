@@ -70,8 +70,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          dotnet clean --configuration Release
-          rm -rf obj bin
+          echo "Limpando arquivos obj/bin..."
+          find . -name "obj" -type d -exec rm -rf {} + 2>/dev/null || true
+          find . -name "bin" -type d -exec rm -rf {} + 2>/dev/null || true
           dotnet sonarscanner begin \
             /k:"AnnaBLoz_freelamatch-api" \
             /o:"annabloz" \
@@ -82,7 +83,7 @@ jobs:
             /d:sonar.coverage.exclusions="**/*Tests.cs,**/Program.cs,**/Migrations/**"
             
       - name: Build for SonarScanner
-        run: dotnet build --configuration Release --no-incremental
+        run: dotnet build --configuration Release --force
           
       - name: End SonarCloud analysis
         env:
