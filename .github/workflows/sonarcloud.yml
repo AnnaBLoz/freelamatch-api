@@ -2,60 +2,55 @@ name: Analyze .NET Backend
 
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
   pull_request:
 
 jobs:
   build:
     name: Build, Test and Analyze
     runs-on: ubuntu-latest
-
     steps:
-      # 1. Clonar o repositório
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      # 2. Instalar .NET
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: "8.0.x"
+          dotnet-version: '8.0.x'
 
-      # 3. Restaurar dependências
       - name: Restore dependencies
-        working-directory: FreelaMatchAPI
+        working-directory: ./FreelaMatchAPI
         run: dotnet restore
 
-      # 4. Build da solução
       - name: Build solution
-        working-directory: FreelaMatchAPI
+        working-directory: ./FreelaMatchAPI
         run: dotnet build --no-restore --configuration Release
 
-      # 5. Executar testes com cobertura
       - name: Run tests with coverage
-        working-directory: FreelaMatchAPI
+        working-directory: ./FreelaMatchAPI
         run: |
           dotnet test \
+            --no-build \
             --configuration Release \
             /p:CollectCoverage=true \
             /p:CoverletOutputFormat=cobertura \
-            --logger trx
+            /p:CoverletOutput=./coverage.cobertura.xml \
+            --logger trx \
+            --results-directory ./TestResults
 
-      # 6. Scan SonarCloud com Quality Gate
       - name: SonarCloud Scan
-        uses: SonarSource/sonarcloud-github-action@v2
+        uses: SonarSource/sonarcloud-github-action@v3
         env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
           args: >
-            -Dsonar.organization=annabloz
             -Dsonar.projectKey=AnnaBLoz_freelamatch-api
+            -Dsonar.organization=annabloz
             -Dsonar.host.url=https://sonarcloud.io
-            -Dsonar.token=${{ secrets.SONAR_TOKEN }}
             -Dsonar.cs.vstest.reportsPaths=**/TestResults/*.trx
             -Dsonar.cs.opencover.reportsPaths=**/coverage.cobertura.xml
-            -Dsonar.exclusions=**/Migrations/**
+            -Dsonar.exclusions=**/Migrations/**,**/*Program.cs,**/*Startup.cs
             -Dsonar.qualitygate.wait=true
