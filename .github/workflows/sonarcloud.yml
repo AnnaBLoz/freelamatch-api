@@ -9,30 +9,26 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      # Este checkout especial mata o bug do clone vazio
-      - name: Checkout repository (full clone)
+      - name: Checkout
         uses: actions/checkout@v4
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
           fetch-depth: 0
-          ref: ${{ github.ref }}
-          clean: true
-          filter: tree:0   # esta linha é a mágica
+          filter: tree:0
 
-      - name: Debug – mostrar que agora veio tudo
+      - name: Debug – onde estamos e o que temos
         run: |
-          echo "=== Raiz do repositório ==="
+          pwd
+          echo "=== Arquivos na raiz:"
           ls -la
-          echo ""
-          echo "=== Conteúdo da pasta FreelaMatchAPI ==="
-          ls -la FreelaMatchAPI | head -20
+          echo "=== Dentro da pasta FreelaMatchAPI ==="
+          ls -la FreelaMatchAPI || echo "Não existe!"
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 8.0.x
 
-      - name: Restore & Build & Test
+      - name: Restore + Build + Test + Coverage
         run: |
           dotnet restore FreelaMatchAPI/FreelaMatchAPI.csproj
           dotnet build FreelaMatchAPI/FreelaMatchAPI.csproj -c Release --no-restore
@@ -40,9 +36,9 @@ jobs:
             --no-build -c Release \
             /p:CollectCoverage=true \
             /p:CoverletOutputFormat=cobertura \
-            /p:CoverletOutput=../coverage.cobertura.xml \
+            /p:CoverletOutput=coverage.cobertura.xml \
             --logger trx \
-            --results-directory ../TestResults
+            --results-directory ./TestResults
 
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@v3
@@ -53,6 +49,6 @@ jobs:
           args: >
             -Dsonar.projectKey=AnnaBLoz_freelamatch-api
             -Dsonar.organization=annabloz
-            -Dsonar.cs.vstest.reportsPaths=**/TestResults/*.trx
-            -Dsonar.cs.opencover.reportsPaths=coverage.cobertura.xml
+            -Dsonar.cs.vstest.reportsPaths=**/*.trx
+            -Dsonar.cs.cobertura.reportPaths=coverage.cobertura.xml
             -Dsonar.qualitygate.wait=true
