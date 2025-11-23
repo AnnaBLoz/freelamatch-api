@@ -15,9 +15,10 @@ jobs:
         with:
           fetch-depth: 0
 
-      - uses: actions/setup-dotnet@v4
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '8.0.x'
+          dotnet-version: '8.0.303'
 
       - name: Install SonarScanner
         run: dotnet tool install --global dotnet-sonarscanner
@@ -36,7 +37,8 @@ jobs:
             /d:sonar.host.url="https://sonarcloud.io" \
             /d:sonar.login="${{ secrets.SONAR_TOKEN }}" \
             /d:sonar.coverage.exclusions="**/Migrations/**,**/Program.cs" \
-            /d:sonar.cs.opencover.reportsPaths="$(pwd)/FreelaMatch.Tests/coverage.opencover.xml"
+            /d:sonar.cs.opencover.reportsPaths="$(pwd)/FreelaMatch.Tests/coverage.opencover.xml" \
+            /d:sonar.test.inclusions="**/*Tests.cs"
 
       - name: Build
         run: dotnet build --configuration Release --no-incremental
@@ -52,7 +54,7 @@ jobs:
 
       - name: Verify coverage file
         run: |
-          echo "Coverage files found:"
+          echo "Coverage file generated:"
           find FreelaMatch.Tests -name "*.xml"
           echo "Preview:"
           head -n 20 FreelaMatch.Tests/coverage.opencover.xml || echo "File not found!"
