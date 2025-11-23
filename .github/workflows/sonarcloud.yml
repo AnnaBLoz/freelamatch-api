@@ -1,59 +1,60 @@
-name: SonarCloud - Backend
+name: SonarCloud (.NET)
 
 on:
   push:
     branches:
       - main
   pull_request:
-    types: [opened, synchronize, reopened]
+    branches:
+      - main
 
 jobs:
-  sonarcloud:
-    name: Analyze .NET Backend
+  build:
+    name: Build and Analyze (.NET)
     runs-on: ubuntu-latest
 
     steps:
+      # Checkout do código
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
+      # Cache do SonarCloud
+      - name: Cache SonarCloud packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.sonar/cache
+          key: ${{ runner.os }}-sonar
+          restore-keys: ${{ runner.os }}-sonar
+
+      # Instalar .NET 8
       - name: Setup .NET 8
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: "8.0.x"
 
+      # Restore
       - name: Restore dependencies
-        working-directory: ./freela-match-api
+        working-directory: FreelaMatchAPI  
         run: dotnet restore
 
-      - name: Build API
-        working-directory: ./freela-match-api
-        run: dotnet build --configuration Release --no-restore
+      # Build
+      - name: Build project
+        working-directory: FreelaMatchAPI
+        run: dotnet build --no-restore
 
-      - name: Run tests with coverage
-        working-directory: ./freela-match-api
-        run: |
-          dotnet test \
-            --configuration Release \
-            --collect:"XPlat Code Coverage"
+      # Testes com cobertura
+      - name: Run tests
+        working-directory: FreelaMatchAPI
+        run: dotnet test --no-build --collect:"XPlat Code Coverage"
 
+      # SonarCloud Scan
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@v2
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
-          args: >
-            -Dsonar.organization=annabloz
-            -Dsonar.projectKey=AnnaBLoz_freelamatch-api
-            -Dsonar.host.url=https://sonarcloud.io
-            -Dsonar.token=${{ secrets.SONAR_TOKEN }}
-            -Dsonar.cs.vstest.reportsPaths=**/TestResults/**/*.trx
-            -Dsonar.cs.opencover.reportsPaths=**/TestResults/**/coverage.cobertura.xml
-            -Dsonar.exclusions=**/Migrations/**
-
-      - name: SonarCloud Quality Gate
-        uses: SonarSource/sonarcloud-quality-gate-action@v1
-        timeout-minutes: 5
+          projectBaseDir: FreelaMatchAPI  
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: "https://sonarcloud.io"
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
