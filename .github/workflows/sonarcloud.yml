@@ -38,7 +38,6 @@ jobs:
             /o:"annabloz" \
             /d:sonar.host.url="https://sonarcloud.io" \
             /d:sonar.login="${{ secrets.SONAR_TOKEN }}" \
-            /d:sonar.cs.opencover.reportsPaths="$(pwd)/FreelaMatchAPI.Tests/coverage/coverage.opencover.xml" \
             /d:sonar.coverage.exclusions="**/Migrations/**,**/Program.cs" \
             /d:sonar.test.inclusions="**/*Tests.cs"
 
@@ -47,19 +46,31 @@ jobs:
 
       - name: Run tests and collect coverage
         run: |
-          dotnet test \
+          dotnet test FreelaMatchAPI.Tests/FreelaMatchAPI.Tests.csproj \
             --configuration Release \
             --no-build \
-            /p:CollectCoverage=true \
+            --collect:"XPlat Code Coverage" \
             /p:CoverletOutputFormat=opencover \
             /p:CoverletOutput=$(pwd)/FreelaMatchAPI.Tests/coverage/
 
+      - name: Locate coverage file
+        id: find_coverage
+        run: |
+          echo "Searching for coverage files..."
+          found=$(find . -type f -name "coverage.opencover.xml" | head -n 1)
+          echo "Coverage file found at: $found"
+          if [ -z "$found" ]; then
+            echo "No coverage.opencover.xml found!" && exit 1
+          fi
+          echo "coverage_path=$found" >> $GITHUB_OUTPUT
+
       - name: Verify coverage report
         run: |
-          echo "Checking coverage folder contents:"
-          ls -la $(pwd)/FreelaMatchAPI.Tests/coverage
-          echo "First 15 lines of coverage.opencover.xml:"
-          head -n 15 $(pwd)/FreelaMatchAPI.Tests/coverage/coverage.opencover.xml || echo "File not found!"
+          echo "Preview of coverage file:"
+          head -n 20 "${{ steps.find_coverage.outputs.coverage_path }}"
 
       - name: SonarCloud End
-        run: dotnet sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
+        run: |
+          dotnet sonarscanner end \
+            /d:sonar.login="${{ secrets.SONAR_TOKEN }}" \
+            /d:sonar.cs.opencover.reportsPaths="${{ steps.find_coverage.outputs.coverage_path }}"
