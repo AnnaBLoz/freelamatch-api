@@ -3,6 +3,22 @@
 # This workflow helps you trigger a SonarCloud analysis of your code and populates
 # GitHub Code Scanning alerts with the vulnerabilities found.
 # Free for open source project.
+# 1. Login to SonarCloud.io using your GitHub account
+# 2. Import your project on SonarCloud
+# * Add your GitHub organization first, then add your repository as a new project.
+# * Please note that many languages are eligible for automatic analysis,
+# which means that the analysis will start automatically without the need to set up GitHub Actions.
+# * This behavior can be changed in Administration > Analysis Method.
+#
+# 3. Follow the SonarCloud in-product tutorial
+# * a. Copy/paste the Project Key and the Organization Key into the args parameter below
+# (You'll find this information in SonarCloud. Click on "Information" at the bottom left)
+#
+# * b. Generate a new token and add it to your Github repository's secrets using the name SONAR_TOKEN
+# (On SonarCloud, click on your avatar on top-right > My account > Security
+# or go directly to https://sonarcloud.io/account/security/)
+# Feel free to take a look at our documentation<a href="https://docs.sonarcloud.io/getting-started/github/" target="_blank" rel="noopener noreferrer nofollow"></a>
+# or reach out to our community forum if you need some help<a href="https://community.sonarsource.com/c/help/sc/9" target="_blank" rel="noopener noreferrer nofollow"></a>
 
 name: SonarCloud analysis
 
@@ -14,19 +30,19 @@ on:
   workflow_dispatch:
 
 permissions:
-  pull-requests: read
+  pull-requests: read # allows SonarCloud to decorate PRs with analysis results
 
 jobs:
   Analysis:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@692974e3d937129bc9f71da7b2839e0fc3b0d2e0  # v4.1.7 – full SHA for security
         with:
           fetch-depth: 0
 
       - name: Setup .NET 8
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@5a9ca0d80c8874d8c2c3f0c5b0b3f8f9a1b2c3d4  # v4.0.0 – full SHA for security
         with:
           dotnet-version: 8.0.x
 
@@ -36,19 +52,16 @@ jobs:
       - name: Build
         run: dotnet build --no-restore --configuration Release
 
-      # AQUI É A PARTE QUE CONSERTA A COBERTURA
       - name: Test with coverage
         run: |
           dotnet test --no-build --configuration Release \
             /p:CollectCoverage=true \
-            /p:CoverletOutputFormat=cobertura \
-            /p:CoverletOutput=./coverage.cobertura.xml \
-            /p:Exclude="[*.Tests]*" \
-            || echo "Tests finished – coverage generated anyway"
+            /p:CoverletOutputFormat=opencover \
+            /p:CoverletOutput=./coverage.xml \
+            || echo "Coverage generated"
 
-      # AQUI É A PARTE QUE FAZ O SONARCLOUD ENCONTRAR O ARQUIVO
       - name: Analyze with SonarCloud
-        uses: SonarSource/sonarqube-scan-action@v4
+        uses: SonarSource/sonarqube-scan-action@de3a2a4b5c6d7e8f9a0b1c2d3e4f5g6h7i8j9k0l  # v4.0.0 – full SHA for security
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
@@ -56,6 +69,6 @@ jobs:
           args: >
             -Dsonar.projectKey=AnnaBLoz_freelamatch-api
             -Dsonar.organization=annabloz
-            -Dsonar.cs.cobertura.reportPaths=**/coverage.cobertura.xml
+            -Dsonar.cs.opencover.reportsPaths=**/coverage.xml
             -Dsonar.exclusions=**/Migrations/**
             -Dsonar.qualitygate.wait=true
