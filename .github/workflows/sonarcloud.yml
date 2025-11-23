@@ -2,7 +2,8 @@ name: Analyze .NET Backend
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
   pull_request:
 
 jobs:
@@ -14,8 +15,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Setup .NET 8
-        uses: actions/setup-dotnet@v4
+      - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '8.0.x'
 
@@ -36,8 +36,7 @@ jobs:
             /d:sonar.host.url="https://sonarcloud.io" \
             /d:sonar.login="${{ secrets.SONAR_TOKEN }}" \
             /d:sonar.coverage.exclusions="**/Migrations/**,**/Program.cs" \
-            /d:sonar.test.inclusions="**/*Tests.cs" \
-            /d:sonar.cs.opencover.reportsPaths="$(pwd)/coverage/opencover.xml"
+            /d:sonar.cs.opencover.reportsPaths="$(pwd)/FreelaMatch.Tests/coverage.opencover.xml"
 
       - name: Build
         run: dotnet build --configuration Release --no-incremental
@@ -47,29 +46,16 @@ jobs:
           dotnet test FreelaMatch.Tests/FreelaMatch.Tests.csproj \
             --configuration Release \
             --no-build \
-            --collect:"XPlat Code Coverage"
+            /p:CollectCoverage=true \
+            /p:CoverletOutputFormat=opencover \
+            /p:CoverletOutput=$(pwd)/FreelaMatch.Tests/coverage
 
-      - name: Locate coverage file
-        id: find_cov
+      - name: Verify coverage file
         run: |
-          echo "Searching for coverage.cobertura.xml..."
-          found=$(find . -type f -name "coverage.cobertura.xml" | head -n 1)
-          echo "coverage_path=$found" >> $GITHUB_OUTPUT
-          echo "Found: $found"
-
-      - name: Convert coverage to OpenCover
-        run: |
-          dotnet tool install -g dotnet-reportgenerator-globaltool
-          reportgenerator \
-            "-reports:${{ steps.find_cov.outputs.coverage_path }}" \
-            "-targetdir:coverage" \
-            "-reporttypes:opencover" \
-            "-filefilters:+FreelaMatch*"
-
-      - name: Verify converted report
-        run: |
-          echo "Preview of opencover.xml:"
-          head -n 20 coverage/opencover.xml || echo "File not found!"
+          echo "Coverage files found:"
+          find FreelaMatch.Tests -name "*.xml"
+          echo "Preview:"
+          head -n 20 FreelaMatch.Tests/coverage.opencover.xml || echo "File not found!"
 
       - name: SonarCloud End
         run: dotnet sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
