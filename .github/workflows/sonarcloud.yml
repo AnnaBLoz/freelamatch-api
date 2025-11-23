@@ -44,113 +44,78 @@ jobs:
             /o:"annabloz" \
             /d:sonar.host.url="https://sonarcloud.io" \
             /d:sonar.token="${{ secrets.SONAR_TOKEN }}" \
-            /d:sonar.cs.opencover.reportsPaths="coverage.opencover.xml,**/coverage.opencover.xml" \
+            /d:sonar.cs.opencover.reportsPaths="coverage.opencover.xml" \
             /d:sonar.exclusions="**/Migrations/**,**/obj/**,**/bin/**" \
             /d:sonar.coverage.exclusions="**/*Tests.cs,**/Program.cs"
 
       - name: Build
         run: dotnet build --configuration Release --no-restore
 
-      - name: Create coverage directory
-        run: mkdir -p ./coverage-reports
-
-      - name: Run tests with coverage (Method 1)
-        continue-on-error: true
+      - name: Run tests with coverage
         run: |
-          echo "Método 1: Coverlet com output na raiz"
+          echo "Running tests with coverage collection..."
           
-          dotnet test \
+          dotnet test ./FreelaMatch.Tests/FreelaMatch.Tests.csproj \
             --configuration Release \
             --no-build \
             --verbosity normal \
-            /p:CollectCoverage=true \
-            /p:CoverletOutputFormat=opencover \
-            /p:CoverletOutput=../../coverage.opencover.xml
-
-      - name: Run tests with coverage (Method 2)
-        if: always()
-        continue-on-error: true
-        run: |
-          echo "Método 2: Coverlet padrão"
-          
-          dotnet test \
-            --configuration Release \
-            --no-build \
-            /p:CollectCoverage=true \
-            /p:CoverletOutputFormat=opencover
-
-      - name: Run tests with coverage (Method 3 - Collector)
-        if: always()
-        continue-on-error: true
-        run: |
-          echo "Método 3: XPlat Code Coverage"
-          
-          dotnet test \
-            --configuration Release \
-            --no-build \
             --collect:"XPlat Code Coverage" \
-            --results-directory ./coverage-reports \
+            --results-directory ./TestResults \
             -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover
+          
+          echo ""
+          echo "Tests completed. Searching for coverage files..."
+          find ./TestResults -name "*.xml" -type f
 
-      - name: Find and consolidate coverage files
+      - name: Find and copy coverage files to root
         if: always()
         run: |
-          echo "=== PROCURANDO TODOS OS ARQUIVOS DE COBERTURA ==="
-          find . -type f -name "*.xml" | grep -iE "(coverage|opencover)" || echo "Nenhum encontrado"
+          echo "=== Searching for coverage files ==="
+          find ./TestResults -name "*.xml" -type f
           
           echo ""
-          echo "=== LISTANDO ARQUIVOS ESPECÍFICOS ==="
-          find . -name "coverage.opencover.xml" -o -name "*.opencover.xml" | while read file; do
-            echo "Encontrado: $file ($(wc -l < "$file") linhas)"
-          done
+          echo "=== Copying coverage file to root ==="
           
-          echo ""
-          echo "=== CONSOLIDANDO ARQUIVOS NA RAIZ ==="
+          # XPlat Code Coverage generates files in TestResults with GUIDs
+          COVERAGE_FILE=$(find ./TestResults -name "coverage.opencover.xml" -o -name "*.xml" | grep -v "TestResults.xml" | head -1)
           
-          # Método 1: Copia da pasta de testes
-          if [ -f "./FreelaMatch.Tests/coverage.opencover.xml" ]; then
-            echo " Copiando de FreelaMatch.Tests/"
-            cp ./FreelaMatch.Tests/coverage.opencover.xml ./coverage.opencover.xml
-          fi
-          
-          # Método 2: Procura qualquer coverage.opencover.xml
-          COVERAGE_FILE=$(find . -name "coverage.opencover.xml" | head -1)
-          if [ -n "$COVERAGE_FILE" ] && [ ! -f "./coverage.opencover.xml" ]; then
-            echo " Copiando de $COVERAGE_FILE"
+          if [ -n "$COVERAGE_FILE" ]; then
+            echo "Found coverage file: $COVERAGE_FILE"
             cp "$COVERAGE_FILE" ./coverage.opencover.xml
-          fi
-          
-          # Método 3: Procura nos resultados do collector
-          COLLECTOR_FILE=$(find ./coverage-reports -name "*.xml" -o -name "coverage.cobertura.xml" | head -1)
-          if [ -n "$COLLECTOR_FILE" ] && [ ! -f "./coverage.opencover.xml" ]; then
-            echo "Copiando de coverage-reports: $COLLECTOR_FILE"
-            cp "$COLLECTOR_FILE" ./coverage.opencover.xml
-          fi
-          
-          echo ""
-          echo "=== VERIFICAÇÃO FINAL ==="
-          if [ -f "./coverage.opencover.xml" ]; then
-            echo "coverage.opencover.xml EXISTE NA RAIZ!"
-            echo "Tamanho: $(wc -l < ./coverage.opencover.xml) linhas"
+            echo "Coverage file copied to root"
+            
             echo ""
-            echo "Primeiras 20 linhas:"
-            head -20 ./coverage.opencover.xml
+            echo "File size: $(wc -l < ./coverage.opencover.xml) lines"
+            
+            # Show first 30 lines if file is valid
+            if [ $(wc -l < ./coverage.opencover.xml) -gt 5 ]; then
+              echo ""
+              echo "First 30 lines of coverage file:"
+              head -30 ./coverage.opencover.xml
+            else
+              echo "ERROR: File is too small, showing entire content:"
+              cat ./coverage.opencover.xml
+            fi
           else
-            echo "ERRO: coverage.opencover.xml NÃO FOI CRIADO NA RAIZ!"
-            echo ""
-            echo "Todos os arquivos XML encontrados:"
-            find . -name "*.xml" | grep -v obj | grep -v bin | head -20
+            echo "ERROR: No coverage file found in TestResults"
+            echo "All files in TestResults:"
+            find ./TestResults -type f
           fi
 
-      - name: Verify coverage file exists before ending analysis
+      - name: Verify coverage file in root
         if: always()
         run: |
-          if [ ! -f "./coverage.opencover.xml" ]; then
-            echo "AVISO: Arquivo de cobertura não encontrado!"
-            echo "O SonarCloud vai rodar sem dados de cobertura."
+          if [ -f "./coverage.opencover.xml" ]; then
+            LINES=$(wc -l < ./coverage.opencover.xml)
+            echo "Coverage file exists in root: $LINES lines"
             
-            # Cria um arquivo vazio para não quebrar
-            echo '<?xml version="1.0" encoding="utf-8"?><CoverageSession></CoverageSession>' > ./coverage.opencover.xml
+            if [ "$LINES" -lt 10 ]; then
+              echo "WARNING: Coverage file is too small, might be invalid"
+              cat ./coverage.opencover.xml
+            fi
+          else
+            echo "ERROR: coverage.opencover.xml not found in root directory"
+            ls -la
           fi
 
       - name: End SonarCloud analysis
@@ -158,33 +123,35 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: dotnet sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
 
-      - name: Summary Report
+      - name: Create summary report
         if: always()
         run: |
-          echo "### Relatório de Cobertura" >> $GITHUB_STEP_SUMMARY
+          echo "### Coverage Analysis Report" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo " [Dashboard SonarCloud](https://sonarcloud.io/dashboard?id=AnnaBLoz_freelamatch-api)" >> $GITHUB_STEP_SUMMARY
+          echo "[View SonarCloud Dashboard](https://sonarcloud.io/dashboard?id=AnnaBLoz_freelamatch-api)" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           
           if [ -f "./coverage.opencover.xml" ]; then
             LINES=$(wc -l < ./coverage.opencover.xml)
-            if [ "$LINES" -gt 5 ]; then
-              echo "**Arquivo de cobertura gerado com sucesso!**" >> $GITHUB_STEP_SUMMARY
+            
+            if [ "$LINES" -gt 10 ]; then
+              echo "**Status:** Coverage file generated successfully" >> $GITHUB_STEP_SUMMARY
               echo "" >> $GITHUB_STEP_SUMMARY
-              echo "- Arquivo: \`coverage.opencover.xml\`" >> $GITHUB_STEP_SUMMARY
-              echo "- Tamanho: $LINES linhas" >> $GITHUB_STEP_SUMMARY
-              echo "- Status: Enviado ao SonarCloud" >> $GITHUB_STEP_SUMMARY
+              echo "- File: coverage.opencover.xml" >> $GITHUB_STEP_SUMMARY
+              echo "- Size: $LINES lines" >> $GITHUB_STEP_SUMMARY
+              echo "- Uploaded to SonarCloud: Yes" >> $GITHUB_STEP_SUMMARY
             else
-              echo "**Arquivo de cobertura vazio ou inválido**" >> $GITHUB_STEP_SUMMARY
+              echo "**Status:** Coverage file is invalid or empty" >> $GITHUB_STEP_SUMMARY
               echo "" >> $GITHUB_STEP_SUMMARY
-              echo "O arquivo existe mas tem apenas $LINES linhas." >> $GITHUB_STEP_SUMMARY
+              echo "- File exists but has only $LINES lines" >> $GITHUB_STEP_SUMMARY
+              echo "- This may indicate a problem with Coverlet configuration" >> $GITHUB_STEP_SUMMARY
             fi
           else
-            echo " **Nenhum arquivo de cobertura foi gerado**" >> $GITHUB_STEP_SUMMARY
+            echo "**Status:** No coverage file generated" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
-            echo "Análise do SonarCloud executada sem dados de cobertura." >> $GITHUB_STEP_SUMMARY
+            echo "Coverage data was not collected. Check the build logs for errors." >> $GITHUB_STEP_SUMMARY
           fi
           
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "---" >> $GITHUB_STEP_SUMMARY
-          echo "**Testes executados:** 32 " >> $GITHUB_STEP_SUMMARY
+          echo "Tests executed: 32 passed" >> $GITHUB_STEP_SUMMARY
