@@ -9,25 +9,22 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 8.0.x
 
-      - name: Restore dependencies
-        run: dotnet restore freela-match-api.csproj
+      - name: Restore
+        run: dotnet restore
 
       - name: Build
-        run: dotnet build freela-match-api.csproj --no-restore --configuration Release
+        run: dotnet build --no-restore --configuration Release
 
       - name: Test with coverage
         run: |
-          dotnet test freela-match-api.csproj \
-            --no-build \
-            --configuration Release \
+          dotnet test --no-build --configuration Release \
             /p:CollectCoverage=true \
             /p:CoverletOutputFormat=cobertura \
             /p:CoverletOutput=coverage.cobertura.xml \

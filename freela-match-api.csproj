@@ -7,9 +7,12 @@
     <RootNamespace>freela_match_api</RootNamespace>
   </PropertyGroup>
 
-  <ItemGroup>
-    <Compile Include="sonar-project.properties" />
-  </ItemGroup>
+    <ItemGroup>
+		<Content Remove="sonar-project.properties" />
+		<None Update="sonar-project.properties">
+			<CopyToOutputDirectory>Never</CopyToOutputDirectory>
+		</None>
+	</ItemGroup>
 
   <ItemGroup>
     <None Include="Controllers\UserController.cs" />
