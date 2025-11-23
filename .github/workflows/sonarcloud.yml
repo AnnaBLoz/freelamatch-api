@@ -50,7 +50,7 @@ jobs:
             /o:"annabloz" \
             /d:sonar.host.url="https://sonarcloud.io" \
             /d:sonar.token="${{ secrets.SONAR_TOKEN }}" \
-            /d:sonar.cs.opencover.reportsPaths="**/coverage.opencover.xml" \
+            /d:sonar.cs.opencover.reportsPaths="coverage/coverage.opencover.xml" \
             /d:sonar.exclusions="**/Migrations/**" \
             /d:sonar.coverage.exclusions="**/*Tests.cs,**/Program.cs,**/Migrations/**"
             
@@ -67,17 +67,24 @@ jobs:
             
       - name: Verify coverage file
         run: |
-          echo "Searching for coverage files..."
-          find . -name "coverage.opencover.xml" -type f
-          if find . -name "coverage.opencover.xml" -type f | grep -q .; then
-            echo "Coverage file(s) found successfully"
-            find . -name "coverage.opencover.xml" -exec ls -lh {} \;
-            echo "Preview of coverage file:"
-            find . -name "coverage.opencover.xml" -exec head -30 {} \;
+          echo "===== Searching for ALL coverage files ====="
+          find . -name "*.xml" -type f | grep -i coverage || echo "No coverage XML files found"
+          echo ""
+          echo "===== Checking coverage directory ====="
+          ls -la coverage/ || echo "Coverage directory does not exist"
+          echo ""
+          echo "===== Checking root directory ====="
+          ls -la *.xml || echo "No XML files in root"
+          echo ""
+          echo "===== Full directory tree ====="
+          find . -name "*.xml" -type f
+          echo ""
+          if [ -f "coverage/coverage.opencover.xml" ]; then
+            echo "Coverage file found at coverage/coverage.opencover.xml"
+            ls -lh coverage/coverage.opencover.xml
+            head -50 coverage/coverage.opencover.xml
           else
-            echo "ERROR: No coverage files generated"
-            echo "Directory structure:"
-            ls -la
+            echo " Coverage file NOT found"
             exit 1
           fi
           
