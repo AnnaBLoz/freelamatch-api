@@ -27,10 +27,7 @@ jobs:
           dotnet-version: 8.0.x
 
       - name: Remove conflicting files
-        run: |
-          rm -f sonar-project.properties
-          echo "Arquivos .csproj encontrados:"
-          find . -name "*.csproj"
+        run: rm -f sonar-project.properties
 
       - name: Install SonarCloud scanner
         run: dotnet tool install --global dotnet-sonarscanner
@@ -39,6 +36,8 @@ jobs:
         run: dotnet restore
 
       - name: Begin SonarCloud analysis
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           dotnet sonarscanner begin \
             /k:"AnnaBLoz_freelamatch-api" \
@@ -46,18 +45,16 @@ jobs:
             /d:sonar.host.url="https://sonarcloud.io" \
             /d:sonar.token="${{ secrets.SONAR_TOKEN }}" \
             /d:sonar.cs.opencover.reportsPaths="**/coverage.opencover.xml" \
-            /d:sonar.exclusions="**/Migrations/**" \
-            /d:sonar.coverage.exclusions="**Tests*.cs,**/*Tests.cs,**/Program.cs" \
-            /d:sonar.projectBaseDir="."
+            /d:sonar.exclusions="**/Migrations/**,**/obj/**,**/bin/**" \
+            /d:sonar.coverage.exclusions="**/*Tests.cs,**/Program.cs"
 
       - name: Build
         run: dotnet build --configuration Release --no-restore
 
-      - name: Run ALL tests with coverage
+      - name: Run tests with coverage
         run: |
-          echo "Executando TODOS os testes com cobertura..."
+          echo " Executando testes com cobertura..."
           
-          # Executa testes para TODA a solution com coverlet
           dotnet test \
             --configuration Release \
             --no-build \
@@ -65,51 +62,33 @@ jobs:
             /p:CollectCoverage=true \
             /p:CoverletOutputFormat=opencover \
             /p:CoverletOutput=./coverage.opencover.xml
-          
-          echo ""
-          echo "Testes executados!"
 
       - name: Display coverage files
         if: always()
         run: |
-          echo "=== Arquivos de cobertura gerados ==="
-          find . -name "coverage.opencover.xml" -o -name "*.opencover.xml" | while read file; do
-            echo "$file"
-            echo "   Tamanho: $(wc -l < "$file") linhas"
-            echo "   Primeiras linhas:"
-            head -10 "$file"
-            echo "---"
+          echo "=== Arquivos de cobertura ==="
+          find . -name "coverage.opencover.xml" -o -name "*.opencover.xml" 2>/dev/null | while read file; do
+            echo "$file ($(wc -l < "$file") linhas)"
           done
-          
-          echo ""
-          echo "=== Todos os arquivos XML (para debug) ==="
-          find . -name "*.xml" -path "*/TestResults/*" -o -name "*coverage*.xml" | head -20
 
       - name: End SonarCloud analysis
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          dotnet sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
+        run: dotnet sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
 
       - name: Summary
         if: always()
         run: |
-          echo "### Análise SonarCloud - Resumo" >> $GITHUB_STEP_SUMMARY
+          echo "### Análise SonarCloud Concluída" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo " [Ver Relatório Completo](https://sonarcloud.io/dashboard?id=AnnaBLoz_freelamatch-api)" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "[Ver Relatório Completo](https://sonarcloud.io/dashboard?id=AnnaBLoz_freelamatch-api)" >> $GITHUB_STEP_SUMMARY
           
           COVERAGE_COUNT=$(find . -name "coverage.opencover.xml" 2>/dev/null | wc -l)
           
           if [ "$COVERAGE_COUNT" -gt 0 ]; then
-            echo "**Cobertura de código enviada ao SonarCloud**" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
-            echo "Arquivos gerados: $COVERAGE_COUNT" >> $GITHUB_STEP_SUMMARY
+            echo " **Cobertura enviada:** $COVERAGE_COUNT arquivo(s)" >> $GITHUB_STEP_SUMMARY
           else
-            echo "**Nenhum arquivo de cobertura detectado**" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
-            echo "Verifique os logs acima para mais detalhes" >> $GITHUB_STEP_SUMMARY
+            echo " **Nenhum arquivo de cobertura detectado**" >> $GITHUB_STEP_SUMMARY
           fi
-          
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Testes executados:** " >> $GITHUB_STEP_SUMMARY
