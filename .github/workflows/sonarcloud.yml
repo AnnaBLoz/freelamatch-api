@@ -29,61 +29,43 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
           
-      - name: Install SonarScanner
-        run: dotnet tool install --global dotnet-sonarscanner
-        
-      - name: Add Coverlet to test project
+      - name: Install tools
         run: |
-          cd FreelaMatch.Tests
-          dotnet add package coverlet.msbuild --version 6.0.0
-          cd ..
+          dotnet tool install --global dotnet-sonarscanner
+          dotnet tool install --global dotnet-coverage
         
       - name: Restore dependencies
         run: dotnet restore
-          
-      - name: Build
-        run: dotnet build --configuration Release --no-restore
-        
-      - name: Test with coverage
-        run: |
-          dotnet test --configuration Release --verbosity normal \
-            /p:CollectCoverage=true \
-            /p:CoverletOutputFormat=opencover \
-            /p:CoverletOutput=../coverage/ \
-            FreelaMatch.Tests/FreelaMatch.Tests.csproj
-            
-      - name: Verify coverage file
-        run: |
-          echo "===== Coverage file verification ====="
-          if [ -f "coverage/coverage.opencover.xml" ]; then
-            echo "Coverage file found!"
-            ls -lh coverage/coverage.opencover.xml
-            echo ""
-            echo "===== Coverage Summary ====="
-            head -5 coverage/coverage.opencover.xml
-          else
-            echo "Coverage file NOT found"
-            exit 1
-          fi
         
       - name: Begin SonarCloud analysis
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          echo "Limpando arquivos obj/bin..."
-          find . -name "obj" -type d -exec rm -rf {} + 2>/dev/null || true
-          find . -name "bin" -type d -exec rm -rf {} + 2>/dev/null || true
           dotnet sonarscanner begin \
             /k:"AnnaBLoz_freelamatch-api" \
             /o:"annabloz" \
             /d:sonar.host.url="https://sonarcloud.io" \
             /d:sonar.token="${{ secrets.SONAR_TOKEN }}" \
-            /d:sonar.cs.opencover.reportsPaths="coverage/coverage.opencover.xml" \
+            /d:sonar.cs.vscoveragexml.reportsPaths=coverage.xml \
             /d:sonar.exclusions="**/Migrations/**" \
             /d:sonar.coverage.exclusions="**/*Tests.cs,**/Program.cs,**/Migrations/**"
+          
+      - name: Build
+        run: dotnet build --configuration Release --no-restore
+        
+      - name: Test with coverage
+        run: dotnet-coverage collect "dotnet test --configuration Release --no-build --verbosity minimal" -f xml -o coverage.xml
             
-      - name: Build for SonarScanner
-        run: dotnet build --configuration Release --force
+      - name: Verify coverage file
+        run: |
+          if [ -f "coverage.xml" ]; then
+            echo "Coverage file generated!"
+            ls -lh coverage.xml
+            head -10 coverage.xml
+          else
+            echo "Coverage file NOT found"
+            exit 1
+          fi
           
       - name: End SonarCloud analysis
         env:
