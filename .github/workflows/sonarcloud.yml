@@ -49,28 +49,34 @@ jobs:
           dotnet test FreelaMatch.Tests/FreelaMatch.Tests.csproj \
             --configuration Release \
             --no-build \
-            --collect:"XPlat Code Coverage" \
-            /p:CoverletOutputFormat=opencover \
-            /p:CoverletOutput=$(pwd)/FreelaMatch.Tests/coverage/
+            --collect:"XPlat Code Coverage"
 
       - name: Locate coverage file
         id: find_coverage
         run: |
           echo "Searching for coverage files..."
-          found=$(find . -type f -name "coverage.opencover.xml" | head -n 1)
+          found=$(find . -type f -name "coverage.cobertura.xml" | head -n 1)
           echo "Coverage file found at: $found"
           if [ -z "$found" ]; then
-            echo "No coverage.opencover.xml found!" && exit 1
+            echo "No coverage.cobertura.xml found!" && exit 1
           fi
           echo "coverage_path=$found" >> $GITHUB_OUTPUT
 
+      - name: Convert Cobertura to OpenCover
+        run: |
+          dotnet tool install -g dotnet-reportgenerator-globaltool
+          reportgenerator \
+            "-reports:${{ steps.find_coverage.outputs.coverage_path }}" \
+            "-targetdir:coverage-converted" \
+            "-reporttypes:opencover"
+
       - name: Verify coverage report
         run: |
-          echo "Preview of coverage file:"
-          head -n 20 "${{ steps.find_coverage.outputs.coverage_path }}"
+          echo "Preview of converted coverage file:"
+          head -n 20 coverage-converted/opencover.xml
 
       - name: SonarCloud End
         run: |
           dotnet sonarscanner end \
             /d:sonar.login="${{ secrets.SONAR_TOKEN }}" \
-            /d:sonar.cs.opencover.reportsPaths="${{ steps.find_coverage.outputs.coverage_path }}"
+            /d:sonar.cs.opencover.reportsPaths="coverage-converted/opencover.xml"
