@@ -70,12 +70,15 @@ jobs:
       # Testes + Coverage
       - name: Run tests and generate coverage
         run: |
-          dotnet test ./FreelaMatch.Tests/FreelaMatch.Tests.csproj \
+          dotnet test \
             --configuration Release \
             --no-build \
-            /p:CollectCoverage=true \
-            /p:CoverletOutput=../coverage.xml \
-            /p:CoverletOutputFormat=opencover
+            --collect:"XPlat Code Coverage" \
+            --results-directory ./TestResults \
+            -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover
+          
+          # Mover arquivo de coverage para raiz
+          find ./TestResults -name "coverage.opencover.xml" -exec cp {} ./coverage.xml \;
 
       - name: Verify coverage file
         run: |
