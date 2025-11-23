@@ -6,39 +6,43 @@ on:
   pull_request:
 
 jobs:
-  build:
-    name: Build, Test and Analyze
+  build-and-analyze:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
+      - name: Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
+      # Adicione este passo para ver o que realmente foi clonado
+      - name: List files (debug)
+        run: |
+          echo "=== Estrutura do diretório atual ==="
+          ls -la
+          echo "=== Dentro de FreelaMatchAPI (se existir) ==="
+          ls -la FreelaMatchAPI || echo "Pasta FreelaMatchAPI não existe!"
+
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '8.0.x'
+          dotnet-version: 8.0.x
 
-      - name: Restore dependencies
-        working-directory: ./FreelaMatchAPI
-        run: dotnet restore
+      - name: Restore
+        run: dotnet restore FreelaMatchAPI/FreelaMatchAPI.csproj
 
-      - name: Build solution
-        working-directory: ./FreelaMatchAPI
-        run: dotnet build --no-restore --configuration Release
+      - name: Build
+        run: dotnet build FreelaMatchAPI/FreelaMatchAPI.csproj --no-restore --configuration Release
 
-      - name: Run tests with coverage
-        working-directory: ./FreelaMatchAPI
+      - name: Test with coverage
         run: |
-          dotnet test \
+          dotnet test FreelaMatchAPI/FreelaMatchAPI.csproj \
             --no-build \
             --configuration Release \
             /p:CollectCoverage=true \
             /p:CoverletOutputFormat=cobertura \
-            /p:CoverletOutput=./coverage.cobertura.xml \
+            /p:CoverletOutput=../coverage.cobertura.xml \
             --logger trx \
-            --results-directory ./TestResults
+            --results-directory ../TestResults
 
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@v3
@@ -49,8 +53,8 @@ jobs:
           args: >
             -Dsonar.projectKey=AnnaBLoz_freelamatch-api
             -Dsonar.organization=annabloz
-            -Dsonar.host.url=https://sonarcloud.io
+            -Dsonar.sources=.
             -Dsonar.cs.vstest.reportsPaths=**/TestResults/*.trx
-            -Dsonar.cs.opencover.reportsPaths=**/coverage.cobertura.xml
-            -Dsonar.exclusions=**/Migrations/**,**/*Program.cs,**/*Startup.cs
+            -Dsonar.cs.opencover.reportsPaths=coverage.cobertura.xml
+            -Dsonar.exclusions=**/Migrations/**,**/*Program.cs
             -Dsonar.qualitygate.wait=true
