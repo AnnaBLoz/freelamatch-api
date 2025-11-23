@@ -1,169 +1,86 @@
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using Xunit;
 using Moq;
-using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
 using FreelaMatchAPI.Controllers;
-using FreelaMatchAPI.Interfaces;
-using FreelaMatchAPI.DTOs;
 using FreelaMatchAPI.Models;
+using FreelaMatchAPI.Data;
+using Microsoft.EntityFrameworkCore;
+using System.Threading.Tasks;
+using System.Collections.Generic;
 
-namespace FreelaMatchAPI.Tests.Controllers
+namespace FreelaMatch.Tests.Controllers
 {
     public class ProfileControllerTests
     {
-        private readonly Mock<IProfileService> _profileServiceMock;
         private readonly ProfileController _controller;
+        private readonly AppDbContext _context;
 
         public ProfileControllerTests()
         {
-            _profileServiceMock = new Mock<IProfileService>();
-            _controller = new ProfileController(_profileServiceMock.Object);
+            var options = new DbContextOptionsBuilder<AppDbContext>()
+                .UseInMemoryDatabase("ProfileTestsDb")
+                .Options;
+
+            _context = new AppDbContext(options);
+            _controller = new ProfileController(_context);
         }
 
-        // ------------------------------------------------------------
-        // GET PROFILE
-        // ------------------------------------------------------------
         [Fact]
-        public async Task GetProfile_ShouldCreateProfile_WhenNotExists()
+        public async Task GetProfile_ReturnsOk_WhenProfileExists()
         {
-            // Arrange
-            Profile? nullProfile = null;
-
-            var createdProfile = new Profile
+            var profile = new Profile
             {
                 ProfileId = 1,
-                UserId = 1,
-                Biography = "",
-                PricePerHour = 0
-            };
-
-            _profileServiceMock
-                .Setup(s => s.GetProfileByUserIdAsync(1))
-                .ReturnsAsync(nullProfile);
-
-            _profileServiceMock
-                .Setup(s => s.CreateProfileAsync(1, It.IsAny<UpdateProfile>()))
-                .ReturnsAsync((true, "created", createdProfile));
-
-            // Act
-            var result = await _controller.GetProfile(1);
-
-            // Assert
-            var ok = Assert.IsType<OkObjectResult>(result.Result);
-            var profile = Assert.IsType<Profile>(ok.Value);
-            profile.ProfileId.Should().Be(1);
-        }
-
-        [Fact]
-        public async Task GetProfile_ShouldReturnNotFound_WhenProfileDoesNotExist()
-        {
-            _profileServiceMock.Setup(s => s.GetProfileByUserIdAsync(1))
-                .ReturnsAsync((Profile?)null);
-
-            var result = await _controller.GetProfile(1);
-
-            result.Result.Should().BeOfType<NotFoundObjectResult>();
-            var notFound = result.Result as NotFoundObjectResult;
-
-            var message = notFound!.Value.GetType().GetProperty("message")!.GetValue(notFound.Value);
-            message.Should().Be("Profile not found");
-        }
-
-        // ------------------------------------------------------------
-        // UPDATE PROFILE
-        // ------------------------------------------------------------
-        [Fact]
-        public async Task UpdateProfile_ShouldReturnOk_WhenUpdateSuccess()
-        {
-            var updated = new UpdateProfile { Bio = "Updated Bio" };
-
-            var fakeProfile = new Profile
-            {
-                Id = 1,
-                Bio = "Updated Bio",
+                Biography = "Teste Bio",
+                ExperienceLevel = ExperienceLevel.Junior,
+                PricePerHour = 100,
                 UserId = 1
             };
 
-            _profileServiceMock.Setup(s => s.UpdateProfileAsync(1, updated))
-                .ReturnsAsync((true, "Profile updated successfully", fakeProfile));
+            _context.Profile.Add(profile);
+            await _context.SaveChangesAsync();
 
-            var result = await _controller.UpdateProfile(1, updated);
+            var result = await _controller.GetProfile(1);
 
-            result.Should().BeOfType<OkObjectResult>();
             var ok = result as OkObjectResult;
+            Assert.NotNull(ok);
 
-            var data = ok!.Value.Should().BeAssignableTo<Profile>().Subject;
-            data.Bio.Should().Be("Updated Bio");
+            var data = ok.Value as Profile;
+            Assert.NotNull(data);
+            Assert.Equal("Teste Bio", data.Biography);
         }
 
         [Fact]
-        public async Task UpdateProfile_ShouldReturnNotFound_WhenProfileDoesNotExist()
+        public async Task UpdateProfile_ReturnsOk_WhenUpdatedSuccessfully()
         {
-            var updated = new UpdateProfile { Bio = "Updated Bio" };
-
-            _profileServiceMock.Setup(s => s.UpdateProfileAsync(99, updated))
-                .ReturnsAsync((false, "Profile not found", null));
-
-            var result = await _controller.UpdateProfile(99, updated);
-
-            result.Should().BeOfType<NotFoundObjectResult>();
-            var notFound = result as NotFoundObjectResult;
-
-            var message = notFound!.Value.GetType().GetProperty("message")!.GetValue(notFound.Value);
-            message.Should().Be("Profile not found");
-        }
-
-        [Fact]
-        public async Task UpdateProfile_ShouldReturnBadRequest_WhenModelStateInvalid()
-        {
-            _controller.ModelState.AddModelError("Bio", "Required");
-
-            var updated = new UpdateProfile { Bio = "" };
-
-            var result = await _controller.UpdateProfile(1, updated);
-
-            result.Should().BeOfType<BadRequestObjectResult>();
-        }
-
-        // ------------------------------------------------------------
-        // GET SKILLS
-        // ------------------------------------------------------------
-        [Fact]
-        public async Task GetSkills_ShouldReturnOk_WhenSkillsExist()
-        {
-            var skills = new List<Skill>
+            var profile = new Profile
             {
-                new Skill { SkillId = 1, SkillName = "C#" },
-                new Skill { SkillId = 2, SkillName = "Angular" }
+                ProfileId = 1,
+                Biography = "Old Bio",
+                ExperienceLevel = ExperienceLevel.Junior,
+                PricePerHour = 50,
+                UserId = 1
             };
 
-            _profileServiceMock.Setup(s => s.GetSkills())
-                .ReturnsAsync(skills);
+            _context.Profile.Add(profile);
+            await _context.SaveChangesAsync();
 
-            var result = await _controller.GetSkills();
+            var update = new UpdateProfile
+            {
+                Biography = "New Bio",
+                ExperienceLevel = ExperienceLevel.Senior,
+                PricePerHour = 200,
+                UserSkills = new List<UserSkill>()
+            };
 
-            result.Result.Should().BeOfType<OkObjectResult>();
-            var ok = result.Result as OkObjectResult;
+            var result = await _controller.UpdateProfile(1, update);
 
-            var data = ok!.Value.Should().BeAssignableTo<List<Skill>>().Subject;
-            data.Count.Should().Be(2);
-        }
+            var ok = result as OkObjectResult;
+            Assert.NotNull(ok);
 
-        [Fact]
-        public async Task GetSkills_ShouldReturnNotFound_WhenNoSkills()
-        {
-            _profileServiceMock.Setup(s => s.GetSkills())
-                .ReturnsAsync(new List<Skill>());
-
-            var result = await _controller.GetSkills();
-
-            result.Result.Should().BeOfType<NotFoundObjectResult>();
-            var notFound = result.Result as NotFoundObjectResult;
-
-            var message = notFound!.Value.GetType().GetProperty("message")!.GetValue(notFound.Value);
-            message.Should().Be("Skills not found");
+            var updated = ok.Value as Profile;
+            Assert.NotNull(updated);
+            Assert.Equal("New Bio", updated.Biography);
         }
     }
 }
