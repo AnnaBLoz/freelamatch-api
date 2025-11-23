@@ -1,9 +1,7 @@
-using FreelaMatchAPI.DTOs;
 using FreelaMatchAPI.Interfaces;
 using FreelaMatchAPI.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Linq;
 
 namespace FreelaMatchAPI.Controllers
 {
@@ -19,17 +17,31 @@ namespace FreelaMatchAPI.Controllers
             _profileService = profileService;
         }
 
+        // ==========================================
+        // GET PROFILE
+        // ==========================================
         [HttpGet("")]
         public async Task<ActionResult<Profile>> GetProfile([FromQuery] int userId)
         {
             var profile = await _profileService.GetProfileByUserIdAsync(userId);
 
+            // Se ainda não existe, criar automaticamente
             if (profile == null)
-                return NotFound(new { message = "Profile not found" });
+            {
+                var created = await _profileService.CreateProfileAsync(userId, new UpdateProfile());
+
+                if (!created.Success)
+                    return NotFound(new { message = created.Message });
+
+                profile = created.Profile;
+            }
 
             return Ok(profile);
         }
 
+        // ==========================================
+        // UPDATE PROFILE
+        // ==========================================
         [HttpPut("{userId}")]
         public async Task<IActionResult> UpdateProfile(int userId, [FromBody] UpdateProfile updatedProfile)
         {
@@ -44,6 +56,9 @@ namespace FreelaMatchAPI.Controllers
             return Ok(result.Profile);
         }
 
+        // ==========================================
+        // GET SKILLS
+        // ==========================================
         [HttpGet("skills")]
         public async Task<ActionResult<List<Skill>>> GetSkills()
         {

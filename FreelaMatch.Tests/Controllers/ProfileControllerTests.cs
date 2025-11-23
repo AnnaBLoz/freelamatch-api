@@ -26,26 +26,34 @@ namespace FreelaMatchAPI.Tests.Controllers
         // GET PROFILE
         // ------------------------------------------------------------
         [Fact]
-        public async Task GetProfile_ShouldReturnOk_WhenProfileExists()
+        public async Task GetProfile_ShouldCreateProfile_WhenNotExists()
         {
-            var fakeProfile = new Profile
+            // Arrange
+            Profile? nullProfile = null;
+
+            var createdProfile = new Profile
             {
-                Id = 1,
-                Bio = "Test Bio",
-                UserId = 1
+                ProfileId = 1,
+                UserId = 1,
+                Biography = "",
+                PricePerHour = 0
             };
 
-            _profileServiceMock.Setup(s => s.GetProfileByUserIdAsync(1))
-                .ReturnsAsync(fakeProfile);
+            _profileServiceMock
+                .Setup(s => s.GetProfileByUserIdAsync(1))
+                .ReturnsAsync(nullProfile);
 
+            _profileServiceMock
+                .Setup(s => s.CreateProfileAsync(1, It.IsAny<UpdateProfile>()))
+                .ReturnsAsync((true, "created", createdProfile));
+
+            // Act
             var result = await _controller.GetProfile(1);
 
-            result.Result.Should().BeOfType<OkObjectResult>();
-            var ok = result.Result as OkObjectResult;
-
-            var data = ok!.Value.Should().BeAssignableTo<Profile>().Subject;
-            data.Id.Should().Be(1);
-            data.Bio.Should().Be("Test Bio");
+            // Assert
+            var ok = Assert.IsType<OkObjectResult>(result.Result);
+            var profile = Assert.IsType<Profile>(ok.Value);
+            profile.ProfileId.Should().Be(1);
         }
 
         [Fact]

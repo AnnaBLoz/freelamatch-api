@@ -49,10 +49,11 @@ public class ProfileService : IProfileService
         var profile = new Profile
         {
             UserId = userId,
-            Biography = string.Empty,
+            Biography = "",
             PricePerHour = 0,
-            ExperienceLevel = 0,
-            SectorId = null, // caso o setor seja opcional
+            ExperienceLevel = ExperienceLevel.Junior,
+            SectorId = null,
+            UserSkills = new List<UserSkill>()
         };
 
         _context.Profiles.Add(profile);
