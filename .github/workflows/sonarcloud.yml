@@ -64,9 +64,7 @@ jobs:
             --verbosity normal \
             /p:CollectCoverage=true \
             /p:CoverletOutputFormat=opencover \
-            /p:CoverletOutput=./coverage.opencover.xml \
-            /p:Exclude="[*Tests]*,[*.Tests]*" \
-            /p:ExcludeByFile="**/Migrations/**/*.cs"
+            /p:CoverletOutput=./coverage.opencover.xml
           
           echo ""
           echo "Testes executados!"
@@ -96,9 +94,9 @@ jobs:
       - name: Summary
         if: always()
         run: |
-          echo "###Análise SonarCloud - Resumo" >> $GITHUB_STEP_SUMMARY
+          echo "### Análise SonarCloud - Resumo" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "[Ver Relatório Completo](https://sonarcloud.io/dashboard?id=AnnaBLoz_freelamatch-api)" >> $GITHUB_STEP_SUMMARY
+          echo " [Ver Relatório Completo](https://sonarcloud.io/dashboard?id=AnnaBLoz_freelamatch-api)" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           
           COVERAGE_COUNT=$(find . -name "coverage.opencover.xml" 2>/dev/null | wc -l)
@@ -114,4 +112,4 @@ jobs:
           fi
           
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Testes executados:**" >> $GITHUB_STEP_SUMMARY
+          echo "**Testes executados:** " >> $GITHUB_STEP_SUMMARY
