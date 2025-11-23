@@ -6,7 +6,7 @@ on:
   pull_request:
 
 jobs:
-  build-and-analyze:
+  build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -16,19 +16,18 @@ jobs:
         with:
           dotnet-version: 8.0.x
 
-      - name: Restore
-        run: dotnet restore
+      - name: Restore & Build
+        run: |
+          dotnet restore
+          dotnet build --no-restore --configuration Release
 
-      - name: Build
-        run: dotnet build --no-restore --configuration Release
-
-      - name: Generate coverage (even without tests)
+      - name: Test + Coverage (não falha se não tiver testes)
         run: |
           dotnet test --no-build --configuration Release \
             /p:CollectCoverage=true \
             /p:CoverletOutputFormat=cobertura \
             /p:CoverletOutput=coverage.cobertura.xml \
-            || true  
+            || echo "No tests found – continuing..."
 
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@v3
