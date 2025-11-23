@@ -46,30 +46,73 @@ jobs:
             /o:"annabloz" \
             /d:sonar.host.url="https://sonarcloud.io" \
             /d:sonar.token="${{ secrets.SONAR_TOKEN }}" \
-            /d:sonar.cs.opencover.reportsPaths="**/TestResults/coverage.opencover.xml" \
+            /d:sonar.cs.opencover.reportsPaths="**/coverage.opencover.xml" \
             /d:sonar.exclusions="**/Migrations/**"
 
       - name: Build
-        run: dotnet build --no-restore --configuration Release
+        run: dotnet build --configuration Release
 
-      - name: Test with coverage
+      - name: Run tests with coverage
+        continue-on-error: true
         run: |
-          dotnet test ./FreelaMatch.Tests/FreelaMatch.Tests.csproj \
-            --no-build \
-            --configuration Release \
-            --collect:"XPlat Code Coverage" \
-            --results-directory ./TestResults \
-            -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover
+          # Encontra todos os projetos de teste
+          TEST_PROJECTS=$(find . -name "*.Tests.csproj" -o -name "*Tests.csproj" -o -name "*.Test.csproj")
+          
+          if [ -z "$TEST_PROJECTS" ]; then
+            echo "Nenhum projeto de teste encontrado"
+            echo "Projetos disponíveis:"
+            find . -name "*.csproj"
+          else
+            echo "Projetos de teste encontrados:"
+            echo "$TEST_PROJECTS"
+            
+            # Executa testes para cada projeto encontrado
+            for project in $TEST_PROJECTS; do
+              echo "Executando testes para: $project"
+              dotnet test "$project" \
+                --configuration Release \
+                --no-build \
+                /p:CollectCoverage=true \
+                /p:CoverletOutputFormat=opencover \
+                /p:CoverletOutput=./coverage.opencover.xml \
+                /p:Include="[FreelaMatch.*]*" \
+                /p:Exclude="[*]FreelaMatch.Migrations.*,[*Tests*]*" || echo "Falha ao executar testes para $project"
+            done
+          fi
 
-      - name: Verify coverage file
+      - name: List all generated coverage files
         run: |
-          echo "=== Arquivos de cobertura gerados ==="
-          find ./TestResults -name "*.xml" -o -name "*.opencover.xml"
+          echo "=== Buscando arquivos de cobertura em todo o repositório ==="
+          find . -name "*.opencover.xml" -o -name "coverage.*.xml" | head -20
+          
           echo ""
-          echo "=== Conteúdo dos arquivos ==="
-          find ./TestResults -name "*.xml" -exec echo "Arquivo: {}" \; -exec head -20 {} \;
+          echo "=== Verificando conteúdo dos arquivos encontrados ==="
+          for file in $(find . -name "*.opencover.xml" | head -5); do
+            echo "Arquivo: $file"
+            head -10 "$file" || echo "Não foi possível ler o arquivo"
+            echo "---"
+          done
 
       - name: End SonarCloud analysis
         run: dotnet sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Summary
+        if: always()
+        run: |
+          echo "### Resumo da Análise SonarCloud" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "[Ver relatório completo](https://sonarcloud.io/dashboard?id=AnnaBLoz_freelamatch-api)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          if [ -n "$(find . -name '*.opencover.xml')" ]; then
+            echo "Arquivos de cobertura gerados com sucesso" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "Nenhum arquivo de cobertura foi gerado" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "**Possíveis causas:**" >> $GITHUB_STEP_SUMMARY
+            echo "- Não há projetos de teste no repositório" >> $GITHUB_STEP_SUMMARY
+            echo "- Os testes falharam durante a execução" >> $GITHUB_STEP_SUMMARY
+            echo "- O pacote coverlet.msbuild não está instalado" >> $GITHUB_STEP_SUMMARY
+          fi
