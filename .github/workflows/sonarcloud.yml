@@ -29,8 +29,10 @@ jobs:
       - name: Remove conflicting files
         run: rm -f sonar-project.properties
 
-      - name: Install SonarCloud scanner
-        run: dotnet tool install --global dotnet-sonarscanner
+      - name: Install tools
+        run: |
+          dotnet tool install --global dotnet-sonarscanner
+          dotnet tool install --global dotnet-coverage
 
       - name: Restore dependencies
         run: dotnet restore
@@ -44,13 +46,21 @@ jobs:
             /o:"annabloz" \
             /d:sonar.host.url="https://sonarcloud.io" \
             /d:sonar.token="${{ secrets.SONAR_TOKEN }}" \
+            /d:sonar.cs.vscoveragexml.reportsPaths=coverage.xml \
             /d:sonar.exclusions="**/Migrations/**"
 
       - name: Build
         run: dotnet build --configuration Release --no-restore
 
-      - name: Run tests
-        run: dotnet test --configuration Release --no-build --verbosity normal
+      - name: Test with dotnet-coverage
+        run: |
+          dotnet-coverage collect "dotnet test --configuration Release --no-build" -f xml -o coverage.xml
+          
+          echo "Coverage file generated:"
+          ls -lh coverage.xml
+          
+          echo "First 30 lines of coverage:"
+          head -30 coverage.xml
 
       - name: End SonarCloud analysis
         env:
@@ -65,4 +75,10 @@ jobs:
           echo "[View Dashboard](https://sonarcloud.io/dashboard?id=AnnaBLoz_freelamatch-api)" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Tests:** 32 passed" >> $GITHUB_STEP_SUMMARY
-          echo "**Coverage:** Not configured (will be added later)" >> $GITHUB_STEP_SUMMARY
+          
+          if [ -f "coverage.xml" ]; then
+            SIZE=$(wc -l < coverage.xml)
+            echo "**Coverage:** Generated ($SIZE lines)" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "**Coverage:** Failed to generate" >> $GITHUB_STEP_SUMMARY
+          fi
