@@ -7,8 +7,8 @@ on:
   pull_request:
 
 jobs:
-  build-and-analyze:
-    name: Build, Test and SonarCloud
+  build:
+    name: Build, Test, Coverage & SonarCloud
     runs-on: ubuntu-latest
 
     steps:
@@ -20,10 +20,13 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: 8.0.x
+          dotnet-version: '8.0.x'
 
-      - name: Install ReportGenerator (optional, for HTML coverage)
-        run: dotnet tool install --global dotnet-reportgenerator-globaltool
+      - name: Install SonarScanner for .NET
+        run: dotnet tool install --global dotnet-sonarscanner --version 5.15.0
+
+      - name: Add .NET global tools to PATH
+        run: echo "$HOME/.dotnet/tools" >> $GITHUB_PATH
 
       - name: Restore dependencies
         run: dotnet restore
@@ -31,7 +34,15 @@ jobs:
       - name: Build solution
         run: dotnet build --configuration Release --no-restore
 
-      # --- SonarCloud Begin ---
+      - name: Run tests and collect coverage
+        run: |
+          dotnet test \
+            --configuration Release \
+            --no-build \
+            --collect:"XPlat Code Coverage" \
+            /p:CoverletOutputFormat=opencover \
+            /p:CoverletOutput=$(pwd)/coverage.opencover.xml
+
       - name: SonarCloud Begin
         run: |
           dotnet sonarscanner begin \
@@ -44,20 +55,12 @@ jobs:
             /d:sonar.tests="FreelaMatchAPI.Tests" \
             /d:sonar.test.inclusions="**/*Tests.cs" \
             /d:sonar.exclusions="**/Migrations/**,**/Program.cs"
-      
-      # --- Run Tests and Collect Coverage ---
-      - name: Run Tests with Coverage
-        run: |
-          for proj in $(find ./tests -name "*.csproj"); do
-            dotnet test $proj \
-              --configuration Release \
-              --no-build \
-              /p:CollectCoverage=true \
-              /p:CoverletOutputFormat=opencover \
-              /p:CoverletOutput=$(pwd)/coverage.opencover.xml
-          done
 
-      # --- SonarCloud End ---
-      - name: SonarCloud End
-        run: |
-          dotnet sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
+      - name: Build for SonarCloud analysis
+        run: dotnet build --configuration Release
+
+      - name: Run SonarCloud End
+        run: dotnet sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
+
+      - name: Notify completion
+        run: echo "### SonarCloud Analysis Complete" >> $GITHUB_STEP_SUMMARY
