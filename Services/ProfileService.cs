@@ -1,5 +1,6 @@
 ﻿using FreelaMatchAPI.Data;
 using FreelaMatchAPI.DTOs;
+using FreelaMatchAPI.Interfaces;
 using FreelaMatchAPI.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -9,7 +10,7 @@ using System.Security.Claims;
 using System.Text;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
-public class ProfileService
+public class ProfileService : IProfileService
 {
     private readonly AppDbContext _context;
     private readonly IConfiguration _config;

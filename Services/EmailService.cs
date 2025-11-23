@@ -12,7 +12,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 
-public class EmailService
+public class EmailService : IEmailService
 {
     private readonly AppDbContext _context;
     private readonly IConfiguration _config;
