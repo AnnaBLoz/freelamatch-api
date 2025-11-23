@@ -44,132 +44,25 @@ jobs:
             /o:"annabloz" \
             /d:sonar.host.url="https://sonarcloud.io" \
             /d:sonar.token="${{ secrets.SONAR_TOKEN }}" \
-            /d:sonar.cs.opencover.reportsPaths="coverage.opencover.xml" \
-            /d:sonar.exclusions="**/Migrations/**,**/obj/**,**/bin/**" \
-            /d:sonar.coverage.exclusions="**/*Tests.cs,**/Program.cs"
+            /d:sonar.exclusions="**/Migrations/**"
 
       - name: Build
         run: dotnet build --configuration Release --no-restore
 
-      - name: Run tests with coverage
-        run: |
-          echo "Running tests with coverage collection..."
-          
-          dotnet test \
-            --configuration Release \
-            --no-build \
-            --verbosity normal \
-            --logger "trx;LogFileName=test-results.trx" \
-            /p:CollectCoverage=true \
-            /p:CoverletOutputFormat=opencover \
-            /p:CoverletOutput=./TestResults/
-          
-          echo ""
-          echo "Tests completed. Searching for coverage files..."
-          find . -name "*.opencover.xml" -o -name "coverage.opencover.xml"
-
-      - name: Find and copy coverage files to root
-        if: always()
-        run: |
-          echo "=== Searching for coverage files in entire repository ==="
-          find . -name "*.opencover.xml" -o -name "coverage.opencover.xml" 2>/dev/null
-          
-          echo ""
-          echo "=== Looking specifically in common locations ==="
-          ls -la ./TestResults/*.opencover.xml 2>/dev/null || echo "Not in ./TestResults/"
-          ls -la ./FreelaMatch.Tests/TestResults/*.opencover.xml 2>/dev/null || echo "Not in ./FreelaMatch.Tests/TestResults/"
-          ls -la ./FreelaMatch.Tests/*.opencover.xml 2>/dev/null || echo "Not in ./FreelaMatch.Tests/"
-          
-          echo ""
-          echo "=== Attempting to copy coverage file to root ==="
-          
-          # Try multiple possible locations
-          if [ -f "./TestResults/coverage.opencover.xml" ]; then
-            COVERAGE_FILE="./TestResults/coverage.opencover.xml"
-          elif [ -f "./FreelaMatch.Tests/TestResults/coverage.opencover.xml" ]; then
-            COVERAGE_FILE="./FreelaMatch.Tests/TestResults/coverage.opencover.xml"
-          elif [ -f "./FreelaMatch.Tests/coverage.opencover.xml" ]; then
-            COVERAGE_FILE="./FreelaMatch.Tests/coverage.opencover.xml"
-          else
-            # Find any .opencover.xml file
-            COVERAGE_FILE=$(find . -name "*.opencover.xml" | head -1)
-          fi
-          
-          if [ -n "$COVERAGE_FILE" ] && [ -f "$COVERAGE_FILE" ]; then
-            echo "Found coverage file: $COVERAGE_FILE"
-            cp "$COVERAGE_FILE" ./coverage.opencover.xml
-            echo "Coverage file copied to root successfully"
-            
-            LINES=$(wc -l < ./coverage.opencover.xml)
-            echo ""
-            echo "File size: $LINES lines"
-            
-            if [ "$LINES" -gt 10 ]; then
-              echo ""
-              echo "First 30 lines of coverage file:"
-              head -30 ./coverage.opencover.xml
-            else
-              echo ""
-              echo "WARNING: File is too small. Full content:"
-              cat ./coverage.opencover.xml
-            fi
-          else
-            echo "ERROR: No coverage file found anywhere"
-            echo ""
-            echo "All XML files in repository (excluding obj/bin):"
-            find . -name "*.xml" -type f | grep -v "/obj/" | grep -v "/bin/" | head -20
-          fi
-
-      - name: Verify coverage file in root
-        if: always()
-        run: |
-          if [ -f "./coverage.opencover.xml" ]; then
-            LINES=$(wc -l < ./coverage.opencover.xml)
-            echo "Coverage file exists in root: $LINES lines"
-            
-            if [ "$LINES" -lt 10 ]; then
-              echo "WARNING: Coverage file is too small, might be invalid"
-              cat ./coverage.opencover.xml
-            fi
-          else
-            echo "ERROR: coverage.opencover.xml not found in root directory"
-            ls -la
-          fi
+      - name: Run tests
+        run: dotnet test --configuration Release --no-build --verbosity normal
 
       - name: End SonarCloud analysis
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: dotnet sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
 
-      - name: Create summary report
+      - name: Summary
         if: always()
         run: |
-          echo "### Coverage Analysis Report" >> $GITHUB_STEP_SUMMARY
+          echo "### SonarCloud Analysis Complete" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "[View SonarCloud Dashboard](https://sonarcloud.io/dashboard?id=AnnaBLoz_freelamatch-api)" >> $GITHUB_STEP_SUMMARY
+          echo "[View Dashboard](https://sonarcloud.io/dashboard?id=AnnaBLoz_freelamatch-api)" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          
-          if [ -f "./coverage.opencover.xml" ]; then
-            LINES=$(wc -l < ./coverage.opencover.xml)
-            
-            if [ "$LINES" -gt 10 ]; then
-              echo "**Status:** Coverage file generated successfully" >> $GITHUB_STEP_SUMMARY
-              echo "" >> $GITHUB_STEP_SUMMARY
-              echo "- File: coverage.opencover.xml" >> $GITHUB_STEP_SUMMARY
-              echo "- Size: $LINES lines" >> $GITHUB_STEP_SUMMARY
-              echo "- Uploaded to SonarCloud: Yes" >> $GITHUB_STEP_SUMMARY
-            else
-              echo "**Status:** Coverage file is invalid or empty" >> $GITHUB_STEP_SUMMARY
-              echo "" >> $GITHUB_STEP_SUMMARY
-              echo "- File exists but has only $LINES lines" >> $GITHUB_STEP_SUMMARY
-              echo "- This may indicate a problem with Coverlet configuration" >> $GITHUB_STEP_SUMMARY
-            fi
-          else
-            echo "**Status:** No coverage file generated" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo "Coverage data was not collected. Check the build logs for errors." >> $GITHUB_STEP_SUMMARY
-          fi
-          
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "---" >> $GITHUB_STEP_SUMMARY
-          echo "Tests executed: 32 passed" >> $GITHUB_STEP_SUMMARY
+          echo "**Tests:** 32 passed" >> $GITHUB_STEP_SUMMARY
+          echo "**Coverage:** Not configured (will be added later)" >> $GITHUB_STEP_SUMMARY

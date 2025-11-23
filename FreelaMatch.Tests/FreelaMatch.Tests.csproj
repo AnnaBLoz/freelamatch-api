@@ -9,11 +9,10 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="coverlet.collector" Version="6.0.2" />
-
-		<!-- CORREÇÃO: Remover IncludeAssets e PrivateAssets do coverlet.msbuild -->
-		<PackageReference Include="coverlet.msbuild" Version="6.0.2" />
-
+		<PackageReference Include="coverlet.collector" Version="6.0.2">
+		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		  <PrivateAssets>all</PrivateAssets>
+		</PackageReference>
 		<PackageReference Include="FluentAssertions" Version="8.8.0" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="8.0.0" />
 		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.0.1" />
@@ -29,7 +28,6 @@
 		<Using Include="Xunit" />
 	</ItemGroup>
 
-	<!-- CORREÇÃO: Caminho correto - um nível acima ao invés de dois -->
 	<ItemGroup>
 		<ProjectReference Include="..\freela-match-api.csproj" />
 	</ItemGroup>
