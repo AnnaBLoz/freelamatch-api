@@ -75,7 +75,7 @@ namespace FreelaMatch.Tests
         }
 
         // -------------------------------
-        // REGISTER - FALHA
+        // REGISTER - FALHA (CORRIGIDO)
         // -------------------------------
         [Fact]
         public async Task Register_ShouldReturnBadRequest_WhenServiceThrows()
@@ -88,14 +88,21 @@ namespace FreelaMatch.Tests
                 .ThrowsAsync(new InvalidOperationException("Email já cadastrado"));
 
             // Act
-            var result = await _controller.Register(dto) as BadRequestObjectResult;
+            var result = await _controller.Register(dto);
 
             // Assert
-            result.Should().NotBeNull();
-            result!.StatusCode.Should().Be(400);
+            result.Should().BeOfType<BadRequestObjectResult>();
+            var badRequest = result as BadRequestObjectResult;
+            Assert.NotNull(badRequest);
+            Assert.NotNull(badRequest.Value);
 
-            dynamic data = result.Value!;
-            ((string)data.message).Should().Be("Email já cadastrado");
+            // Usar reflexão para acessar propriedades de objetos anônimos
+            var valueType = badRequest.Value.GetType();
+            var messageProperty = valueType.GetProperty("message");
+            Assert.NotNull(messageProperty);
+
+            var message = messageProperty.GetValue(badRequest.Value) as string;
+            Assert.Equal("Email já cadastrado", message);
         }
 
         // -------------------------------

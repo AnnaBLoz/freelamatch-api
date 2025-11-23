@@ -51,16 +51,25 @@ public class ProposalControllerTests
     public async Task Create_ShouldReturnOk_WhenProposalCreated()
     {
         var dto = new CreateProposal { Title = "Test", OwnerId = 1 };
-        var proposal = new Proposal { ProposalId = 1, Title = "Test" };
+        var createdProposal = new Proposal { ProposalId = 1, Title = "Test" };
 
-        _proposalServiceMock.Setup(s => s.CreateProposal(dto)).ReturnsAsync(proposal);
+        _proposalServiceMock.Setup(s => s.CreateProposal(dto)).ReturnsAsync(createdProposal);
 
-        var actionResult = await _controller.Create(dto);
+        var result = await _controller.Create(dto);
 
-        var okResult = Assert.IsType<OkObjectResult>(actionResult);
-        dynamic data = okResult.Value;
+        result.Should().BeOfType<OkObjectResult>();
+        var ok = result as OkObjectResult;
+        Assert.NotNull(ok);
+        Assert.NotNull(ok.Value);
 
-        ((int)data.proposal.ProposalId).Should().Be(1);
+        // Usar reflexão para acessar propriedades de objetos anônimos
+        var valueType = ok.Value.GetType();
+        var proposalProperty = valueType.GetProperty("proposal");
+        Assert.NotNull(proposalProperty);
+
+        var proposal = proposalProperty.GetValue(ok.Value) as Proposal;
+        Assert.NotNull(proposal);
+        Assert.Equal(1, proposal.ProposalId);
     }
 
     [Fact]
