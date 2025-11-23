@@ -7,14 +7,17 @@ on:
 
 jobs:
   build:
-    name: Build, Test, Coverage & SonarCloud
     runs-on: ubuntu-latest
-    container: mcr.microsoft.com/dotnet/sdk:8.0    
 
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
 
       - name: Install SonarScanner
         run: dotnet tool install --global dotnet-sonarscanner
@@ -22,7 +25,7 @@ jobs:
       - name: Add .NET global tools to PATH
         run: echo "$HOME/.dotnet/tools" >> $GITHUB_PATH
 
-      - name: Restore
+      - name: Restore dependencies
         run: dotnet restore
 
       - name: SonarCloud Begin
@@ -32,27 +35,41 @@ jobs:
             /o:"annabloz" \
             /d:sonar.host.url="https://sonarcloud.io" \
             /d:sonar.login="${{ secrets.SONAR_TOKEN }}" \
-            /d:sonar.cs.vscoveragexml.reportsPaths="$(pwd)/coverage.xml" \
             /d:sonar.coverage.exclusions="**/Migrations/**,**/Program.cs" \
-            /d:sonar.test.inclusions="**/*Tests.cs"
+            /d:sonar.test.inclusions="**/*Tests.cs" \
+            /d:sonar.cs.opencover.reportsPaths="$(pwd)/coverage/opencover.xml"
 
       - name: Build
         run: dotnet build --configuration Release --no-incremental
 
-      - name: Install dotnet-coverage
-        run: dotnet tool install --global dotnet-coverage
-
-      - name: Collect coverage
+      - name: Run tests and collect coverage
         run: |
-          dotnet-coverage collect "dotnet test FreelaMatch.Tests/FreelaMatch.Tests.csproj --no-build --configuration Release" \
-            -f xml \
-            -o "$(pwd)/coverage.xml"
+          dotnet test FreelaMatch.Tests/FreelaMatch.Tests.csproj \
+            --configuration Release \
+            --no-build \
+            --collect:"XPlat Code Coverage"
 
-      - name: Verify coverage
+      - name: Locate coverage file
+        id: find_cov
         run: |
-          echo "Coverage file:"
-          ls -la $(pwd)/coverage.xml
-          head -n 20 $(pwd)/coverage.xml || echo "No file found!"
+          echo "Searching for coverage.cobertura.xml..."
+          found=$(find . -type f -name "coverage.cobertura.xml" | head -n 1)
+          echo "coverage_path=$found" >> $GITHUB_OUTPUT
+          echo "Found: $found"
+
+      - name: Convert coverage to OpenCover
+        run: |
+          dotnet tool install -g dotnet-reportgenerator-globaltool
+          reportgenerator \
+            "-reports:${{ steps.find_cov.outputs.coverage_path }}" \
+            "-targetdir:coverage" \
+            "-reporttypes:opencover" \
+            "-filefilters:+FreelaMatch*"
+
+      - name: Verify converted report
+        run: |
+          echo "Preview of opencover.xml:"
+          head -n 20 coverage/opencover.xml || echo "File not found!"
 
       - name: SonarCloud End
         run: dotnet sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
