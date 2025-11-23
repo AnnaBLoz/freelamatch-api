@@ -13,31 +13,39 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # Checkout
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Setup .NET 8
+      # Setup .NET 8
+      - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: "8.0.x"
 
+      # Restore
       - name: Restore dependencies
         working-directory: ./freela-match-api
         run: dotnet restore
 
+      # Build
       - name: Build API
         working-directory: ./freela-match-api
         run: dotnet build --configuration Release --no-restore
 
+      # Run tests + coverage
       - name: Run tests with coverage
         working-directory: ./freela-match-api
         run: |
           dotnet test \
             --configuration Release \
-            --collect:"XPlat Code Coverage"
+            --collect:"XPlat Code Coverage" \
+            --results-directory TestResults
 
+      # SonarCloud Scan
+      - name: SonarCloud Scan
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@v2
         env:
@@ -48,10 +56,12 @@ jobs:
             -Dsonar.projectKey=AnnaBLoz_freelamatch-api
             -Dsonar.host.url=https://sonarcloud.io
             -Dsonar.token=${{ secrets.SONAR_TOKEN }}
-            -Dsonar.cs.vstest.reportsPaths=**/TestResults/**/*.trx
-            -Dsonar.cs.opencover.reportsPaths=**/TestResults/**/coverage.cobertura.xml
+            -Dsonar.sources=freela-match-api
+            -Dsonar.cs.opencover.reportsPaths=freela-match-api/TestResults/**/coverage.cobertura.xml
+            -Dsonar.cs.vstest.reportsPaths=freela-match-api/TestResults/**/*.trx
             -Dsonar.exclusions=**/Migrations/**
 
+      # Quality Gate
       - name: SonarCloud Quality Gate
         uses: SonarSource/sonarcloud-quality-gate-action@v1
         timeout-minutes: 5

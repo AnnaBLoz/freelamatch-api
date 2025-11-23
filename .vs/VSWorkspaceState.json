@@ -1,7 +1,10 @@
 {
   "ExpandedNodes": [
-    ""
+    "",
+    "\\.github",
+    "\\.github\\workflows",
+    "\\Services",
+    "\\Solution1"
   ],
-  "SelectedNode": "\\freela-match.sln",
   "PreviewInSolutionExplorer": false
 }
