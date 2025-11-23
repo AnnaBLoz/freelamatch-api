@@ -23,7 +23,7 @@ jobs:
           dotnet-version: '8.0.x'
 
       - name: Install SonarScanner for .NET
-        run: dotnet tool install --global dotnet-sonarscanner --version 5.15.0
+        run: dotnet tool install --global dotnet-sonarscanner
 
       - name: Add .NET global tools to PATH
         run: echo "$HOME/.dotnet/tools" >> $GITHUB_PATH
@@ -38,26 +38,24 @@ jobs:
             /o:"annabloz" \
             /d:sonar.host.url="https://sonarcloud.io" \
             /d:sonar.login="${{ secrets.SONAR_TOKEN }}" \
-            /d:sonar.cs.opencover.reportsPaths="$(pwd)/coverage.opencover.xml" \
-            /d:sonar.sources="FreelaMatchAPI" \
-            /d:sonar.tests="FreelaMatchAPI.Tests" \
-            /d:sonar.test.inclusions="**/*Tests.cs" \
-            /d:sonar.exclusions="**/Migrations/**,**/Program.cs"
+            /d:sonar.cs.opencover.reportsPaths="$(pwd)/coverage/coverage.opencover.xml" \
+            /d:sonar.coverage.exclusions="**/Migrations/**,**/Program.cs" \
+            /d:sonar.test.inclusions="**/*Tests.cs"
 
       - name: Build
         run: dotnet build --configuration Release --no-incremental
 
-      - name: Run tests and collect coverage
+      - name: Test with coverage
         run: |
           dotnet test \
             --configuration Release \
             --no-build \
             /p:CollectCoverage=true \
             /p:CoverletOutputFormat=opencover \
-            /p:CoverletOutput=$(pwd)/coverage.opencover.xml
+            /p:CoverletOutput="$(pwd)/coverage/coverage.opencover.xml"
+
+      - name: Verify coverage report
+        run: ls -la $(pwd)/coverage
 
       - name: SonarCloud End
         run: dotnet sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
-
-      - name: Notify completion
-        run: echo "### SonarCloud Analysis Complete" >> $GITHUB_STEP_SUMMARY
