@@ -46,9 +46,6 @@ jobs:
             /d:sonar.host.url="https://sonarcloud.io" \
             /d:sonar.token="${{ secrets.SONAR_TOKEN }}" \
             /d:sonar.cs.cobertura.reportsPaths=coverage.xml \
-            /d:sonar.sources=./ \
-            /d:sonar.tests=./ \
-            /d:sonar.inclusions=**/*.cs \
             /d:sonar.exclusions="**/Migrations/**"
 
       - name: Build
@@ -56,10 +53,11 @@ jobs:
 
       - name: Test with Coverlet (Cobertura)
         run: |
-          dotnet test --configuration Release --no-build \
+          dotnet test FreelaMatch.Tests/FreelaMatch.Tests.csproj \
+            --configuration Release --no-build \
             /p:CollectCoverage=true \
-            /p:CoverletOutput=coverage.xml \
-            /p:CoverletOutputFormat=\"cobertura\"
+            /p:CoverletOutput=../coverage.xml \
+            /p:CoverletOutputFormat=cobertura
 
           echo "Coverage file generated:"
           ls -lh coverage.xml
