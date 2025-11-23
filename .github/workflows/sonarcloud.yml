@@ -25,29 +25,17 @@ jobs:
         with:
           dotnet-version: 8.0.x
 
-      - name: Install Java (required by SonarScanner)
+      - name: Setup Java 17
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Clean conflicting Sonar files
-        run: rm -f sonar-project.properties
+      - name: Install SonarScanner
+        run: dotnet tool install --global dotnet-sonarscanner
 
-      # Instalar ferramentas necessárias
-      - name: Install tools
-        run: |
-          dotnet tool install --global dotnet-sonarscanner
-
-      # IMPORTANTE: Restaurar ANTES do build e do SonarScanner
       - name: Restore dependencies
-        run: |
-          dotnet restore
-          dotnet restore ./FreelaMatch.Tests/FreelaMatch.Tests.csproj
-
-      # Build ANTES do SonarScanner para garantir que todas as referências estejam resolvidas
-      - name: Build (without SonarScanner)
-        run: dotnet build --configuration Release --no-restore
+        run: dotnet restore
 
       - name: Begin SonarCloud analysis
         env:
@@ -58,37 +46,38 @@ jobs:
             /o:"annabloz" \
             /d:sonar.host.url="https://sonarcloud.io" \
             /d:sonar.token="${{ secrets.SONAR_TOKEN }}" \
-            /d:sonar.cs.opencover.reportsPaths="**/TestResults/coverage.opencover.xml" \
+            /d:sonar.cs.opencover.reportsPaths="**/coverage.opencover.xml" \
             /d:sonar.exclusions="**/Migrations/**" \
             /d:sonar.coverage.exclusions="**/*Tests.cs,**/Program.cs,**/Migrations/**"
 
-      # Rebuild com o SonarScanner ativo
-      - name: Build with SonarScanner
+      - name: Build
         run: dotnet build --configuration Release --no-restore
 
-      # Testes + Coverage usando Coverlet
-      - name: Run tests and generate coverage
+      - name: Test with coverage
         run: |
           dotnet test \
             --configuration Release \
-            --no-restore \
+            --no-build \
+            --verbosity normal \
             /p:CollectCoverage=true \
             /p:CoverletOutputFormat=opencover \
-            /p:CoverletOutput=./TestResults/coverage.opencover.xml
+            /p:CoverletOutput=../coverage.opencover.xml
 
-      - name: Verify coverage file
+      - name: Verify coverage file exists
         run: |
-          if [ -f "./TestResults/coverage.opencover.xml" ]; then
-            echo "Coverage file generated"
-            ls -lh ./TestResults/coverage.opencover.xml
-            echo "Lines: $(wc -l < ./TestResults/coverage.opencover.xml)"
+          echo "Searching for coverage files..."
+          find . -name "*.opencover.xml" -type f
+          
+          if [ -f "coverage.opencover.xml" ]; then
+            echo "Coverage file found in root"
+            ls -lh coverage.opencover.xml
           else
-            echo "Coverage file not found"
-            ls -la ./TestResults || echo "TestResults folder not found"
+            echo "Coverage file not found in expected location"
+            echo "Directory contents:"
+            ls -la
             exit 1
           fi
 
-      # End Analysis
       - name: End SonarCloud analysis
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -101,10 +90,9 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "[View Dashboard](https://sonarcloud.io/dashboard?id=AnnaBLoz_freelamatch-api)" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Tests:** Completed" >> $GITHUB_STEP_SUMMARY
-          if [ -f "coverage.xml" ]; then
-            SIZE=$(wc -l < coverage.xml)
+          if [ -f "coverage.opencover.xml" ]; then
+            SIZE=$(wc -l < coverage.opencover.xml)
             echo "**Coverage:** Generated ($SIZE lines)" >> $GITHUB_STEP_SUMMARY
           else
-            echo "**Coverage:** Failed to generate" >> $GITHUB_STEP_SUMMARY
+            echo "**Coverage:** Check logs for details" >> $GITHUB_STEP_SUMMARY
           fi
