@@ -31,18 +31,6 @@ jobs:
       - name: Restore dependencies
         run: dotnet restore
 
-      - name: Build solution
-        run: dotnet build --configuration Release --no-restore
-
-      - name: Run tests and collect coverage
-        run: |
-          dotnet test \
-            --configuration Release \
-            --no-build \
-            --collect:"XPlat Code Coverage" \
-            /p:CoverletOutputFormat=opencover \
-            /p:CoverletOutput=$(pwd)/coverage.opencover.xml
-
       - name: SonarCloud Begin
         run: |
           dotnet sonarscanner begin \
@@ -56,10 +44,19 @@ jobs:
             /d:sonar.test.inclusions="**/*Tests.cs" \
             /d:sonar.exclusions="**/Migrations/**,**/Program.cs"
 
-      - name: Build for SonarCloud analysis
-        run: dotnet build --configuration Release
+      - name: Build
+        run: dotnet build --configuration Release --no-incremental
 
-      - name: Run SonarCloud End
+      - name: Run tests and collect coverage
+        run: |
+          dotnet test \
+            --configuration Release \
+            --no-build \
+            /p:CollectCoverage=true \
+            /p:CoverletOutputFormat=opencover \
+            /p:CoverletOutput=$(pwd)/coverage.opencover.xml
+
+      - name: SonarCloud End
         run: dotnet sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
 
       - name: Notify completion
