@@ -32,7 +32,6 @@ jobs:
       - name: Install tools
         run: |
           dotnet tool install --global dotnet-sonarscanner
-          dotnet tool install --global dotnet-coverage
 
       - name: Restore dependencies
         run: dotnet restore
@@ -47,18 +46,24 @@ jobs:
             /d:sonar.host.url="https://sonarcloud.io" \
             /d:sonar.token="${{ secrets.SONAR_TOKEN }}" \
             /d:sonar.cs.cobertura.reportsPaths=coverage.xml \
+            /d:sonar.sources=./ \
+            /d:sonar.tests=./ \
+            /d:sonar.inclusions=**/*.cs \
             /d:sonar.exclusions="**/Migrations/**"
 
       - name: Build
         run: dotnet build --configuration Release --no-restore
 
-      - name: Test with dotnet-coverage
+      - name: Test with Coverlet (Cobertura)
         run: |
-          dotnet-coverage collect "dotnet test --configuration Release --no-build" -f xml -o coverage.xml
-          
+          dotnet test --configuration Release --no-build \
+            /p:CollectCoverage=true \
+            /p:CoverletOutput=coverage.xml \
+            /p:CoverletOutputFormat=\"cobertura\"
+
           echo "Coverage file generated:"
           ls -lh coverage.xml
-          
+
           echo "First 30 lines of coverage:"
           head -30 coverage.xml
 
