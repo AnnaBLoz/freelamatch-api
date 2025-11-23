@@ -8,39 +8,48 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout
+      - name: Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Debug – estrutura real (VOCÊ VAI VER A PASTA freelamatch-api AQUI)
+      - name: Debug final 
         run: |
-          pwd
-          echo "=== Conteúdo da pasta atual ==="
+          echo "=== Raiz do workspace ==="
           ls -la
-          echo "=== Se existe a pasta com nome do repo ==="
-          ls -la freelamatch-api || echo "não tem pasta freelamatch-api"
+          echo ""
+          echo "=== Conteúdo da pasta FreelaMatchAPI ==="
+          ls -la FreelaMatchAPI
 
-      - name: Setup .NET
+      - name: Setup .NET 8
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 8.0.x
 
-      - name: Restore + Build + Test
+      - name: Restore, Build & Test com cobertura
         run: |
-          dotnet restore freelamatch-api/FreelaMatchAPI/FreelaMatchAPI.csproj
-          dotnet build freelamatch-api/FreelaMatchAPI/FreelaMatchAPI.csproj -c Release --no-restore
-          dotnet test freelamatch-api/FreelaMatchAPI/FreelaMatchAPI.csproj \
-            --no-build -c Release \
+          dotnet restore FreelaMatchAPI/FreelaMatchAPI.csproj
+          dotnet build FreelaMatchAPI/FreelaMatchAPI.csproj -c Release --no-restore
+          dotnet test FreelaMatchAPI/FreelaMatchAPI.csproj \
+            --no-build \
+            -c Release \
             /p:CollectCoverage=true \
             /p:CoverletOutputFormat=cobertura \
             /p:CoverletOutput=coverage.cobertura.xml \
-            --logger trx \
-            --results-directory ./TestResults
+            --logger "trx" \
+            --results-directory TestResults
 
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@v3
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          args: >
+            -Dsonar.projectKey=AnnaBLoz_freelamatch-api
+            -Dsonar.organization=annabloz
+            -Dsonar.cs.vstest.reportsPaths=**/TestResults/*.trx
+            -Dsonar.cs.cobertura.reportPaths=coverage.cobertura.xml
+            -Dsonar.qualitygate.wait=true
