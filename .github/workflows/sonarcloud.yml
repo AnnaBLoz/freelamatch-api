@@ -35,7 +35,7 @@ jobs:
       - name: Install global tools
         run: |
           dotnet tool install --global dotnet-sonarscanner
-          dotnet tool install --global dotnet-coverage
+          dotnet tool install --global coverlet.console
           
       - name: Restore dependencies
         run: dotnet restore
@@ -51,20 +51,28 @@ jobs:
             /d:sonar.token="${{ secrets.SONAR_TOKEN }}" \
             /d:sonar.exclusions="**/Migrations/**" \
             /d:sonar.coverage.exclusions="**/*Tests.cs,**/Program.cs,**/Migrations/**" \
-            /d:sonar.cs.vscoveragexml.reportsPaths=coverage.xml
+            /d:sonar.cs.opencover.reportsPaths=coverage.opencover.xml
           
       - name: Build
         run: dotnet build --configuration Release --no-restore
         
       - name: Run tests with coverage
-        run: dotnet-coverage collect "dotnet test --configuration Release --no-build --verbosity minimal" -f xml -o coverage.xml
+        run: |
+          # Localiza todos os projetos de teste e gera cobertura OpenCover
+          for proj in $(find ./tests -name "*.csproj"); do
+            coverlet $(dirname $proj)/bin/Release/net8.0/$(basename $proj .csproj).dll \
+              --target "dotnet" \
+              --targetargs "test $proj --no-build --configuration Release" \
+              --format opencover \
+              --output coverage.opencover.xml
+          done
           
       - name: Verify coverage file
         run: |
-          if [ -f "coverage.xml" ]; then
+          if [ -f "coverage.opencover.xml" ]; then
             echo "Coverage file generated!"
-            ls -lh coverage.xml
-            head -10 coverage.xml
+            ls -lh coverage.opencover.xml
+            head -10 coverage.opencover.xml
           else
             echo "Coverage file NOT found"
             exit 1
