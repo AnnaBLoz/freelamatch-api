@@ -38,24 +38,28 @@ jobs:
             /o:"annabloz" \
             /d:sonar.host.url="https://sonarcloud.io" \
             /d:sonar.login="${{ secrets.SONAR_TOKEN }}" \
-            /d:sonar.cs.opencover.reportsPaths="$(pwd)/coverage/coverage.opencover.xml" \
+            /d:sonar.cs.opencover.reportsPaths="$(pwd)/FreelaMatchAPI.Tests/coverage/coverage.opencover.xml" \
             /d:sonar.coverage.exclusions="**/Migrations/**,**/Program.cs" \
             /d:sonar.test.inclusions="**/*Tests.cs"
 
       - name: Build
         run: dotnet build --configuration Release --no-incremental
 
-      - name: Test with coverage
+      - name: Run tests and collect coverage
         run: |
           dotnet test \
             --configuration Release \
             --no-build \
             /p:CollectCoverage=true \
             /p:CoverletOutputFormat=opencover \
-            /p:CoverletOutput="$(pwd)/coverage/coverage.opencover.xml"
+            /p:CoverletOutput=$(pwd)/FreelaMatchAPI.Tests/coverage/
 
       - name: Verify coverage report
-        run: ls -la $(pwd)/coverage
+        run: |
+          echo "Checking coverage folder contents:"
+          ls -la $(pwd)/FreelaMatchAPI.Tests/coverage
+          echo "First 15 lines of coverage.opencover.xml:"
+          head -n 15 $(pwd)/FreelaMatchAPI.Tests/coverage/coverage.opencover.xml || echo "File not found!"
 
       - name: SonarCloud End
         run: dotnet sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
