@@ -7,17 +7,14 @@ on:
 
 jobs:
   build:
+    name: Build, Test, Coverage & SonarCloud
     runs-on: ubuntu-latest
+    container: mcr.microsoft.com/dotnet/sdk:8.0    
 
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: '8.0.303'
 
       - name: Install SonarScanner
         run: dotnet tool install --global dotnet-sonarscanner
@@ -42,20 +39,20 @@ jobs:
       - name: Build
         run: dotnet build --configuration Release --no-incremental
 
-      - name: Install coverage dependencies
-        run: sudo apt-get update && sudo apt-get install -y libxml2
+      - name: Install dotnet-coverage
+        run: dotnet tool install --global dotnet-coverage
 
-      - name: Collect coverage with dotnet-coverage
+      - name: Collect coverage
         run: |
-          dotnet tool install --global dotnet-coverage
           dotnet-coverage collect "dotnet test FreelaMatch.Tests/FreelaMatch.Tests.csproj --no-build --configuration Release" \
             -f xml \
             -o "$(pwd)/coverage.xml"
 
-      - name: Verify coverage file
+      - name: Verify coverage
         run: |
+          echo "Coverage file:"
           ls -la $(pwd)/coverage.xml
-          head -n 20 $(pwd)/coverage.xml || echo "File not found!"
+          head -n 20 $(pwd)/coverage.xml || echo "No file found!"
 
       - name: SonarCloud End
         run: dotnet sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
