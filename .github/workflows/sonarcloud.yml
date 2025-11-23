@@ -8,33 +8,26 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout code
+      - name: Checkout
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
-      - name: Debug final 
-        run: |
-          echo "=== Raiz do workspace ==="
-          ls -la
-          echo ""
-          echo "=== Conteúdo da pasta FreelaMatchAPI ==="
-          ls -la FreelaMatchAPI
-
-      - name: Setup .NET 8
+      - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 8.0.x
 
-      - name: Restore, Build & Test com cobertura
+      - name: Restore dependencies
+        run: dotnet restore freela-match-api.csproj
+
+      - name: Build
+        run: dotnet build freela-match-api.csproj --no-restore --configuration Release
+
+      - name: Test with coverage
         run: |
-          dotnet restore FreelaMatchAPI/FreelaMatchAPI.csproj
-          dotnet build FreelaMatchAPI/FreelaMatchAPI.csproj -c Release --no-restore
-          dotnet test FreelaMatchAPI/FreelaMatchAPI.csproj \
+          dotnet test freela-match-api.csproj \
             --no-build \
-            -c Release \
+            --configuration Release \
             /p:CollectCoverage=true \
             /p:CoverletOutputFormat=cobertura \
             /p:CoverletOutput=coverage.cobertura.xml \
@@ -52,4 +45,5 @@ jobs:
             -Dsonar.organization=annabloz
             -Dsonar.cs.vstest.reportsPaths=**/TestResults/*.trx
             -Dsonar.cs.cobertura.reportPaths=coverage.cobertura.xml
+            -Dsonar.exclusions=**/Migrations/**
             -Dsonar.qualitygate.wait=true
