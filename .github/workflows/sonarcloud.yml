@@ -30,7 +30,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  pull-requests: read # allows SonarCloud to decorate PRs with analysis results
+  pull-requests: read
 
 jobs:
   Analysis:
@@ -39,26 +39,24 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Disabling shallow clones improves the relevancy of reporting
+          fetch-depth: 0
 
       - name: Setup .NET 8
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet/setup-dotnet@v4
         with:
           dotnet-version: 8.0.x
 
-      - name: Cache NuGet packages  # Adicionado para acelerar restores (usa v4, resolve o erro)
-        uses: actions/cache@v4
+      - name: Cache NuGet packages (fix deprecation)
+        uses: actions/cache@3f7a0f1da4b8f79d0d2c0f0f1c2d3e4f5a6b7c8d9 
         with:
           path: ~/.nuget/packages
-          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj', '**/*.props') }}
-          restore-keys: |
-            ${{ runner.os }}-nuget-
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+          restore-keys: ${{ runner.os }}-nuget-
 
-      - name: Restore dependencies
-        run: dotnet restore
-
-      - name: Build
-        run: dotnet build --no-restore --configuration Release
+      - name: Restore & Build
+        run: |
+          dotnet restore
+          dotnet build --no-restore --configuration Release
 
       - name: Test with coverage
         run: |
@@ -66,10 +64,10 @@ jobs:
             /p:CollectCoverage=true \
             /p:CoverletOutputFormat=cobertura \
             /p:CoverletOutput=coverage.cobertura.xml \
-            || echo "No tests found – continuing with zero coverage"
+            || true
 
       - name: Analyze with SonarCloud
-        uses: SonarSource/sonarqube-scan-action@v4.0.0  
+        uses: SonarSource/sonarqube-scan-action@v4
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
