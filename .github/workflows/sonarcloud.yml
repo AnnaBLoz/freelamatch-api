@@ -59,6 +59,7 @@ jobs:
             /d:sonar.host.url="https://sonarcloud.io" \
             /d:sonar.token="${{ secrets.SONAR_TOKEN }}" \
             /d:sonar.cs.opencover.reportsPaths="**/coverage.xml" \
+            /d:sonar.cs.vscoveragexml.reportsPaths="**/coverage.xml" \
             /d:sonar.exclusions="**/Migrations/**,**/bin/**,**/obj/**" \
             /d:sonar.test.inclusions="**/*Tests.cs" \
             /d:sonar.coverage.exclusions="**/*Tests.cs,**/Program.cs,**/Migrations/**"
@@ -67,40 +68,44 @@ jobs:
       - name: Build with SonarScanner
         run: dotnet build --configuration Release --no-restore
 
-      # Testes + Coverage
+      # Instalar Coverlet global tool
+      - name: Install Coverlet
+        run: dotnet tool install --global coverlet.console
+
+      # Testes + Coverage usando Coverlet
       - name: Run tests and generate coverage
         run: |
           dotnet test FreelaMatch.Tests/FreelaMatch.Tests.csproj \
             --configuration Release \
-            /p:CollectCoverage=true \
-            /p:CoverletOutputFormat=opencover \
-            /p:CoverletOutput=../
+            --logger trx \
+            --collect:"XPlat Code Coverage" \
+            --results-directory ./TestResults
 
-      - name: Find and verify coverage file
+      - name: Find and process coverage file
         run: |
-          echo " Searching for coverage files..."
-          find . -name "*.xml" -type f | grep -i coverage || true
-          echo ""
-          echo " Checking common locations:"
-          ls -la . || true
-          ls -la FreelaMatch.Tests/ || true
+          echo "Searching for coverage files..."
+          find ./TestResults -name "*.xml" -type f
           
-          # Procurar e copiar o arquivo
-          if [ -f "coverage.opencover.xml" ]; then
-            echo "Found coverage.opencover.xml in root"
-            mv coverage.opencover.xml coverage.xml
-          elif [ -f "FreelaMatch.Tests/coverage.opencover.xml" ]; then
-            echo " Found in FreelaMatch.Tests/"
-            cp FreelaMatch.Tests/coverage.opencover.xml coverage.xml
+          # Encontrar o arquivo de coverage
+          COVERAGE_FILE=$(find ./TestResults -name "coverage.cobertura.xml" | head -n 1)
+          
+          if [ -n "$COVERAGE_FILE" ]; then
+            echo "Found coverage file: $COVERAGE_FILE"
+            cp "$COVERAGE_FILE" ./coverage.xml
+            echo "File size: $(du -h ./coverage.xml | cut -f1)"
+            echo "Lines: $(wc -l < ./coverage.xml)"
           else
-            echo " Coverage file not found"
-            exit 1
+            echo "Cobertura format not found, trying opencover..."
+            COVERAGE_FILE=$(find ./TestResults -name "*.xml" | head -n 1)
+            if [ -n "$COVERAGE_FILE" ]; then
+              echo "Found: $COVERAGE_FILE"
+              cp "$COVERAGE_FILE" ./coverage.xml
+            else
+              echo "No coverage file found"
+              ls -R ./TestResults
+              exit 1
+            fi
           fi
-          
-          echo ""
-          echo " Final coverage file:"
-          ls -lh coverage.xml
-          echo "Lines: $(wc -l < coverage.xml)"
 
       # End Analysis
       - name: End SonarCloud analysis
