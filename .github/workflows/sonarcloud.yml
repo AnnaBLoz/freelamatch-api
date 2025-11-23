@@ -1,56 +1,47 @@
-name: SonarCloud (.NET)
+name: Analyze .NET Backend
 
 on:
   push:
     branches:
       - main
   pull_request:
-    branches:
-      - main
 
 jobs:
   build:
-    name: Build and Analyze (.NET)
+    name: Build and Analyze
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Cache SonarCloud packages
-        uses: actions/cache@v4
-        with:
-          path: ~/.sonar/cache
-          key: ${{ runner.os }}-sonar
-          restore-keys: ${{ runner.os }}-sonar
-
-      - name: Setup .NET 8
+      - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: "8.0.x"
 
-      # RESTORE
       - name: Restore dependencies
         working-directory: ./freela-match-api
         run: dotnet restore
 
-      # BUILD
-      - name: Build project
+      - name: Build solution
         working-directory: ./freela-match-api
-        run: dotnet build --no-restore
+        run: dotnet build --no-restore --configuration Release
 
-      # TEST
       - name: Run tests
         working-directory: ./freela-match-api
-        run: dotnet test --no-build --collect:"XPlat Code Coverage"
+        run: dotnet test --no-build --verbosity normal
 
-      # SONARCLOUD SCAN
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@v2
-        with:
-          projectBaseDir: ./freela-match-api
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          projectBaseDir: ./freela-match-api
+
+      - name: SonarCloud Quality Gate
+        uses: SonarSource/sonarcloud-quality-gate-action@v1
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
