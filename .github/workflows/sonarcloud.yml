@@ -70,26 +70,37 @@ jobs:
       # Testes + Coverage
       - name: Run tests and generate coverage
         run: |
-          dotnet test \
+          dotnet test FreelaMatch.Tests/FreelaMatch.Tests.csproj \
             --configuration Release \
-            --no-build \
-            --collect:"XPlat Code Coverage" \
-            --results-directory ./TestResults \
-            -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover
-          
-          # Mover arquivo de coverage para raiz
-          find ./TestResults -name "coverage.opencover.xml" -exec cp {} ./coverage.xml \;
+            /p:CollectCoverage=true \
+            /p:CoverletOutputFormat=opencover \
+            /p:CoverletOutput=../
 
-      - name: Verify coverage file
+      - name: Find and verify coverage file
         run: |
-          if [ -f "coverage.xml" ]; then
-            echo "Coverage file generated successfully"
-            echo "File size: $(du -h coverage.xml | cut -f1)"
-            echo "Lines: $(wc -l < coverage.xml)"
+          echo " Searching for coverage files..."
+          find . -name "*.xml" -type f | grep -i coverage || true
+          echo ""
+          echo " Checking common locations:"
+          ls -la . || true
+          ls -la FreelaMatch.Tests/ || true
+          
+          # Procurar e copiar o arquivo
+          if [ -f "coverage.opencover.xml" ]; then
+            echo "Found coverage.opencover.xml in root"
+            mv coverage.opencover.xml coverage.xml
+          elif [ -f "FreelaMatch.Tests/coverage.opencover.xml" ]; then
+            echo " Found in FreelaMatch.Tests/"
+            cp FreelaMatch.Tests/coverage.opencover.xml coverage.xml
           else
-            echo "Coverage file not found"
+            echo " Coverage file not found"
             exit 1
           fi
+          
+          echo ""
+          echo " Final coverage file:"
+          ls -lh coverage.xml
+          echo "Lines: $(wc -l < coverage.xml)"
 
       # End Analysis
       - name: End SonarCloud analysis
