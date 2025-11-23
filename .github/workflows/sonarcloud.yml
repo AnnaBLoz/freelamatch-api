@@ -1,5 +1,4 @@
 name: SonarCloud Analysis
-
 on:
   push:
     branches: [ "main" ]
@@ -26,6 +25,12 @@ jobs:
         with:
           dotnet-version: 8.0.x
 
+      - name: Install Java (required by SonarScanner)
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
       - name: Clean conflicting Sonar files
         run: rm -f sonar-project.properties
 
@@ -34,8 +39,15 @@ jobs:
           dotnet tool install --global dotnet-sonarscanner
           dotnet tool install --global coverlet.console
 
+      # IMPORTANTE: Restaurar ANTES do build e do SonarScanner
       - name: Restore dependencies
-        run: dotnet restore
+        run: |
+          dotnet restore
+          dotnet restore ./FreelaMatch.Tests/FreelaMatch.Tests.csproj
+
+      # Build ANTES do SonarScanner para garantir que todas as referências estejam resolvidas
+      - name: Build (without SonarScanner)
+        run: dotnet build --configuration Release --no-restore
 
       - name: Begin SonarCloud analysis
         env:
@@ -46,33 +58,37 @@ jobs:
             /o:"annabloz" \
             /d:sonar.host.url="https://sonarcloud.io" \
             /d:sonar.token="${{ secrets.SONAR_TOKEN }}" \
-            /d:sonar.cs.opencover.reportsPaths=coverage.xml \
-            /d:sonar.exclusions="**/Migrations/**"
+            /d:sonar.cs.opencover.reportsPaths="**/coverage.xml" \
+            /d:sonar.exclusions="**/Migrations/**,**/bin/**,**/obj/**" \
+            /d:sonar.test.inclusions="**/*Tests.cs" \
+            /d:sonar.coverage.exclusions="**/*Tests.cs,**/Program.cs,**/Migrations/**"
 
-      - name: Build
+      # Rebuild com o SonarScanner ativo
+      - name: Build with SonarScanner
         run: dotnet build --configuration Release --no-restore
 
-      # ============================
-      #     TESTES + COVERAGE
-      # ============================
+      # Testes + Coverage
       - name: Run tests and generate coverage
         run: |
           dotnet test ./FreelaMatch.Tests/FreelaMatch.Tests.csproj \
             --configuration Release \
+            --no-build \
             /p:CollectCoverage=true \
             /p:CoverletOutput=../coverage.xml \
             /p:CoverletOutputFormat=opencover
 
-      - name: Show coverage file
+      - name: Verify coverage file
         run: |
-          echo "Coverage file generated:"
-          ls -la ./coverage.xml
-          echo "Preview (first 20 lines):"
-          head -n 20 ./coverage.xml
+          if [ -f "coverage.xml" ]; then
+            echo "Coverage file generated successfully"
+            echo "File size: $(du -h coverage.xml | cut -f1)"
+            echo "Lines: $(wc -l < coverage.xml)"
+          else
+            echo "Coverage file not found"
+            exit 1
+          fi
 
-      # ============================
-      #      END ANALYSIS
-      # ============================
+      # End Analysis
       - name: End SonarCloud analysis
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
