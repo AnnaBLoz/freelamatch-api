@@ -15,10 +15,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@692974e3d937129bc9f71da7b2839e0fc3b0d2e0  # v4.2.2 – SHA real
+        uses: actions/checkout@v4
 
       - name: Setup .NET 8
-        uses: actions/setup-dotnet@5a9ca0d80c8874d8c2c3f0c5b0b3f8f9a1b2c3d4  # v4.0.0 – SHA real
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: 8.0.x
 
       - name: Restore dependencies
         run: dotnet restore
@@ -35,7 +37,7 @@ jobs:
             || echo "Coverage generated"
 
       - name: SonarCloud Scan
-        uses: SonarSource/sonarqube-scan-action@291ed4e4e6b5c0f5e86b1d1b7c8f9a0b1c2d3e4f  # SHA real da v4.0.0 (novembro 2025)
+        uses: SonarSource/sonarqube-scan-action@v4
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
