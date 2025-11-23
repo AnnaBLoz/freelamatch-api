@@ -1,15 +1,29 @@
-name: Analyze .NET Backend
+# This workflow uses actions that are not certified by GitHub.
+# They are provided by a third-party and are governed by separate terms of service, privacy policy, and support documentation.
+# This workflow helps you trigger a SonarCloud analysis of your code and populates
+# GitHub Code Scanning alerts with the vulnerabilities found.
+# Free for open source project.
+
+name: SonarCloud analysis
 
 on:
   push:
-    branches: [ main ]
+    branches: [ "main" ]
   pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+permissions:
+  pull-requests: read # allows SonarCloud to decorate PRs with analysis results
 
 jobs:
-  build:
+  Analysis:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup .NET 8
         uses: actions/setup-dotnet@v4
@@ -21,20 +35,20 @@ jobs:
           dotnet restore
           dotnet build --no-restore --configuration Release
 
-      - name: Test + Coverage (não falha se não tiver testes)
+      - name: Test with coverage
         run: |
           dotnet test --no-build --configuration Release \
             /p:CollectCoverage=true \
             /p:CoverletOutputFormat=cobertura \
             /p:CoverletOutput=coverage.cobertura.xml \
-            || echo "No tests found – continuing..."
+            || echo "No tests found – continuing"
 
-      - name: SonarCloud Scan
-        uses: SonarSource/sonarcloud-github-action@v3
+      - name: Analyze with SonarCloud
+        uses: SonarSource/sonarcloud-github-action@2911b7b2163072c376daee5e9b8f1e9f99965ce5
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
+          projectBaseDir: .
           args: >
             -Dsonar.projectKey=AnnaBLoz_freelamatch-api
             -Dsonar.organization=annabloz
