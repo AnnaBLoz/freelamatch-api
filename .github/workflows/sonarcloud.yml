@@ -26,43 +26,50 @@ jobs:
         with:
           dotnet-version: 8.0.x
 
+      - name: Cache SonarCloud packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.sonar/cache
+          key: ${{ runner.os }}-sonar
+          restore-keys: ${{ runner.os }}-sonar
+
+      - name: Install SonarCloud scanner
+        run: dotnet tool install --global dotnet-sonarscanner
+
       - name: Restore dependencies
         run: dotnet restore
+
+      - name: Begin SonarCloud analysis
+        run: |
+          dotnet sonarscanner begin \
+            /k:"AnnaBLoz_freelamatch-api" \
+            /o:"annabloz" \
+            /d:sonar.host.url="https://sonarcloud.io" \
+            /d:sonar.token="${{ secrets.SONAR_TOKEN }}" \
+            /d:sonar.cs.opencover.reportsPaths="**/TestResults/coverage.opencover.xml" \
+            /d:sonar.exclusions="**/Migrations/**"
 
       - name: Build
         run: dotnet build --no-restore --configuration Release
 
-      - name: Create TestResults directory
-        run: mkdir -p ./FreelaMatch.Tests/TestResults
-
-      - name: Test with coverage (OpenCover)
+      - name: Test with coverage
         run: |
           dotnet test ./FreelaMatch.Tests/FreelaMatch.Tests.csproj \
             --no-build \
             --configuration Release \
-            /p:CollectCoverage=true \
-            /p:CoverletOutputFormat=opencover \
-            /p:CoverletOutput=./TestResults/ \
-            /p:Include="[FreelaMatch.*]*" \
-            /p:Exclude="[*]FreelaMatch.Migrations.*"
+            --collect:"XPlat Code Coverage" \
+            --results-directory ./TestResults \
+            -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover
 
-      - name: Verify coverage file was generated
+      - name: Verify coverage file
         run: |
-          echo "=== Conteúdo do diretório TestResults ==="
-          ls -la ./FreelaMatch.Tests/TestResults/
-          echo "=== Primeiras linhas do coverage.opencover.xml ==="
-          head -30 ./FreelaMatch.Tests/TestResults/coverage.opencover.xml || echo "Arquivo não encontrado!"
+          echo "=== Arquivos de cobertura gerados ==="
+          find ./TestResults -name "*.xml" -o -name "*.opencover.xml"
+          echo ""
+          echo "=== Conteúdo dos arquivos ==="
+          find ./TestResults -name "*.xml" -exec echo "Arquivo: {}" \; -exec head -20 {} \;
 
-      - name: SonarCloud Scan
-        uses: SonarSource/sonarqube-scan-action@v4
+      - name: End SonarCloud analysis
+        run: dotnet sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
         env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        with:
-          projectBaseDir: .
-          args: >
-            -Dsonar.projectKey=AnnaBLoz_freelamatch-api
-            -Dsonar.organization=annabloz
-            -Dsonar.host.url=https://sonarcloud.io
-            -Dsonar.cs.opencover.reportsPaths=**/TestResults/coverage.opencover.xml
-            -Dsonar.exclusions=**/Migrations/**
-            -Dsonar.qualitygate.wait=true
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
