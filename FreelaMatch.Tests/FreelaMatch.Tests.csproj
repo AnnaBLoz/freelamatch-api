@@ -6,22 +6,13 @@
 		<Nullable>enable</Nullable>
 		<IsPackable>false</IsPackable>
 		<IsTestProject>true</IsTestProject>
-
-		<!-- 🔹 Coverlet: coleta coverage sempre e no formato esperado -->
-		<CollectCoverage>true</CollectCoverage>
-		<CoverletOutputFormat>opencover</CoverletOutputFormat>
-		<CoverletOutput>$(MSBuildProjectDirectory)/coverage/</CoverletOutput>
-
-		<!-- 🔹 Garante coleta automática mesmo sem flag -->
-		<VSTestCollect>Code Coverage</VSTestCollect>
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="coverlet.collector" Version="6.0.2">
-			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-			<PrivateAssets>all</PrivateAssets>
-		</PackageReference>
+		<!-- Coletor do Coverlet -->
+		<PackageReference Include="coverlet.collector" Version="6.0.2" />
 
+		<!-- Dependências de teste -->
 		<PackageReference Include="FluentAssertions" Version="8.8.0" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="8.0.0" />
 		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.0.1" />

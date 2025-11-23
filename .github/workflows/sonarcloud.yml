@@ -2,29 +2,33 @@ name: Analyze .NET Backend
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
   pull_request:
 
 jobs:
   build:
+    name: Build, Test, Coverage & SonarCloud
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - uses: actions/setup-dotnet@v4
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '8.0.x'
 
-      - name: Install SonarScanner
+      - name: Install SonarScanner for .NET
         run: dotnet tool install --global dotnet-sonarscanner
 
       - name: Add .NET global tools to PATH
         run: echo "$HOME/.dotnet/tools" >> $GITHUB_PATH
 
-      - name: Restore
+      - name: Restore dependencies
         run: dotnet restore
 
       - name: SonarCloud Begin
@@ -47,14 +51,16 @@ jobs:
             --configuration Release \
             --no-build \
             /p:CollectCoverage=true \
-            /p:CoverletOutputFormat=opencover \
             /p:CoverletOutput=$(pwd)/FreelaMatch.Tests/coverage/ \
+            /p:CoverletOutputFormat=opencover \
             /p:Exclude="[xunit.*]*"
 
       - name: Verify coverage file
         run: |
           echo "Looking for coverage report..."
           find FreelaMatch.Tests/coverage -type f
+          echo "Preview of coverage.opencover.xml:"
+          head -n 20 FreelaMatch.Tests/coverage/coverage.opencover.xml || echo "File not found!"
 
       - name: SonarCloud End
         run: dotnet sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
