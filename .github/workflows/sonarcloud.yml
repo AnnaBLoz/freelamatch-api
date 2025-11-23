@@ -13,26 +13,25 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          filter: tree:0
 
-      - name: Debug – onde estamos e o que temos
+      - name: Debug – estrutura real (VOCÊ VAI VER A PASTA freelamatch-api AQUI)
         run: |
           pwd
-          echo "=== Arquivos na raiz:"
+          echo "=== Conteúdo da pasta atual ==="
           ls -la
-          echo "=== Dentro da pasta FreelaMatchAPI ==="
-          ls -la FreelaMatchAPI || echo "Não existe!"
+          echo "=== Se existe a pasta com nome do repo ==="
+          ls -la freelamatch-api || echo "não tem pasta freelamatch-api"
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 8.0.x
 
-      - name: Restore + Build + Test + Coverage
+      - name: Restore + Build + Test
         run: |
-          dotnet restore FreelaMatchAPI/FreelaMatchAPI.csproj
-          dotnet build FreelaMatchAPI/FreelaMatchAPI.csproj -c Release --no-restore
-          dotnet test FreelaMatchAPI/FreelaMatchAPI.csproj \
+          dotnet restore freelamatch-api/FreelaMatchAPI/FreelaMatchAPI.csproj
+          dotnet build freelamatch-api/FreelaMatchAPI/FreelaMatchAPI.csproj -c Release --no-restore
+          dotnet test freelamatch-api/FreelaMatchAPI/FreelaMatchAPI.csproj \
             --no-build -c Release \
             /p:CollectCoverage=true \
             /p:CoverletOutputFormat=cobertura \
@@ -45,10 +44,3 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        with:
-          args: >
-            -Dsonar.projectKey=AnnaBLoz_freelamatch-api
-            -Dsonar.organization=annabloz
-            -Dsonar.cs.vstest.reportsPaths=**/*.trx
-            -Dsonar.cs.cobertura.reportPaths=coverage.cobertura.xml
-            -Dsonar.qualitygate.wait=true
