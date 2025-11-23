@@ -31,8 +31,10 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Install SonarScanner
-        run: dotnet tool install --global dotnet-sonarscanner
+      - name: Install tools
+        run: |
+          dotnet tool install --global dotnet-sonarscanner
+          dotnet tool install --global dotnet-coverage
 
       - name: Restore dependencies
         run: dotnet restore
@@ -46,7 +48,7 @@ jobs:
             /o:"annabloz" \
             /d:sonar.host.url="https://sonarcloud.io" \
             /d:sonar.token="${{ secrets.SONAR_TOKEN }}" \
-            /d:sonar.cs.opencover.reportsPaths="**/coverage.opencover.xml" \
+            /d:sonar.cs.vscoveragexml.reportsPaths=coverage.xml \
             /d:sonar.exclusions="**/Migrations/**" \
             /d:sonar.coverage.exclusions="**/*Tests.cs,**/Program.cs,**/Migrations/**"
 
@@ -55,25 +57,16 @@ jobs:
 
       - name: Test with coverage
         run: |
-          dotnet test \
-            --configuration Release \
-            --no-build \
-            --verbosity normal \
-            /p:CollectCoverage=true \
-            /p:CoverletOutputFormat=opencover \
-            /p:CoverletOutput=../coverage.opencover.xml
+          dotnet-coverage collect "dotnet test --configuration Release --no-build" -f xml -o coverage.xml
 
-      - name: Verify coverage file exists
+      - name: Verify coverage file
         run: |
-          echo "Searching for coverage files..."
-          find . -name "*.opencover.xml" -type f
-          
-          if [ -f "coverage.opencover.xml" ]; then
-            echo "Coverage file found in root"
-            ls -lh coverage.opencover.xml
+          if [ -f "coverage.xml" ]; then
+            echo "Coverage file generated successfully"
+            ls -lh coverage.xml
+            head -20 coverage.xml
           else
-            echo "Coverage file not found in expected location"
-            echo "Directory contents:"
+            echo "ERROR: Coverage file not generated"
             ls -la
             exit 1
           fi
@@ -89,10 +82,3 @@ jobs:
           echo "### SonarCloud Analysis Complete" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "[View Dashboard](https://sonarcloud.io/dashboard?id=AnnaBLoz_freelamatch-api)" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          if [ -f "coverage.opencover.xml" ]; then
-            SIZE=$(wc -l < coverage.opencover.xml)
-            echo "**Coverage:** Generated ($SIZE lines)" >> $GITHUB_STEP_SUMMARY
-          else
-            echo "**Coverage:** Check logs for details" >> $GITHUB_STEP_SUMMARY
-          fi
