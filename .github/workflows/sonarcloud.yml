@@ -40,27 +40,26 @@ jobs:
             /d:sonar.login="${{ secrets.SONAR_TOKEN }}" \
             /d:sonar.coverage.exclusions="**/Migrations/**,**/Program.cs" \
             /d:sonar.test.inclusions="**/*Tests.cs" \
-            /d:sonar.cs.opencover.reportsPaths="$(pwd)/FreelaMatch.Tests/coverage/coverage.opencover.xml"
+            /d:sonar.cs.vscoveragexml.reportsPaths="$(pwd)/coverage.xml"
 
       - name: Build
         run: dotnet build --configuration Release --no-incremental
 
+      - name: Install dotnet-coverage tool
+        run: dotnet tool install --global dotnet-coverage
+
       - name: Run tests and collect coverage
         run: |
-          dotnet test FreelaMatch.Tests/FreelaMatch.Tests.csproj \
-            --configuration Release \
-            --no-build \
-            /p:CollectCoverage=true \
-            /p:CoverletOutput=$(pwd)/FreelaMatch.Tests/coverage/ \
-            /p:CoverletOutputFormat=opencover \
-            /p:Exclude="[xunit.*]*"
+          dotnet-coverage collect "dotnet test FreelaMatch.Tests/FreelaMatch.Tests.csproj --no-build --configuration Release" \
+            -f xml \
+            -o "$(pwd)/coverage.xml"
 
-      - name: Verify coverage file
+      - name: Verify coverage report
         run: |
-          echo "Looking for coverage report..."
-          find FreelaMatch.Tests/coverage -type f
-          echo "Preview of coverage.opencover.xml:"
-          head -n 20 FreelaMatch.Tests/coverage/coverage.opencover.xml || echo "File not found!"
+          echo "Coverage file generated at:"
+          ls -la $(pwd)/coverage.xml
+          echo "Preview:"
+          head -n 20 $(pwd)/coverage.xml
 
       - name: SonarCloud End
         run: dotnet sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
