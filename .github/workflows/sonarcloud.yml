@@ -14,13 +14,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Checkout do código
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      # Cache do SonarCloud
       - name: Cache SonarCloud packages
         uses: actions/cache@v4
         with:
@@ -28,33 +26,31 @@ jobs:
           key: ${{ runner.os }}-sonar
           restore-keys: ${{ runner.os }}-sonar
 
-      # Instalar .NET 8
       - name: Setup .NET 8
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: "8.0.x"
 
-      # Restore
+      # RESTORE
       - name: Restore dependencies
-        working-directory: FreelaMatchAPI  
+        working-directory: ./freela-match-api
         run: dotnet restore
 
-      # Build
+      # BUILD
       - name: Build project
-        working-directory: FreelaMatchAPI
+        working-directory: ./freela-match-api
         run: dotnet build --no-restore
 
-      # Testes com cobertura
+      # TEST
       - name: Run tests
-        working-directory: FreelaMatchAPI
+        working-directory: ./freela-match-api
         run: dotnet test --no-build --collect:"XPlat Code Coverage"
 
-      # SonarCloud Scan
+      # SONARCLOUD SCAN
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@v2
         with:
-          projectBaseDir: FreelaMatchAPI  
+          projectBaseDir: ./freela-match-api
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: "https://sonarcloud.io"
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
