@@ -55,51 +55,69 @@ jobs:
         run: |
           echo "Running tests with coverage collection..."
           
-          dotnet test ./FreelaMatch.Tests/FreelaMatch.Tests.csproj \
+          dotnet test \
             --configuration Release \
             --no-build \
             --verbosity normal \
-            --collect:"XPlat Code Coverage" \
-            --results-directory ./TestResults \
-            -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover
+            --logger "trx;LogFileName=test-results.trx" \
+            /p:CollectCoverage=true \
+            /p:CoverletOutputFormat=opencover \
+            /p:CoverletOutput=./TestResults/
           
           echo ""
           echo "Tests completed. Searching for coverage files..."
-          find ./TestResults -name "*.xml" -type f
+          find . -name "*.opencover.xml" -o -name "coverage.opencover.xml"
 
       - name: Find and copy coverage files to root
         if: always()
         run: |
-          echo "=== Searching for coverage files ==="
-          find ./TestResults -name "*.xml" -type f
+          echo "=== Searching for coverage files in entire repository ==="
+          find . -name "*.opencover.xml" -o -name "coverage.opencover.xml" 2>/dev/null
           
           echo ""
-          echo "=== Copying coverage file to root ==="
+          echo "=== Looking specifically in common locations ==="
+          ls -la ./TestResults/*.opencover.xml 2>/dev/null || echo "Not in ./TestResults/"
+          ls -la ./FreelaMatch.Tests/TestResults/*.opencover.xml 2>/dev/null || echo "Not in ./FreelaMatch.Tests/TestResults/"
+          ls -la ./FreelaMatch.Tests/*.opencover.xml 2>/dev/null || echo "Not in ./FreelaMatch.Tests/"
           
-          # XPlat Code Coverage generates files in TestResults with GUIDs
-          COVERAGE_FILE=$(find ./TestResults -name "coverage.opencover.xml" -o -name "*.xml" | grep -v "TestResults.xml" | head -1)
+          echo ""
+          echo "=== Attempting to copy coverage file to root ==="
           
-          if [ -n "$COVERAGE_FILE" ]; then
+          # Try multiple possible locations
+          if [ -f "./TestResults/coverage.opencover.xml" ]; then
+            COVERAGE_FILE="./TestResults/coverage.opencover.xml"
+          elif [ -f "./FreelaMatch.Tests/TestResults/coverage.opencover.xml" ]; then
+            COVERAGE_FILE="./FreelaMatch.Tests/TestResults/coverage.opencover.xml"
+          elif [ -f "./FreelaMatch.Tests/coverage.opencover.xml" ]; then
+            COVERAGE_FILE="./FreelaMatch.Tests/coverage.opencover.xml"
+          else
+            # Find any .opencover.xml file
+            COVERAGE_FILE=$(find . -name "*.opencover.xml" | head -1)
+          fi
+          
+          if [ -n "$COVERAGE_FILE" ] && [ -f "$COVERAGE_FILE" ]; then
             echo "Found coverage file: $COVERAGE_FILE"
             cp "$COVERAGE_FILE" ./coverage.opencover.xml
-            echo "Coverage file copied to root"
+            echo "Coverage file copied to root successfully"
             
+            LINES=$(wc -l < ./coverage.opencover.xml)
             echo ""
-            echo "File size: $(wc -l < ./coverage.opencover.xml) lines"
+            echo "File size: $LINES lines"
             
-            # Show first 30 lines if file is valid
-            if [ $(wc -l < ./coverage.opencover.xml) -gt 5 ]; then
+            if [ "$LINES" -gt 10 ]; then
               echo ""
               echo "First 30 lines of coverage file:"
               head -30 ./coverage.opencover.xml
             else
-              echo "ERROR: File is too small, showing entire content:"
+              echo ""
+              echo "WARNING: File is too small. Full content:"
               cat ./coverage.opencover.xml
             fi
           else
-            echo "ERROR: No coverage file found in TestResults"
-            echo "All files in TestResults:"
-            find ./TestResults -type f
+            echo "ERROR: No coverage file found anywhere"
+            echo ""
+            echo "All XML files in repository (excluding obj/bin):"
+            find . -name "*.xml" -type f | grep -v "/obj/" | grep -v "/bin/" | head -20
           fi
 
       - name: Verify coverage file in root
