@@ -1,79 +1,127 @@
-﻿using Xunit;
-using Moq;
-using Microsoft.AspNetCore.Mvc;
-using FreelaMatchAPI.Controllers;
-using FreelaMatchAPI.Models;
+﻿using FreelaMatchAPI.Controllers;
+using FreelaMatchAPI.DTOs;
 using FreelaMatchAPI.Interfaces;
-using System.Threading.Tasks;
+using FreelaMatchAPI.Models;
+using Microsoft.AspNetCore.Mvc;
+using Moq;
 
 namespace FreelaMatch.Tests.Controllers
 {
     public class PortfolioControllerTests
     {
-        private readonly Mock<IPortfolioService> _service;
+        private readonly Mock<IPortfolioService> _serviceMock;
         private readonly PortfolioController _controller;
 
         public PortfolioControllerTests()
         {
-            _service = new Mock<IPortfolioService>();
-            _controller = new PortfolioController(_service.Object);
+            _serviceMock = new Mock<IPortfolioService>();
+            _controller = new PortfolioController(_serviceMock.Object);
         }
 
         [Fact]
-        public async Task CreatePortfolio_ReturnsOk()
+        public async Task GetPortfolio_ShouldReturnOk_WhenDataExists()
         {
-            var create = new CreatePortfolio
+            var portfolios = new List<Portfolio>
             {
-                URL = "http://site.com",
-                UserId = 1,
-                IsActive = true
+                new Portfolio { Id = 1, UserId = 1, Title = "Proj 1" }
             };
 
-            var saved = new Portfolio
-            {
-                PortfolioId = 1,
-                URL = "http://site.com",
-                UserId = 1,
-                IsActive = true
-            };
+            _serviceMock
+                .Setup(s => s.GetPortfolioByUserIdAsync(1))
+                .ReturnsAsync(portfolios);
 
-            _service.Setup(s => s.CreatePortfolioAsync(create))
-                .ReturnsAsync(saved);
+            var result = await _controller.GetPortfolio(1);
+            var ok = result.Result as OkObjectResult;
 
-            var result = await _controller.CreatePortfolio(create);
-
-            var ok = Assert.IsType<OkObjectResult>(result);
-            var data = Assert.IsType<Portfolio>(ok.Value);
-
-            Assert.Equal("http://site.com", data.URL);
+            Assert.NotNull(ok);
+            Assert.Equal(portfolios, ok.Value);
         }
 
         [Fact]
-        public async Task UpdatePortfolio_ReturnsOk()
+        public async Task GetPortfolio_ShouldReturnNotFound_WhenEmpty()
         {
-            var update = new UpdatePortfolio
+            _serviceMock
+                .Setup(s => s.GetPortfolioByUserIdAsync(1))
+                .ReturnsAsync(new List<Portfolio>());
+
+            var result = await _controller.GetPortfolio(1);
+
+            Assert.IsType<NotFoundObjectResult>(result.Result);
+        }
+
+        [Fact]
+        public async Task UpdatePortfolio_ShouldReturnOk_WhenSuccess()
+        {
+            var updateDto = new UpdatePortfolio
             {
-                URL = "updated.com",
-                IsActive = false
+                Description = "Editado",
+                Title = "Novo título"
             };
 
             var updated = new Portfolio
             {
-                PortfolioId = 1,
-                URL = "updated.com",
+                Id = 1,
                 UserId = 1,
-                IsActive = false
+                Title = updateDto.Title,
+                Description = updateDto.Description
             };
 
-            _service.Setup(s => s.UpdatePortfolioAsync(1, update))
-                .ReturnsAsync(updated);
+            _serviceMock
+                .Setup(s => s.UpdatePortfolioAsync(1, updateDto))
+                .ReturnsAsync((true, "Updated", updated));
 
-            var result = await _controller.UpdatePortfolio(1, update);
+            var result = await _controller.UpdatePortfolio(1, updateDto);
+            var ok = result as OkObjectResult;
 
-            var ok = Assert.IsType<OkObjectResult>(result);
-            var data = Assert.IsType<Portfolio>(ok.Value);
+            Assert.NotNull(ok);
+            Assert.Equal(updated, ok.Value);
+        }
 
-            Assert.Equal("updated.com", data.URL);
+        [Fact]
+        public async Task UpdatePortfolio_ShouldReturnNotFound_WhenFails()
+        {
+            var updateDto = new UpdatePortfolio
+            {
+                Description = "Teste",
+                Title = "X"
+            };
+
+            _serviceMock
+                .Setup(s => s.UpdatePortfolioAsync(1, updateDto))
+                .ReturnsAsync((false, "Not found", (Portfolio?)null));
+
+            var result = await _controller.UpdatePortfolio(1, updateDto);
+
+            Assert.IsType<NotFoundObjectResult>(result);
+        }
+
+        [Fact]
+        public async Task CreatePortfolio_ShouldReturnOk()
+        {
+            var createDto = new CreatePortfolio
+            {
+                Description = "Desc",
+                Title = "Título",
+                UserId = 1
+            };
+
+            var created = new Portfolio
+            {
+                Id = 1,
+                UserId = createDto.UserId,
+                Title = createDto.Title,
+                Description = createDto.Description
+            };
+
+            _serviceMock
+                .Setup(s => s.CreatePortfolio(createDto))
+                .ReturnsAsync(created);
+
+            var result = await _controller.CreatePortfolio(createDto);
+            var ok = result as OkObjectResult;
+
+            Assert.NotNull(ok);
+            Assert.Equal(created, ok.Value);
         }
     }
 }
