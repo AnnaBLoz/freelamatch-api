@@ -22,7 +22,6 @@ jobs:
         with:
           dotnet-version: "8.0.x"
 
-      # Ajuste aqui para o nome correto da pasta
       - name: Restore dependencies
         working-directory: ./FreelaMatchAPI
         run: dotnet restore
@@ -40,7 +39,7 @@ jobs:
             /p:CoverletOutputFormat=cobertura \
             --logger trx
 
-      - name: SonarCloud Scan
+      - name: SonarCloud Scan with Quality Gate
         uses: SonarSource/sonarcloud-github-action@v2
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
@@ -53,8 +52,4 @@ jobs:
             -Dsonar.cs.vstest.reportsPaths=**/TestResults/*.trx
             -Dsonar.cs.opencover.reportsPaths=**/coverage.cobertura.xml
             -Dsonar.exclusions=**/Migrations/**
-
-      - name: SonarCloud Quality Gate
-        uses: SonarSource/sonarcloud-quality-gate-action@v1
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+            -Dsonar.qualitygate.wait=true
