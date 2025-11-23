@@ -14,11 +14,12 @@ permissions:
 jobs:
   Analysis:
     runs-on: ubuntu-latest
+    
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0   # importante para o SonarCloud detectar corretamente as mudanças
+          fetch-depth: 0
 
       - name: Setup .NET 8
         uses: actions/setup-dotnet@v4
@@ -31,6 +32,9 @@ jobs:
       - name: Build
         run: dotnet build --no-restore --configuration Release
 
+      - name: Create TestResults directory
+        run: mkdir -p ./FreelaMatch.Tests/TestResults
+
       - name: Test with coverage (OpenCover)
         run: |
           dotnet test ./FreelaMatch.Tests/FreelaMatch.Tests.csproj \
@@ -38,17 +42,16 @@ jobs:
             --configuration Release \
             /p:CollectCoverage=true \
             /p:CoverletOutputFormat=opencover \
-            /p:CoverletOutput=TestResults/ \
-            /p:MergeWith=TestResults/coverage.json \
+            /p:CoverletOutput=./TestResults/ \
             /p:Include="[FreelaMatch.*]*" \
             /p:Exclude="[*]FreelaMatch.Migrations.*"
 
       - name: Verify coverage file was generated
         run: |
           echo "=== Conteúdo do diretório TestResults ==="
-          ls -la TestResults/
+          ls -la ./FreelaMatch.Tests/TestResults/
           echo "=== Primeiras linhas do coverage.opencover.xml ==="
-          head -30 TestResults/coverage.opencover.xml || echo "Arquivo não encontrado!"
+          head -30 ./FreelaMatch.Tests/TestResults/coverage.opencover.xml || echo "Arquivo não encontrado!"
 
       - name: SonarCloud Scan
         uses: SonarSource/sonarqube-scan-action@v4
@@ -60,6 +63,6 @@ jobs:
             -Dsonar.projectKey=AnnaBLoz_freelamatch-api
             -Dsonar.organization=annabloz
             -Dsonar.host.url=https://sonarcloud.io
-            -Dsonar.cs.opencover.reportsPaths=TestResults/coverage.opencover.xml
+            -Dsonar.cs.opencover.reportsPaths=**/TestResults/coverage.opencover.xml
             -Dsonar.exclusions=**/Migrations/**
             -Dsonar.qualitygate.wait=true
