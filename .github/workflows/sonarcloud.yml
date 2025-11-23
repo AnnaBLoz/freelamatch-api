@@ -26,12 +26,11 @@ jobs:
         with:
           dotnet-version: 8.0.x
 
-      - name: Cache SonarCloud packages
-        uses: actions/cache@v4
-        with:
-          path: ~/.sonar/cache
-          key: ${{ runner.os }}-sonar
-          restore-keys: ${{ runner.os }}-sonar
+      - name: Remove conflicting files
+        run: |
+          rm -f sonar-project.properties
+          echo "Arquivos .csproj encontrados:"
+          find . -name "*.csproj"
 
       - name: Install SonarCloud scanner
         run: dotnet tool install --global dotnet-sonarscanner
@@ -47,72 +46,72 @@ jobs:
             /d:sonar.host.url="https://sonarcloud.io" \
             /d:sonar.token="${{ secrets.SONAR_TOKEN }}" \
             /d:sonar.cs.opencover.reportsPaths="**/coverage.opencover.xml" \
-            /d:sonar.exclusions="**/Migrations/**"
+            /d:sonar.exclusions="**/Migrations/**" \
+            /d:sonar.coverage.exclusions="**Tests*.cs,**/*Tests.cs,**/Program.cs" \
+            /d:sonar.projectBaseDir="."
 
       - name: Build
-        run: dotnet build --configuration Release
+        run: dotnet build --configuration Release --no-restore
 
-      - name: Run tests with coverage
-        continue-on-error: true
+      - name: Run ALL tests with coverage
         run: |
-          # Encontra todos os projetos de teste
-          TEST_PROJECTS=$(find . -name "*.Tests.csproj" -o -name "*Tests.csproj" -o -name "*.Test.csproj")
+          echo "Executando TODOS os testes com cobertura..."
           
-          if [ -z "$TEST_PROJECTS" ]; then
-            echo "Nenhum projeto de teste encontrado"
-            echo "Projetos disponíveis:"
-            find . -name "*.csproj"
-          else
-            echo "Projetos de teste encontrados:"
-            echo "$TEST_PROJECTS"
-            
-            # Executa testes para cada projeto encontrado
-            for project in $TEST_PROJECTS; do
-              echo "Executando testes para: $project"
-              dotnet test "$project" \
-                --configuration Release \
-                --no-build \
-                /p:CollectCoverage=true \
-                /p:CoverletOutputFormat=opencover \
-                /p:CoverletOutput=./coverage.opencover.xml \
-                /p:Include="[FreelaMatch.*]*" \
-                /p:Exclude="[*]FreelaMatch.Migrations.*,[*Tests*]*" || echo "Falha ao executar testes para $project"
-            done
-          fi
-
-      - name: List all generated coverage files
-        run: |
-          echo "=== Buscando arquivos de cobertura em todo o repositório ==="
-          find . -name "*.opencover.xml" -o -name "coverage.*.xml" | head -20
+          # Executa testes para TODA a solution com coverlet
+          dotnet test \
+            --configuration Release \
+            --no-build \
+            --verbosity normal \
+            /p:CollectCoverage=true \
+            /p:CoverletOutputFormat=opencover \
+            /p:CoverletOutput=./coverage.opencover.xml \
+            /p:Exclude="[*Tests]*,[*.Tests]*" \
+            /p:ExcludeByFile="**/Migrations/**/*.cs"
           
           echo ""
-          echo "=== Verificando conteúdo dos arquivos encontrados ==="
-          for file in $(find . -name "*.opencover.xml" | head -5); do
-            echo "Arquivo: $file"
-            head -10 "$file" || echo "Não foi possível ler o arquivo"
+          echo "Testes executados!"
+
+      - name: Display coverage files
+        if: always()
+        run: |
+          echo "=== Arquivos de cobertura gerados ==="
+          find . -name "coverage.opencover.xml" -o -name "*.opencover.xml" | while read file; do
+            echo "$file"
+            echo "   Tamanho: $(wc -l < "$file") linhas"
+            echo "   Primeiras linhas:"
+            head -10 "$file"
             echo "---"
           done
+          
+          echo ""
+          echo "=== Todos os arquivos XML (para debug) ==="
+          find . -name "*.xml" -path "*/TestResults/*" -o -name "*coverage*.xml" | head -20
 
       - name: End SonarCloud analysis
-        run: dotnet sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          dotnet sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
 
       - name: Summary
         if: always()
         run: |
-          echo "### Resumo da Análise SonarCloud" >> $GITHUB_STEP_SUMMARY
+          echo "###Análise SonarCloud - Resumo" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "[Ver relatório completo](https://sonarcloud.io/dashboard?id=AnnaBLoz_freelamatch-api)" >> $GITHUB_STEP_SUMMARY
+          echo "[Ver Relatório Completo](https://sonarcloud.io/dashboard?id=AnnaBLoz_freelamatch-api)" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           
-          if [ -n "$(find . -name '*.opencover.xml')" ]; then
-            echo "Arquivos de cobertura gerados com sucesso" >> $GITHUB_STEP_SUMMARY
-          else
-            echo "Nenhum arquivo de cobertura foi gerado" >> $GITHUB_STEP_SUMMARY
+          COVERAGE_COUNT=$(find . -name "coverage.opencover.xml" 2>/dev/null | wc -l)
+          
+          if [ "$COVERAGE_COUNT" -gt 0 ]; then
+            echo "**Cobertura de código enviada ao SonarCloud**" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
-            echo "**Possíveis causas:**" >> $GITHUB_STEP_SUMMARY
-            echo "- Não há projetos de teste no repositório" >> $GITHUB_STEP_SUMMARY
-            echo "- Os testes falharam durante a execução" >> $GITHUB_STEP_SUMMARY
-            echo "- O pacote coverlet.msbuild não está instalado" >> $GITHUB_STEP_SUMMARY
+            echo "Arquivos gerados: $COVERAGE_COUNT" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "**Nenhum arquivo de cobertura detectado**" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "Verifique os logs acima para mais detalhes" >> $GITHUB_STEP_SUMMARY
           fi
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Testes executados:**" >> $GITHUB_STEP_SUMMARY
