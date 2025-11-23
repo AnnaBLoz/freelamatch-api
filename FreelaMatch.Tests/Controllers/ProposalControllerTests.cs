@@ -29,10 +29,10 @@ public class ProposalControllerTests
             .ReturnsAsync(new List<Proposal> { new Proposal { ProposalId = 1, Title = "Test" } });
 
         var actionResult = await _controller.GetProposals(1);
-        var okResult = Assert.IsType<OkObjectResult>(actionResult.Result);
 
-        okResult.StatusCode.Should().Be(200);
+        var okResult = Assert.IsType<OkObjectResult>(actionResult.Result);
         var data = Assert.IsType<List<Proposal>>(okResult.Value);
+
         data.Count.Should().Be(1);
     }
 
@@ -42,9 +42,9 @@ public class ProposalControllerTests
         _proposalServiceMock.Setup(s => s.GetProposals(1)).ReturnsAsync((List<Proposal>)null);
 
         var actionResult = await _controller.GetProposals(1);
-        var notFoundResult = Assert.IsType<NotFoundObjectResult>(actionResult.Result);
 
-        notFoundResult.StatusCode.Should().Be(404);
+        var notFound = Assert.IsType<NotFoundObjectResult>(actionResult.Result);
+        notFound.StatusCode.Should().Be(404);
     }
 
     [Fact]
@@ -56,23 +56,24 @@ public class ProposalControllerTests
         _proposalServiceMock.Setup(s => s.CreateProposal(dto)).ReturnsAsync(proposal);
 
         var actionResult = await _controller.Create(dto);
-        var okResult = Assert.IsType<OkObjectResult>(actionResult);
 
-        okResult.StatusCode.Should().Be(200);
-        var data = ((dynamic)okResult.Value).proposal;
-        ((int)data.ProposalId).Should().Be(1);
+        var okResult = Assert.IsType<OkObjectResult>(actionResult);
+        dynamic data = okResult.Value;
+
+        ((int)data.proposal.ProposalId).Should().Be(1);
     }
 
     [Fact]
     public async Task ApproveCandidate_ShouldReturnOk_WhenSuccess()
     {
         var dto = new CandidateApprove { CandidateId = 1, ProposalId = 1 };
+
         _proposalServiceMock.Setup(s => s.ApproveCandidate(dto))
             .ReturnsAsync((true, "ok", new Candidate { CandidateId = 1 }));
 
         var actionResult = await _controller.ApproveCandidate(dto);
-        var okResult = Assert.IsType<OkObjectResult>(actionResult);
 
+        var okResult = Assert.IsType<OkObjectResult>(actionResult);
         okResult.StatusCode.Should().Be(200);
     }
 
@@ -80,12 +81,13 @@ public class ProposalControllerTests
     public async Task DisapproveCandidate_ShouldReturnOk_WhenSuccess()
     {
         var dto = new CandidateApprove { CandidateId = 1, ProposalId = 1 };
+
         _proposalServiceMock.Setup(s => s.DisapproveCandidate(dto))
             .ReturnsAsync((true, "ok", new Candidate { CandidateId = 1 }));
 
         var actionResult = await _controller.DisapproveCandidate(dto);
-        var okResult = Assert.IsType<OkObjectResult>(actionResult);
 
+        var okResult = Assert.IsType<OkObjectResult>(actionResult);
         okResult.StatusCode.Should().Be(200);
     }
 
@@ -93,12 +95,13 @@ public class ProposalControllerTests
     public async Task CounterProposal_ShouldReturnOk_WhenSuccess()
     {
         var dto = new CounterProposalCreate { ProposalId = 1 };
+
         _proposalServiceMock.Setup(s => s.CounterProposal(dto))
             .ReturnsAsync((true, "ok", new Proposal { ProposalId = 1 }));
 
         var actionResult = await _controller.CounterProposal(dto);
-        var okResult = Assert.IsType<OkObjectResult>(actionResult);
 
+        var okResult = Assert.IsType<OkObjectResult>(actionResult);
         okResult.StatusCode.Should().Be(200);
     }
 
@@ -106,12 +109,13 @@ public class ProposalControllerTests
     public async Task Candidate_ShouldReturnOk_WhenSuccess()
     {
         var dto = new CandidateProposal { ProposalId = 1, UserId = 1 };
+
         _proposalServiceMock.Setup(s => s.Candidate(dto))
             .ReturnsAsync(new Candidate { CandidateId = 1 });
 
         var actionResult = await _controller.Candidate(dto);
-        var okResult = Assert.IsType<OkObjectResult>(actionResult);
 
+        var okResult = Assert.IsType<OkObjectResult>(actionResult);
         okResult.StatusCode.Should().Be(200);
     }
 }

@@ -1,57 +1,61 @@
-using FreelaMatchAPI.DTOs;
-using FreelaMatchAPI.Models;
 using FreelaMatchAPI.Interfaces;
-using Microsoft.AspNetCore.Authorization;
+using FreelaMatchAPI.Models;
+using FreelaMatchAPI.Services;
 using Microsoft.AspNetCore.Mvc;
 
-[ApiController]
-[Route("api/[controller]")]
-[Authorize]
-public class PortfolioController : ControllerBase
+namespace FreelaMatchAPI.Controllers
 {
-    private readonly IPortfolioService _portfolioService;
-
-    public PortfolioController(IPortfolioService portfolioService)
+    [ApiController]
+    [Route("api/[controller]")]
+    public class PortfolioController : ControllerBase
     {
-        _portfolioService = portfolioService;
-    }
+        private readonly IPortfolioService _portfolioService;
 
-    [HttpGet("")]
-    public async Task<ActionResult<List<Portfolio>>> GetPortfolios([FromQuery] int userId)
-    {
-        var portfolios = await _portfolioService.GetPortfolioByUserIdAsync(userId);
-
-        if (portfolios == null || !portfolios.Any())
-            return NotFound(new { message = "Portfolios not found" });
-
-        return Ok(portfolios);
-    }
-
-    [HttpPut("{portfolioId}")]
-    public async Task<IActionResult> UpdatePortfolio(int portfolioId, [FromBody] UpdatePortfolio updatedPortfolio)
-    {
-        if (!ModelState.IsValid)
-            return BadRequest(ModelState);
-
-        var result = await _portfolioService.UpdatePortfolioAsync(portfolioId, updatedPortfolio);
-
-        if (!result.Success)
-            return NotFound(new { message = result.Message });
-
-        return Ok(result.Portfolio);
-    }
-
-    [HttpPost("create")]
-    public async Task<IActionResult> Register([FromBody] CreatePortfolio portfolioCreate)
-    {
-        try
+        public PortfolioController(IPortfolioService portfolioService)
         {
-            var portfolio = await _portfolioService.CreatePortfolio(portfolioCreate);
-            return Ok(new { portfolio });
+            _portfolioService = portfolioService;
         }
-        catch (InvalidOperationException ex)
+
+        // ==========================================
+        // GET /api/portfolio/{freelancerId}
+        // ==========================================
+        [HttpGet("{freelancerId}")]
+        public async Task<IActionResult> GetPortfolio(int freelancerId)
         {
-            return BadRequest(new { message = ex.Message });
+            var portfolio = await _portfolioService.GetPortfolioAsync(freelancerId);
+
+            if (portfolio == null)
+                return NotFound(new { message = "Portfolios not found" });
+
+            return Ok(portfolio);
+        }
+
+        // ==========================================
+        // POST /api/portfolio
+        // ==========================================
+        [HttpPost]
+        public async Task<IActionResult> CreatePortfolio([FromBody] Portfolio portfolio)
+        {
+            var result = await _portfolioService.CreatePortfolioAsync(portfolio);
+
+            if (!result.Success)
+                return BadRequest(new { message = result.Message });
+
+            return Ok(new { portfolio = result.Portfolio });
+        }
+
+        // ==========================================
+        // PUT /api/portfolio/{id}
+        // ==========================================
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdatePortfolio(int id, [FromBody] Portfolio portfolio)
+        {
+            var result = await _portfolioService.UpdatePortfolioAsync(id, portfolio);
+
+            if (!result.Success)
+                return BadRequest(new { message = result.Message });
+
+            return Ok(result.Portfolio);
         }
     }
 }

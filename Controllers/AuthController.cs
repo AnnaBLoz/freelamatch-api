@@ -27,14 +27,17 @@ namespace FreelaMatchAPI.Controllers
                 var user = await _authService.RegisterAsync(dto);
                 await _profileService.CreateProfileAsync(user.Id, new UpdateProfile { });
 
-                return Ok(new
+                var result = new UserAuthResponseDto
                 {
-                    user.Id,
-                    user.Email,
-                    user.Token,
-                    user.Type,
-                    user.Name
-                });
+                    Id = user.Id,
+                    Email = user.Email,
+                    Token = user.Token,
+                    Type = user.Type,
+                    Name = user.Name,
+                    IsAvailable = user.IsAvailable
+                };
+
+                return Ok(result);
             }
             catch (InvalidOperationException ex)
             {
@@ -46,17 +49,21 @@ namespace FreelaMatchAPI.Controllers
         public async Task<IActionResult> Login([FromBody] LoginDto dto)
         {
             var user = await _authService.LoginAsync(dto.Email, dto.Password);
-            if (user == null) return Unauthorized("Email ou senha incorretos");
 
-            return Ok(new
+            if (user == null)
+                return Unauthorized("Email ou senha incorretos");
+
+            var result = new UserAuthResponseDto
             {
-                user.Id,
-                user.Email,
-                user.Token,
-                user.Type,
-                user.Name,
-                user.IsAvailable
-            });
+                Id = user.Id,
+                Email = user.Email,
+                Token = user.Token,
+                Type = user.Type,
+                Name = user.Name,
+                IsAvailable = user.IsAvailable
+            };
+
+            return Ok(result);
         }
     }
 }

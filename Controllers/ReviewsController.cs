@@ -31,7 +31,7 @@ public class ReviewsController : ControllerBase
     }
 
     [HttpGet("freelancer")]
-    public async Task<ActionResult<List<Candidate>>> GetFreelancersToReview(int userId)
+    public async Task<ActionResult<List<Candidate>>> GetFreelancersToReview([FromQuery] int userId)
     {
         var candidates = await _proposalService.GetFreelancersToReview(userId);
         if (candidates == null || !candidates.Any())
@@ -41,7 +41,7 @@ public class ReviewsController : ControllerBase
     }
 
     [HttpGet("company")]
-    public async Task<ActionResult<List<Proposal>>> GetCompaniesToReview(int userId)
+    public async Task<ActionResult<List<Proposal>>> GetCompaniesToReview([FromQuery] int userId)
     {
         var companies = await _proposalService.GetCompaniesToReview(userId);
         if (companies == null || !companies.Any())

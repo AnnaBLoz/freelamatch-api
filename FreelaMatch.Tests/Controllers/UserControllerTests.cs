@@ -33,13 +33,15 @@ namespace FreelaMatchAPI.Tests.Controllers
                 IsAvailable = true
             };
 
-            _userServiceMock.Setup(s => s.GetUserByUserIdAsync(1)).ReturnsAsync(fakeUser);
+            _userServiceMock.Setup(s => s.GetUserByUserIdAsync(1))
+                .ReturnsAsync(fakeUser);
 
-            var actionResult = await _controller.GetUser(1);
-            var okResult = Assert.IsType<OkObjectResult>(actionResult.Result);
+            var result = await _controller.GetUser(1);
 
-            okResult.StatusCode.Should().Be(200);
-            var data = Assert.IsType<User>(okResult.Value);
+            result.Result.Should().BeOfType<OkObjectResult>();
+            var ok = result.Result as OkObjectResult;
+
+            var data = ok!.Value.Should().BeAssignableTo<User>().Subject;
             data.Id.Should().Be(1);
             data.Name.Should().Be("Anna");
         }
@@ -47,14 +49,16 @@ namespace FreelaMatchAPI.Tests.Controllers
         [Fact]
         public async Task GetUser_ShouldReturnNotFound_WhenUserDoesNotExist()
         {
-            _userServiceMock.Setup(s => s.GetUserByUserIdAsync(2)).ReturnsAsync((User?)null);
+            _userServiceMock.Setup(s => s.GetUserByUserIdAsync(2))
+                .ReturnsAsync((User?)null);
 
-            var actionResult = await _controller.GetUser(2);
-            var notFoundResult = Assert.IsType<NotFoundObjectResult>(actionResult.Result);
+            var result = await _controller.GetUser(2);
 
-            notFoundResult.StatusCode.Should().Be(404);
-            var message = notFoundResult.Value.GetType().GetProperty("message")!.GetValue(notFoundResult.Value);
-            Assert.Equal("User not found", message);
+            result.Result.Should().BeOfType<NotFoundObjectResult>();
+            var notFound = result.Result as NotFoundObjectResult;
+
+            var message = notFound!.Value.GetType().GetProperty("message")!.GetValue(notFound.Value);
+            message.Should().Be("User not found");
         }
 
         [Fact]
@@ -69,18 +73,19 @@ namespace FreelaMatchAPI.Tests.Controllers
             var fakeUser = new User
             {
                 Id = 1,
-                Name = updatedUser.Name,
-                IsAvailable = updatedUser.IsAvailable
+                Name = "Anna Updated",
+                IsAvailable = false
             };
 
             _userServiceMock.Setup(s => s.UpdateUserAsync(1, updatedUser))
                 .ReturnsAsync((true, "User updated successfully", fakeUser));
 
-            var actionResult = await _controller.UpdateUser(1, updatedUser);
-            var okResult = Assert.IsType<OkObjectResult>(actionResult);
+            var result = await _controller.UpdateUser(1, updatedUser);
 
-            okResult.StatusCode.Should().Be(200);
-            var data = Assert.IsType<User>(okResult.Value);
+            result.Should().BeOfType<OkObjectResult>();
+            var ok = result as OkObjectResult;
+
+            var data = ok!.Value.Should().BeAssignableTo<User>().Subject;
             data.Id.Should().Be(1);
             data.Name.Should().Be("Anna Updated");
             data.IsAvailable.Should().BeFalse();
@@ -98,12 +103,13 @@ namespace FreelaMatchAPI.Tests.Controllers
             _userServiceMock.Setup(s => s.UpdateUserAsync(99, updatedUser))
                 .ReturnsAsync((false, "User not found", null));
 
-            var actionResult = await _controller.UpdateUser(99, updatedUser);
-            var notFoundResult = Assert.IsType<NotFoundObjectResult>(actionResult);
+            var result = await _controller.UpdateUser(99, updatedUser);
 
-            notFoundResult.StatusCode.Should().Be(404);
-            var message = notFoundResult.Value.GetType().GetProperty("message")!.GetValue(notFoundResult.Value);
-            Assert.Equal("User not found", message);
+            result.Should().BeOfType<NotFoundObjectResult>();
+            var notFound = result as NotFoundObjectResult;
+
+            var message = notFound!.Value.GetType().GetProperty("message")!.GetValue(notFound.Value);
+            message.Should().Be("User not found");
         }
     }
 }

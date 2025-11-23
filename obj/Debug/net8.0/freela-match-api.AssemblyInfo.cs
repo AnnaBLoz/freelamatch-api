@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("freela-match-api")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+a4134ba1e4b115223e79cc66ccf3ec00b692cb76")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+21b37436f292248b94832ea403c17774481ed96b")]
 [assembly: System.Reflection.AssemblyProductAttribute("freela-match-api")]
 [assembly: System.Reflection.AssemblyTitleAttribute("freela-match-api")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

@@ -52,4 +52,14 @@ namespace FreelaMatchAPI.Models
         public int UserId { get; set; }
         public User User { get; set; }
     }
+
+    public class UserAuthResponseDto
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public UserType Type { get; set; }
+        public string Token { get; set; } = string.Empty;
+        public bool IsAvailable { get; set; }
+    }
 }
