@@ -1,4 +1,4 @@
-name: SonarCloud analysis
+name: SonarCloud Analysis
 
 on:
   push:
@@ -33,8 +33,10 @@ jobs:
           dotnet test --no-build --configuration Release \
             /p:CollectCoverage=true \
             /p:CoverletOutputFormat=opencover \
-            /p:CoverletOutput=./coverage.xml \
-            || echo "Coverage generated"
+            /p:CoverletOutput=./coverage.xml
+
+      - name: Show coverage file
+        run: cat ./coverage.xml
 
       - name: SonarCloud Scan
         uses: SonarSource/sonarqube-scan-action@v4
