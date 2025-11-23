@@ -1,5 +1,6 @@
 using FreelaMatchAPI.Data;
 using FreelaMatchAPI.Models;
+using FreelaMatchAPI.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;

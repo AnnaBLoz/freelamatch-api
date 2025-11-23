@@ -1,20 +1,18 @@
 using FreelaMatchAPI.DTOs;
 using FreelaMatchAPI.Models;
+using FreelaMatchAPI.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using System.ComponentModel.Design;
-using System.Linq;
 
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
 public class ProposalController : ControllerBase
 {
-    private readonly ProposalService _proposalService;
-    private readonly UserService _userService;
+    private readonly IProposalService _proposalService;
+    private readonly IUserService _userService;
 
-    public ProposalController(ProposalService proposalService, UserService userService)
+    public ProposalController(IProposalService proposalService, IUserService userService)
     {
         _proposalService = proposalService;
         _userService = userService;
@@ -24,10 +22,7 @@ public class ProposalController : ControllerBase
     public async Task<ActionResult<List<Proposal>>> GetProposals(int companyId)
     {
         var proposals = await _proposalService.GetProposals(companyId);
-
-        if (proposals == null)
-            return NotFound(new { message = "Proposals not found" });
-
+        if (proposals == null) return NotFound(new { message = "Proposals not found" });
         return Ok(proposals);
     }
 
@@ -35,19 +30,14 @@ public class ProposalController : ControllerBase
     public async Task<ActionResult<List<Proposal>>> GetAllProposals()
     {
         var proposals = await _proposalService.GetAllProposals();
-
         return Ok(proposals);
     }
-
 
     [HttpGet("proposalId/{proposalId}")]
     public async Task<ActionResult<Proposal>> GetProposalById(int proposalId)
     {
         var proposal = await _proposalService.GetProposalById(proposalId);
-
-        if (proposal == null)
-            return NotFound(new { message = "Proposal not found" });
-
+        if (proposal == null) return NotFound(new { message = "Proposal not found" });
         return Ok(proposal);
     }
 
@@ -55,10 +45,7 @@ public class ProposalController : ControllerBase
     public async Task<ActionResult<Proposal>> GetProposalByIdAndCandidate(int proposalId, int candidateId)
     {
         var proposal = await _proposalService.GetProposalByIdAndCandidate(proposalId, candidateId);
-
-        if (proposal == null)
-            return NotFound(new { message = "Proposal not found" });
-
+        if (proposal == null) return NotFound(new { message = "Proposal not found" });
         return Ok(proposal);
     }
 
@@ -68,10 +55,7 @@ public class ProposalController : ControllerBase
         try
         {
             var proposal = await _proposalService.CreateProposal(proposalCreate);
-            return Ok(new
-            {
-                proposal
-            });
+            return Ok(new { proposal });
         }
         catch (InvalidOperationException ex)
         {
@@ -79,17 +63,14 @@ public class ProposalController : ControllerBase
         }
     }
 
-
     [HttpPut("approve")]
     public async Task<IActionResult> ApproveCandidate([FromBody] CandidateApprove candidateApprove)
     {
         try
         {
-            var candidateApproved = await _proposalService.ApproveCandidate(candidateApprove);
-            return Ok(new
-            {
-                candidateApproved
-            });
+            var result = await _proposalService.ApproveCandidate(candidateApprove);
+            if (!result.Success) return BadRequest(new { message = result.Message });
+            return Ok(new { candidateApproved = result.Candidate });
         }
         catch (InvalidOperationException ex)
         {
@@ -102,8 +83,9 @@ public class ProposalController : ControllerBase
     {
         try
         {
-            var candidateDisapproved = await _proposalService.DisapproveCandidate(candidateDisapprove);
-            return Ok(new { candidateDisapproved });
+            var result = await _proposalService.DisapproveCandidate(candidateDisapprove);
+            if (!result.Success) return BadRequest(new { message = result.Message });
+            return Ok(new { candidateDisapproved = result.Candidate });
         }
         catch (InvalidOperationException ex)
         {
@@ -117,10 +99,7 @@ public class ProposalController : ControllerBase
         try
         {
             var candidate = await _proposalService.Candidate(proposalCreate);
-            return Ok(new
-            {
-                candidate
-            });
+            return Ok(new { candidate });
         }
         catch (InvalidOperationException ex)
         {
@@ -132,26 +111,15 @@ public class ProposalController : ControllerBase
     public async Task<IActionResult> CounterProposal([FromBody] CounterProposalCreate counterProposal)
     {
         var result = await _proposalService.CounterProposal(counterProposal);
-
-        if (!result.Success)
-            return BadRequest(new { success = false, message = result.Message });
-
-        return Ok(new
-        {
-            success = true,
-            message = result.Message,
-            proposal = result.Proposal
-        });
+        if (!result.Success) return BadRequest(new { success = false, message = result.Message });
+        return Ok(new { success = true, message = result.Message, proposal = result.Proposal });
     }
 
     [HttpGet("counterproposal/proposalId/{proposalId}")]
     public async Task<ActionResult<List<CounterProposal>>> GetCounterProposalByProposalId(int proposalId)
     {
         var counterProposals = await _proposalService.GetCounterProposalByProposalId(proposalId);
-
-        if (counterProposals == null)
-            return NotFound(new { message = "No counter proposals found" });
-
+        if (counterProposals == null) return NotFound(new { message = "No counter proposals found" });
         return Ok(counterProposals);
     }
 
@@ -159,10 +127,7 @@ public class ProposalController : ControllerBase
     public async Task<ActionResult<List<Proposal>>> GetProposalsByUserId(int userId)
     {
         var candidateProposals = await _proposalService.GetProposalsByUserId(userId);
-
-        if (candidateProposals == null)
-            return NotFound(new { message = "No candidate proposals found" });
-
+        if (candidateProposals == null) return NotFound(new { message = "No candidate proposals found" });
         return Ok(candidateProposals);
     }
 }

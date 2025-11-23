@@ -1,6 +1,7 @@
 ﻿using FreelaMatchAPI.Data;
 using FreelaMatchAPI.DTOs;
 using FreelaMatchAPI.Models;
+using FreelaMatchAPI.Services.Interfaces;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -8,7 +9,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 
-public class AuthService
+public class AuthService : IAuthService
 {
     private readonly AppDbContext _context;
     private readonly IPasswordHasher<User> _passwordHasher;

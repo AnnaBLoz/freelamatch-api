@@ -1,18 +1,17 @@
 using FreelaMatchAPI.DTOs;
 using FreelaMatchAPI.Models;
+using FreelaMatchAPI.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using System.Linq;
 
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
 public class PortfolioController : ControllerBase
 {
-    private readonly PortfolioService _portfolioService;
+    private readonly IPortfolioService _portfolioService;
 
-    public PortfolioController(PortfolioService portfolioService)
+    public PortfolioController(IPortfolioService portfolioService)
     {
         _portfolioService = portfolioService;
     }
@@ -23,12 +22,12 @@ public class PortfolioController : ControllerBase
         var portfolios = await _portfolioService.GetPortfolioByUserIdAsync(userId);
 
         if (portfolios == null || !portfolios.Any())
-            return NotFound(new { message = "Skills not found" });
+            return NotFound(new { message = "Portfolios not found" });
 
         return Ok(portfolios);
     }
 
-    [HttpPut("{userId}")]
+    [HttpPut("{portfolioId}")]
     public async Task<IActionResult> UpdatePortfolio(int portfolioId, [FromBody] UpdatePortfolio updatedPortfolio)
     {
         if (!ModelState.IsValid)
@@ -48,15 +47,11 @@ public class PortfolioController : ControllerBase
         try
         {
             var portfolio = await _portfolioService.CreatePortfolio(portfolioCreate);
-            return Ok(new
-            {
-                portfolio
-            });
+            return Ok(new { portfolio });
         }
         catch (InvalidOperationException ex)
         {
             return BadRequest(new { message = ex.Message });
         }
     }
-
 }

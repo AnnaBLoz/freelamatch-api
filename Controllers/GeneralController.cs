@@ -1,65 +1,70 @@
 using FreelaMatchAPI.DTOs;
+using FreelaMatchAPI.Interfaces;
 using FreelaMatchAPI.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
-[ApiController]
-[Route("api/[controller]")]
-[Authorize]
-public class GeneralController : ControllerBase
+namespace FreelaMatchAPI.Controllers
 {
-    private readonly GeneralService _generalService;
-    private readonly UserService _userService;
-
-    public GeneralController(GeneralService generalService, UserService userService)
+    [ApiController]
+    [Route("api/[controller]")]
+    [Authorize]
+    public class GeneralController : ControllerBase
     {
-        _generalService = generalService;
-        _userService = userService;
-    }
+        private readonly IGeneralService _generalService;
+        private readonly IUserService _userService;
 
-    [HttpGet("Freelancers")]
-    public async Task<ActionResult<List<User>>> GetFreelancers()
-    {
-        var freelancers = await _generalService.GetFreelancers();
+        public GeneralController(IGeneralService generalService, IUserService userService)
+        {
+            _generalService = generalService;
+            _userService = userService;
+        }
 
-        if (freelancers == null)
-            return NotFound(new { message = "Freelancers not found" });
+        [HttpGet("Freelancers")]
+        public async Task<ActionResult<List<User>>> GetFreelancers()
+        {
+            var freelancers = await _generalService.GetFreelancers();
 
-        return Ok(freelancers);
-    }
+            if (freelancers == null || !freelancers.Any())
+                return NotFound(new { message = "Freelancers not found" });
 
-    [HttpGet("Sectors")]
-    public async Task<ActionResult<List<Sector>>> GetSectors()
-    {
-        var sectors = await _generalService.GetSectors();
+            return Ok(freelancers);
+        }
 
-        if (sectors == null)
-            return NotFound(new { message = "Sectors not found" });
+        [HttpGet("Sectors")]
+        public async Task<ActionResult<List<Sector>>> GetSectors()
+        {
+            var sectors = await _generalService.GetSectors();
 
-        return Ok(sectors);
-    }
+            if (sectors == null || !sectors.Any())
+                return NotFound(new { message = "Sectors not found" });
 
-    [HttpGet("Skills")]
-    public async Task<ActionResult<List<Skill>>> GetSkills()
-    {
-        var skills = await _generalService.GetSkills();
+            return Ok(sectors);
+        }
 
-        if (skills == null)
-            return NotFound(new { message = "Skills not found" });
+        [HttpGet("Skills")]
+        public async Task<ActionResult<List<Skill>>> GetSkills()
+        {
+            var skills = await _generalService.GetSkills();
 
-        return Ok(skills);
-    }
+            if (skills == null || !skills.Any())
+                return NotFound(new { message = "Skills not found" });
 
-    [HttpGet("CompletedProjects")]
-    public async Task<ActionResult<List<Candidate>>> CompletedProjects(int userId)
-    {
-        var completed = await _generalService.CompletedProjects(userId);
+            return Ok(skills);
+        }
 
-        if (completed == null)
-            return NotFound(new { message = "Candidate not found" });
+        [HttpGet("CompletedProjects")]
+        public async Task<ActionResult<List<Candidate>>> CompletedProjects([FromQuery] int userId)
+        {
+            var completed = await _generalService.CompletedProjects(userId);
 
-        return Ok(completed);
+            if (completed == null || !completed.Any())
+                return NotFound(new { message = "Candidate not found" });
+
+            return Ok(completed);
+        }
     }
 }

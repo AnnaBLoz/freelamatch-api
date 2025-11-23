@@ -1,28 +1,22 @@
 ﻿using FreelaMatchAPI.Data;
 using FreelaMatchAPI.DTOs;
 using FreelaMatchAPI.Models;
-using Microsoft.AspNetCore.Identity;
+using FreelaMatchAPI.Interfaces;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
 
-public class PortfolioService
+public class PortfolioService : IPortfolioService
 {
     private readonly AppDbContext _context;
-    private readonly IConfiguration _config;
 
-    public PortfolioService(AppDbContext context, IConfiguration config)
+    public PortfolioService(AppDbContext context)
     {
         _context = context;
-        _config = config;
     }
 
     public async Task<List<Portfolio>> GetPortfolioByUserIdAsync(int userId)
     {
         return await _context.Portfolio
-            .Where(p => p.UserId == userId && p.IsActive == true)
+            .Where(p => p.UserId == userId && p.IsActive)
             .ToListAsync();
     }
 
@@ -30,6 +24,9 @@ public class PortfolioService
     {
         var portfolio = await _context.Portfolio
             .FirstOrDefaultAsync(u => u.PortfolioId == portfolioId);
+
+        if (portfolio == null)
+            return (false, "Portfolio not found", null);
 
         portfolio.URL = updatedPortfolio.URL;
         portfolio.IsActive = updatedPortfolio.IsActive;
@@ -41,7 +38,6 @@ public class PortfolioService
 
     public async Task<Portfolio> CreatePortfolio(CreatePortfolio portfolioCreated)
     {
-
         var portfolio = new Portfolio
         {
             URL = portfolioCreated.URL,
@@ -54,5 +50,4 @@ public class PortfolioService
 
         return portfolio;
     }
-
 }

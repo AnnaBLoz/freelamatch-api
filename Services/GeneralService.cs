@@ -1,46 +1,47 @@
 ﻿using FreelaMatchAPI.Data;
-using FreelaMatchAPI.DTOs;
+using FreelaMatchAPI.Interfaces;
 using FreelaMatchAPI.Models;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
-public class GeneralService
+namespace FreelaMatchAPI.Services
 {
-    private readonly AppDbContext _context;
-    private readonly IConfiguration _config;
+    public class GeneralService : IGeneralService
+    {
+        private readonly AppDbContext _context;
 
-    public GeneralService(AppDbContext context, IConfiguration config)
-    {
-        _context = context;
-        _config = config;
-    }
+        public GeneralService(AppDbContext context)
+        {
+            _context = context;
+        }
 
-    public Task<List<User?>> GetFreelancers()
-    {
-        return _context.Users
-            .Where(f => f.Type == UserType.Freelancer)
-            //.Include(f => f.Profile).ThenInclude(f => f.UserSkills).ThenInclude(f => f.Skill)
-            .ToListAsync();
-    }
+        public Task<List<User?>> GetFreelancers()
+        {
+            return _context.Users
+                .Where(f => f.Type == UserType.Freelancer)
+                //.Include(f => f.Profile).ThenInclude(f => f.UserSkills).ThenInclude(f => f.Skill)
+                .ToListAsync();
+        }
 
-    public Task<List<Sector?>> GetSectors()
-    {
-        return _context.Sector
-            .ToListAsync();
-    }
-    public Task<List<Skill?>> GetSkills()
-    {
-        return _context.Skills
-            .ToListAsync();
-    }
+        public Task<List<Sector?>> GetSectors()
+        {
+            return _context.Sector
+                .ToListAsync();
+        }
 
-    public Task<List<Candidate?>> CompletedProjects(int userId)
-    {
-        return _context.Candidate.Where(c => c.UserId == userId && c.Status == ProposalStatus.Accepted)
-            .ToListAsync();
+        public Task<List<Skill?>> GetSkills()
+        {
+            return _context.Skills
+                .ToListAsync();
+        }
+
+        public Task<List<Candidate?>> CompletedProjects(int userId)
+        {
+            return _context.Candidate
+                .Where(c => c.UserId == userId && c.Status == ProposalStatus.Accepted)
+                .ToListAsync();
+        }
     }
 }

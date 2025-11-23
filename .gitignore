@@ -1,26 +1,100 @@
-# Visual Studio
+###############################
+#      VISUAL STUDIO          #
+###############################
+
 .vs/
 *.user
 *.suo
 *.userosscache
 *.sln.docstates
 
-# Build outputs
+###############################
+#     BUILD / COMPILAÇÃO      #
+###############################
+
 bin/
 obj/
 out/
+artifacts/
+AppPackages/
+
+# Arquivos temporários de build
+*.cache
+*.tmp
+*.temp
+*.log
+
+###############################
+#         .NET / NuGet        #
+###############################
+
+# Pacotes NuGet baixados
+packages/
+.nuget/packages/
+
+# Pacotes gerados
+*.nupkg
+*.snupkg
+
+# Locks antigos
+project.lock.json
+project.fragment.lock.json
+
+###############################
+#      EF Core / Migrations   #
+###############################
+
+# Arquivos de fallback do EF (caso ocorram)
+*.jfm
+
+###############################
+#     PUBLICAÇÃO / DEPLOY     #
+###############################
+
+# Perfis de publicação
+*.pubxml
+*.publishsettings
+
+# Pasta de publish local
+PublishProfiles/
+
+###############################
+#          SONARCLOUD         #
+###############################
+
+.sonar/
+.scannerwork/
+
+###############################
+#     IDEs (Rider e VSCode)   #
+###############################
 
 # Rider
 .idea/
+*.iml
 
-# Logs
-*.log
+# VS Code (opcional)
+# .vscode/
 
-# Arquivos temporários do Windows
+###############################
+#        SISTEMA OPERACIONAL  #
+###############################
+
+# Windows
 Thumbs.db
 Desktop.ini
 $RECYCLE.BIN/
 
-# Configurações do NuGet
-*.nupkg
-packages/
+# macOS
+.DS_Store
+
+###############################
+#             GIT             #
+###############################
+
+# Arquivos de conflito
+*.orig
+*.rej
+
+# Rotas locais
+*.pid

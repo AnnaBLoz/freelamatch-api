@@ -1,23 +1,15 @@
 ﻿using FreelaMatchAPI.Data;
 using FreelaMatchAPI.DTOs;
 using FreelaMatchAPI.Models;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
-using System.ComponentModel.Design;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
 
-public class ReviewsService
+public class ReviewsService : IReviewsService
 {
     private readonly AppDbContext _context;
-    private readonly IConfiguration _config;
 
-    public ReviewsService(AppDbContext context, IConfiguration config)
+    public ReviewsService(AppDbContext context)
     {
         _context = context;
-        _config = config;
     }
 
     public async Task<List<Reviews>> GetReviews(int userId)
@@ -44,7 +36,7 @@ public class ReviewsService
         _context.Add(review);
         await _context.SaveChangesAsync();
 
-        // Buscar o Candidate aceito
+        // Atualiza o status do Candidate aceito para Reviewed
         var candidate = await _context.Candidate
             .Where(c => c.UserId == reviewCreated.ReceiverId
                      && c.ProposalId == reviewCreated.ProposalId
@@ -53,7 +45,7 @@ public class ReviewsService
 
         if (candidate != null)
         {
-            candidate.Status = ProposalStatus.Reviewed; // <-- corrigido
+            candidate.Status = ProposalStatus.Reviewed;
             _context.Candidate.Update(candidate);
             await _context.SaveChangesAsync();
         }
