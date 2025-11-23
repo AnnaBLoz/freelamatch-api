@@ -40,6 +40,31 @@ jobs:
         
       - name: Restore dependencies
         run: dotnet restore
+          
+      - name: Build
+        run: dotnet build --configuration Release --no-restore
+        
+      - name: Test with coverage
+        run: |
+          dotnet test --configuration Release --verbosity normal \
+            /p:CollectCoverage=true \
+            /p:CoverletOutputFormat=opencover \
+            /p:CoverletOutput=../coverage/ \
+            FreelaMatch.Tests/FreelaMatch.Tests.csproj
+            
+      - name: Verify coverage file
+        run: |
+          echo "===== Coverage file verification ====="
+          if [ -f "coverage/coverage.opencover.xml" ]; then
+            echo "Coverage file found!"
+            ls -lh coverage/coverage.opencover.xml
+            echo ""
+            echo "===== Coverage Summary ====="
+            head -5 coverage/coverage.opencover.xml
+          else
+            echo "Coverage file NOT found"
+            exit 1
+          fi
         
       - name: Begin SonarCloud analysis
         env:
@@ -54,39 +79,8 @@ jobs:
             /d:sonar.exclusions="**/Migrations/**" \
             /d:sonar.coverage.exclusions="**/*Tests.cs,**/Program.cs,**/Migrations/**"
             
-      - name: Build
-        run: dotnet build --configuration Release --no-restore
-        
-      - name: Test with coverage
-        run: |
-          dotnet test --configuration Release --verbosity normal \
-            /p:CollectCoverage=true \
-            /p:CoverletOutputFormat=opencover \
-            /p:CoverletOutput=../coverage/ \
-            FreelaMatch.Tests/FreelaMatch.Tests.csproj
-            
-      - name: Verify coverage file
-        run: |
-          echo "===== Searching for ALL coverage files ====="
-          find . -name "*.xml" -type f | grep -i coverage || echo "No coverage XML files found"
-          echo ""
-          echo "===== Checking coverage directory ====="
-          ls -la coverage/ || echo "Coverage directory does not exist"
-          echo ""
-          echo "===== Checking root directory ====="
-          ls -la *.xml || echo "No XML files in root"
-          echo ""
-          echo "===== Full directory tree ====="
-          find . -name "*.xml" -type f
-          echo ""
-          if [ -f "coverage/coverage.opencover.xml" ]; then
-            echo "Coverage file found at coverage/coverage.opencover.xml"
-            ls -lh coverage/coverage.opencover.xml
-            head -50 coverage/coverage.opencover.xml
-          else
-            echo " Coverage file NOT found"
-            exit 1
-          fi
+      - name: Build for SonarScanner
+        run: dotnet build --configuration Release
           
       - name: End SonarCloud analysis
         env:
