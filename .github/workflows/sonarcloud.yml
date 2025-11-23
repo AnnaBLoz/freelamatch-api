@@ -26,12 +26,13 @@ jobs:
         with:
           dotnet-version: 8.0.x
 
-      - name: Remove conflicting files
+      - name: Clean conflicting Sonar files
         run: rm -f sonar-project.properties
 
       - name: Install tools
         run: |
           dotnet tool install --global dotnet-sonarscanner
+          dotnet tool install --global coverlet.console
 
       - name: Restore dependencies
         run: dotnet restore
@@ -45,26 +46,33 @@ jobs:
             /o:"annabloz" \
             /d:sonar.host.url="https://sonarcloud.io" \
             /d:sonar.token="${{ secrets.SONAR_TOKEN }}" \
-            /d:sonar.cs.cobertura.reportsPaths=coverage.xml \
+            /d:sonar.cs.opencover.reportsPaths=coverage.xml \
             /d:sonar.exclusions="**/Migrations/**"
 
       - name: Build
         run: dotnet build --configuration Release --no-restore
 
-      - name: Test with Coverlet (Cobertura)
+      # ============================
+      #     TESTES + COVERAGE
+      # ============================
+      - name: Run tests and generate coverage
         run: |
-          dotnet test FreelaMatch.Tests/FreelaMatch.Tests.csproj \
-            --configuration Release --no-build \
+          dotnet test ./FreelaMatch.Tests/FreelaMatch.Tests.csproj \
+            --configuration Release \
             /p:CollectCoverage=true \
             /p:CoverletOutput=../coverage.xml \
-            /p:CoverletOutputFormat=cobertura
+            /p:CoverletOutputFormat=opencover
 
+      - name: Show coverage file
+        run: |
           echo "Coverage file generated:"
-          ls -lh coverage.xml
+          ls -la ./coverage.xml
+          echo "Preview (first 20 lines):"
+          head -n 20 ./coverage.xml
 
-          echo "First 30 lines of coverage:"
-          head -30 coverage.xml
-
+      # ============================
+      #      END ANALYSIS
+      # ============================
       - name: End SonarCloud analysis
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -77,8 +85,7 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "[View Dashboard](https://sonarcloud.io/dashboard?id=AnnaBLoz_freelamatch-api)" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Tests:** 32 passed" >> $GITHUB_STEP_SUMMARY
-          
+          echo "**Tests:** Completed" >> $GITHUB_STEP_SUMMARY
           if [ -f "coverage.xml" ]; then
             SIZE=$(wc -l < coverage.xml)
             echo "**Coverage:** Generated ($SIZE lines)" >> $GITHUB_STEP_SUMMARY
