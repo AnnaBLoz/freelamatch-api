@@ -22,24 +22,37 @@ jobs:
         with:
           dotnet-version: "8.0.x"
 
+      # Ajuste aqui para o nome correto da pasta
       - name: Restore dependencies
-        working-directory: ./freela-match-api
+        working-directory: ./FreelaMatchAPI
         run: dotnet restore
 
       - name: Build solution
-        working-directory: ./freela-match-api
+        working-directory: ./FreelaMatchAPI
         run: dotnet build --no-restore --configuration Release
 
-      - name: Run tests
-        working-directory: ./freela-match-api
-        run: dotnet test --no-build --verbosity normal
+      - name: Run tests with coverage
+        working-directory: ./FreelaMatchAPI
+        run: |
+          dotnet test \
+            --configuration Release \
+            /p:CollectCoverage=true \
+            /p:CoverletOutputFormat=cobertura \
+            --logger trx
 
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@v2
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
-          projectBaseDir: ./freela-match-api
+          args: >
+            -Dsonar.organization=annabloz
+            -Dsonar.projectKey=AnnaBLoz_freelamatch-api
+            -Dsonar.host.url=https://sonarcloud.io
+            -Dsonar.token=${{ secrets.SONAR_TOKEN }}
+            -Dsonar.cs.vstest.reportsPaths=**/TestResults/*.trx
+            -Dsonar.cs.opencover.reportsPaths=**/coverage.cobertura.xml
+            -Dsonar.exclusions=**/Migrations/**
 
       - name: SonarCloud Quality Gate
         uses: SonarSource/sonarcloud-quality-gate-action@v1
