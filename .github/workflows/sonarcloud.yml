@@ -30,7 +30,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  pull-requests: read
+  pull-requests: read # allows SonarCloud to decorate PRs with analysis results
 
 jobs:
   Analysis:
@@ -39,24 +39,18 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          fetch-depth: 0  # Disabling shallow clones improves the relevancy of reporting
 
       - name: Setup .NET 8
-        uses: actions/setup-dotnet/setup-dotnet@v4
+        uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 8.0.x
 
-      - name: Cache NuGet packages (fix deprecation)
-        uses: actions/cache@3f7a0f1da4b8f79d0d2c0f0f1c2d3e4f5a6b7c8d9 
-        with:
-          path: ~/.nuget/packages
-          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
-          restore-keys: ${{ runner.os }}-nuget-
+      - name: Restore dependencies
+        run: dotnet restore
 
-      - name: Restore & Build
-        run: |
-          dotnet restore
-          dotnet build --no-restore --configuration Release
+      - name: Build
+        run: dotnet build --no-restore --configuration Release
 
       - name: Test with coverage
         run: |
@@ -64,17 +58,28 @@ jobs:
             /p:CollectCoverage=true \
             /p:CoverletOutputFormat=cobertura \
             /p:CoverletOutput=coverage.cobertura.xml \
-            || true
+            || echo "No tests found – continuing with zero coverage"
 
       - name: Analyze with SonarCloud
+        # Nova action oficial (substitui a depreciada sonarcloud-github-action)
         uses: SonarSource/sonarqube-scan-action@v4
         env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }} # Generate a token on Sonarcloud.io, add it to the secrets of this repo with the name SONAR_TOKEN (Settings > Secrets > Actions > add new repository secret)
         with:
-          projectBaseDir: .
+          # Additional arguments for the SonarScanner CLI
           args: >
+            # Unique keys of your project and organization. You can find them in SonarCloud > Information (bottom-left menu)
+            # mandatory
             -Dsonar.projectKey=AnnaBLoz_freelamatch-api
             -Dsonar.organization=annabloz
+            # Comma-separated paths to directories containing main source files.
+            #-Dsonar.sources= # optional, default is project base directory
+            # Comma-separated paths to directories containing test source files.
+            #-Dsonar.tests= # optional. For more info about Code Coverage, please refer to https://docs.sonarcloud.io/enriching/test-coverage/overview/
+            # Adds more detail to both client and server-side analysis logs, activating DEBUG mode for the scanner, and adding client-side environment variables and system properties to the server-side log of analysis report processing.
+            #-Dsonar.verbose= # optional, default is false
             -Dsonar.cs.cobertura.reportPaths=coverage.cobertura.xml
             -Dsonar.exclusions=**/Migrations/**
             -Dsonar.qualitygate.wait=true
+          # When you need the analysis to take place in a directory other than the one from which it was launched, default is .
+          projectBaseDir: .
