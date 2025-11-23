@@ -34,10 +34,10 @@ jobs:
       - name: Clean conflicting Sonar files
         run: rm -f sonar-project.properties
 
+      # Instalar ferramentas necessárias
       - name: Install tools
         run: |
           dotnet tool install --global dotnet-sonarscanner
-          dotnet tool install --global coverlet.console
 
       # IMPORTANTE: Restaurar ANTES do build e do SonarScanner
       - name: Restore dependencies
@@ -58,53 +58,34 @@ jobs:
             /o:"annabloz" \
             /d:sonar.host.url="https://sonarcloud.io" \
             /d:sonar.token="${{ secrets.SONAR_TOKEN }}" \
-            /d:sonar.cs.opencover.reportsPaths="**/coverage.xml" \
-            /d:sonar.cs.vscoveragexml.reportsPaths="**/coverage.xml" \
-            /d:sonar.exclusions="**/Migrations/**,**/bin/**,**/obj/**" \
-            /d:sonar.test.inclusions="**/*Tests.cs" \
+            /d:sonar.cs.opencover.reportsPaths="**/TestResults/coverage.opencover.xml" \
+            /d:sonar.exclusions="**/Migrations/**" \
             /d:sonar.coverage.exclusions="**/*Tests.cs,**/Program.cs,**/Migrations/**"
 
       # Rebuild com o SonarScanner ativo
       - name: Build with SonarScanner
         run: dotnet build --configuration Release --no-restore
 
-      # Instalar Coverlet global tool
-      - name: Install Coverlet
-        run: dotnet tool install --global coverlet.console
-
       # Testes + Coverage usando Coverlet
       - name: Run tests and generate coverage
         run: |
-          dotnet test FreelaMatch.Tests/FreelaMatch.Tests.csproj \
+          dotnet test \
             --configuration Release \
-            --logger trx \
-            --collect:"XPlat Code Coverage" \
-            --results-directory ./TestResults
+            --no-restore \
+            /p:CollectCoverage=true \
+            /p:CoverletOutputFormat=opencover \
+            /p:CoverletOutput=./TestResults/coverage.opencover.xml
 
-      - name: Find and process coverage file
+      - name: Verify coverage file
         run: |
-          echo "Searching for coverage files..."
-          find ./TestResults -name "*.xml" -type f
-          
-          # Encontrar o arquivo de coverage
-          COVERAGE_FILE=$(find ./TestResults -name "coverage.cobertura.xml" | head -n 1)
-          
-          if [ -n "$COVERAGE_FILE" ]; then
-            echo "Found coverage file: $COVERAGE_FILE"
-            cp "$COVERAGE_FILE" ./coverage.xml
-            echo "File size: $(du -h ./coverage.xml | cut -f1)"
-            echo "Lines: $(wc -l < ./coverage.xml)"
+          if [ -f "./TestResults/coverage.opencover.xml" ]; then
+            echo "Coverage file generated"
+            ls -lh ./TestResults/coverage.opencover.xml
+            echo "Lines: $(wc -l < ./TestResults/coverage.opencover.xml)"
           else
-            echo "Cobertura format not found, trying opencover..."
-            COVERAGE_FILE=$(find ./TestResults -name "*.xml" | head -n 1)
-            if [ -n "$COVERAGE_FILE" ]; then
-              echo "Found: $COVERAGE_FILE"
-              cp "$COVERAGE_FILE" ./coverage.xml
-            else
-              echo "No coverage file found"
-              ls -R ./TestResults
-              exit 1
-            fi
+            echo "Coverage file not found"
+            ls -la ./TestResults || echo "TestResults folder not found"
+            exit 1
           fi
 
       # End Analysis
