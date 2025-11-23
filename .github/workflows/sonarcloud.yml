@@ -46,12 +46,12 @@ jobs:
 
       - name: Run tests and collect coverage
         run: |
-          dotnet test FreelaMatchAPI.Tests/FreelaMatchAPI.Tests.csproj \
+          dotnet test FreelaMatch.Tests/FreelaMatch.Tests.csproj \
             --configuration Release \
             --no-build \
             --collect:"XPlat Code Coverage" \
             /p:CoverletOutputFormat=opencover \
-            /p:CoverletOutput=$(pwd)/FreelaMatchAPI.Tests/coverage/
+            /p:CoverletOutput=$(pwd)/FreelaMatch.Tests/coverage/
 
       - name: Locate coverage file
         id: find_coverage
