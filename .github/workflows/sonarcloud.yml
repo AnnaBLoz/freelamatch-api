@@ -31,9 +31,9 @@ jobs:
       - name: Run tests with coverage
         run: |
           mkdir -p coverage
-          dotnet test FreelaMatchAPI.Tests/FreelaMatchAPI.Tests.csproj \
+          dotnet test ./FreelaMatch.Tests/FreelaMatch.Tests.csproj \
             --collect:"XPlat Code Coverage" \
-            --settings FreelaMatchAPI.Tests/coverlet.runsettings \
+            --settings ./FreelaMatch.Tests/coverlet.runsettings \
             --results-directory coverage-temp
 
           cp $(find coverage-temp -name "coverage.cobertura.xml") coverage/coverage.cobertura.xml
