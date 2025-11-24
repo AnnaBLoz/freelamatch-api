@@ -3,8 +3,9 @@
     "",
     "\\.github",
     "\\.github\\workflows",
-    "\\Services",
-    "\\Solution1"
+    "\\FreelaMatch.Tests",
+    "\\Services\\Interfaces"
   ],
+  "SelectedNode": "\\freela-match-api.csproj",
   "PreviewInSolutionExplorer": false
 }
