@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RunSettings>
+	<DataCollectionRunSettings>
+		<DataCollectors>
+			<DataCollector friendlyName="XPlat Code Coverage">
+				<Configuration>
+					<!-- Formato de saída -->
+					<Format>opencover</Format>
+
+					<!-- Inclusões: apenas o projeto principal -->
+					<Include>
+						<ModulePath>.*freela-match-api.dll</ModulePath>
+					</Include>
+
+					<!-- Exclusões -->
+					<Exclude>
+						<!-- Ignora projeto de teste -->
+						<ModulePath>.*freela-match-api-test.dll</ModulePath>
+
+						<!-- Ignora migrations -->
+						<ModulePath>.*Migrations.*</ModulePath>
+
+						<!-- Ignora arquivos do SDK do .NET -->
+						<ModulePath>.*Microsoft\.NET\.Test\.Sdk.*</ModulePath>
+					</Exclude>
+
+					<!-- Ignora atributos automáticos de geração ou cobertura -->
+					<ExcludeByAttribute>
+						<Attribute>*.GeneratedCode*</Attribute>
+						<Attribute>*.ExcludeFromCodeCoverage*</Attribute>
+					</ExcludeByAttribute>
+
+					<!-- Opcional: Ignora arquivos específicos -->
+					<!--
+          <ExcludeByFile>
+            <File>**/Program.cs</File>
+          </ExcludeByFile>
+          -->
+				</Configuration>
+			</DataCollector>
+		</DataCollectors>
+	</DataCollectionRunSettings>
+</RunSettings>
