@@ -25,9 +25,6 @@ jobs:
         with:
           dotnet-version: 8.0.x
 
-      - name: List repository files
-        run: ls -R
-
       - name: Restore dependencies
         run: dotnet restore
 
