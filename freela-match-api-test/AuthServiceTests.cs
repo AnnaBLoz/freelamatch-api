@@ -4,6 +4,10 @@ using FreelaMatchAPI.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using System.Collections.Generic;
+using System;
+using System.Threading.Tasks;
+using Xunit;
 
 namespace freela_match_api_test
 {
@@ -31,15 +35,12 @@ namespace freela_match_api_test
             };
 
             IConfiguration config = new ConfigurationBuilder()
-                .AddInMemoryCollection(inMemorySettings!)
+                .AddInMemoryCollection(inMemorySettings)
                 .Build();
 
             return new AuthService(context, passwordHasher, config);
         }
 
-        // --------------------------------------
-        // TESTE: Registrar usuário com sucesso
-        // --------------------------------------
         [Fact]
         public async Task RegisterAsync_ShouldCreateUser_WhenDataIsValid()
         {
@@ -57,15 +58,11 @@ namespace freela_match_api_test
 
             Assert.NotNull(result);
             Assert.Equal(dto.Email, result.Email);
-            Assert.False(string.IsNullOrEmpty(result.Password)); // senha hash
-            Assert.False(string.IsNullOrEmpty(result.Token));     // token gerado
-
+            Assert.False(string.IsNullOrEmpty(result.Password));
+            Assert.False(string.IsNullOrEmpty(result.Token));
             Assert.Equal(1, context.Users.Count());
         }
 
-        // --------------------------------------
-        // TESTE: Email duplicado deve falhar
-        // --------------------------------------
         [Fact]
         public async Task RegisterAsync_ShouldThrow_WhenEmailAlreadyExists()
         {
@@ -79,7 +76,7 @@ namespace freela_match_api_test
                 Name = "Anna",
                 Type = UserType.Freelancer
             });
-            context.SaveChanges();
+            await context.SaveChangesAsync();
 
             var dto = new RegisterDto
             {
@@ -92,9 +89,6 @@ namespace freela_match_api_test
             await Assert.ThrowsAsync<InvalidOperationException>(() => service.RegisterAsync(dto));
         }
 
-        // --------------------------------------
-        // TESTE: Login com sucesso
-        // --------------------------------------
         [Fact]
         public async Task LoginAsync_ShouldReturnUser_WhenCredentialsAreValid()
         {
@@ -121,9 +115,6 @@ namespace freela_match_api_test
             Assert.False(string.IsNullOrEmpty(result.Token));
         }
 
-        // --------------------------------------
-        // TESTE: Login falha com senha incorreta
-        // --------------------------------------
         [Fact]
         public async Task LoginAsync_ShouldReturnNull_WhenPasswordIsWrong()
         {
@@ -148,9 +139,6 @@ namespace freela_match_api_test
             Assert.Null(result);
         }
 
-        // --------------------------------------
-        // TESTE: Login falha para email inexistente
-        // --------------------------------------
         [Fact]
         public async Task LoginAsync_ShouldReturnNull_WhenEmailDoesNotExist()
         {
