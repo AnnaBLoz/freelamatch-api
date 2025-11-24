@@ -27,35 +27,24 @@ jobs:
 
       - name: Run tests with coverage
         run: |
-          mkdir -p coverage
+          # Cria pasta de saída fixa
+          mkdir -p ./freela-match-api-test/coverage
 
-          # Roda os testes gerando cobertura
+          # Roda testes com coverlet direto e saída fixa
           dotnet test ./freela-match-api-test/freela-match-api-test.csproj \
-            --collect:"XPlat Code Coverage" \
-            -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover
+            /p:CollectCoverage=true \
+            /p:CoverletOutput=./freela-match-api-test/coverage/coverage.opencover.xml \
+            /p:CoverletOutputFormat=opencover \
+            --settings coverlet.runsettings
 
-          # Localiza o arquivo OpenCover (preferido pelo SonarCloud)
-          COV=$(find ./freela-match-api-test/TestResults -name "coverage.opencover.xml" | head -n 1)
-
-          # Se não achou OpenCover, tenta Cobertura
-          if [ -z "$COV" ]; then
-            echo "OpenCover não encontrado — tentando Cobertura"
-            COV=$(find ./freela-match-api-test/TestResults -name "coverage.cobertura.xml" | head -n 1)
-
-            if [ -z "$COV" ]; then
-              echo "Nenhum arquivo de coverage encontrado!"
-              exit 1
-            fi
+          # Confirma que o arquivo foi criado
+          if [ ! -f ./freela-match-api-test/coverage/coverage.opencover.xml ]; then
+            echo "Arquivo de cobertura não encontrado!"
+            exit 1
           fi
 
-          echo "Arquivo encontrado: $COV"
-          cp "$COV" coverage/coverage.opencover.xml
-
-          echo "=== Conteúdo da pasta coverage ==="
-          ls -R coverage
-
-          echo "=== Primeiras 20 linhas do coverage ==="
-          head -n 20 coverage/coverage.opencover.xml
+          echo "Arquivo de cobertura gerado:"
+          ls -l ./freela-match-api-test/coverage
 
       - name: Analyze with SonarCloud
         uses: SonarSource/sonarcloud-github-action@v2.2.0
@@ -65,6 +54,7 @@ jobs:
           args: >
             -Dsonar.projectKey="AnnaBLoz_freelamatch-api"
             -Dsonar.organization="annabloz"
-            -Dsonar.cs.opencover.reportsPaths="coverage/coverage.opencover.xml"
+            -Dsonar.sources=.
+            -Dsonar.cs.opencover.reportsPaths=freela-match-api-test/coverage/coverage.opencover.xml
             -Dsonar.verbose=true
           projectBaseDir: .
