@@ -25,10 +25,7 @@ jobs:
         with:
           dotnet-version: 8.0.x
 
-      - name: List repository files
-        run: ls -R
-
-      - name: Restore dependencies
+      - name: Install dependencies
         run: dotnet restore
 
       - name: Run tests with coverage
@@ -38,8 +35,7 @@ jobs:
             --collect:"XPlat Code Coverage" \
             --settings ./FreelaMatch.Tests/coverlet.runsettings \
             --results-directory coverage-temp
-
-          cp $(find coverage-temp -name "coverage.cobertura.xml") coverage/coverage.cobertura.xml
+          find coverage-temp -name "*.cobertura.xml" -exec cp {} coverage/ \;
 
       - name: Analyze with SonarCloud
         uses: SonarSource/sonarcloud-github-action@v2.2.0
@@ -47,8 +43,8 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
           args: >
-            -Dsonar.projectKey="SeuProjetoKey"
-            -Dsonar.organization="SuaOrg"
-            -Dsonar.cs.opencover.reportsPaths="coverage/coverage.cobertura.xml"
+            -Dsonar.projectKey="SEU_PROJETO_KEY"
+            -Dsonar.organization="SUA_ORG"
+            -Dsonar.cs.opencover.reportsPaths="coverage/*.cobertura.xml"
             -Dsonar.verbose=true
           projectBaseDir: .

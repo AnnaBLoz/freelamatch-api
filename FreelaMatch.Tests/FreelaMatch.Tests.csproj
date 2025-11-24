@@ -12,18 +12,16 @@
 		<!-- Coletor de cobertura -->
 		<PackageReference Include="coverlet.collector" Version="6.0.4" />
 
-		<!-- SDK de teste -->
+		<!-- Test SDK estável -->
 		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.0.1" />
 
-		<!-- xUnit alinhado com projeto principal -->
+		<!-- Framework de testes -->
 		<PackageReference Include="xunit" Version="2.9.3" />
-		<PackageReference Include="xunit.runner.visualstudio" Version="2.9.3" />
+		<PackageReference Include="xunit.runner.visualstudio" Version="3.0.0" />
 
-		<!-- Mock e assertions -->
+		<!-- Dependências de mocks e asserts -->
 		<PackageReference Include="Moq" Version="4.20.72" />
 		<PackageReference Include="FluentAssertions" Version="8.8.0" />
-
-		<!-- EF Core InMemory -->
 		<PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="8.0.0" />
 	</ItemGroup>
 
@@ -32,7 +30,8 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\freela-match-api\freela-match-api.csproj" />
+		<!-- Ajuste do caminho do projeto principal -->
+		<ProjectReference Include="..\freela-match-api.csproj" />
 	</ItemGroup>
 
 </Project>
