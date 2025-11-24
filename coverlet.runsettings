@@ -5,12 +5,7 @@
       <DataCollector friendlyName="XPlat Code Coverage">
         <Configuration>
           <Format>opencover</Format>
-          <!-- Exclui pastas e arquivos que não queremos no coverage -->
-          <Exclude>
-            [*]*Migrations*,[*]*Program.cs,[*]*Tests*
-          </Exclude>
-          <!-- Garante que cobre todos os projetos da solução -->
-          <IncludeDirectory>../</IncludeDirectory>
+          <Exclude>[*]*Migrations*,[*]*Program.cs,[*]*Tests*</Exclude>
         </Configuration>
       </DataCollector>
     </DataCollectors>

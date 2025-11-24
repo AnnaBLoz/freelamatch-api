@@ -7,7 +7,7 @@ on:
     branches: [ main ]
 
 jobs:
-  build-and-analyze:
+  analyze:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -25,10 +25,10 @@ jobs:
       - name: Add tools to PATH
         run: echo "$HOME/.dotnet/tools" >> $GITHUB_PATH
 
-      - name: Restore dependencies
+      - name: Restore
         run: dotnet restore
 
-      - name: SonarCloud Begin
+      - name: Sonar Begin
         run: |
           dotnet sonarscanner begin \
             /k:"AnnaBLoz_freelamatch-api" \
@@ -40,7 +40,7 @@ jobs:
       - name: Build
         run: dotnet build --configuration Release --no-restore
 
-      - name: Run tests with coverage
+      - name: Test + Coverage (FUNCIONA 100%)
         run: |
           dotnet test FreelaMatch.Tests/FreelaMatch.Tests.csproj \
             --no-build \
@@ -48,10 +48,11 @@ jobs:
             --collect:"XPlat Code Coverage" \
             --settings coverlet.runsettings
 
-      - name: Debug - Show coverage file
+      - name: Debug - Mostra onde o coverage foi gerado
         run: |
-          echo "=== Looking for coverage files ==="
-          find . -name "coverage.opencover.xml" -o -name "coverage.*" | head -20
+          echo "=== Coverage files generated ==="
+          find . -name "coverage.opencover.xml" -type f || echo "Not found yet"
+          find . -path "*/TestResults/*" -name "coverage.opencover.xml" -exec echo "Found: {}" \;
 
-      - name: SonarCloud End
+      - name: Sonar End
         run: dotnet sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
