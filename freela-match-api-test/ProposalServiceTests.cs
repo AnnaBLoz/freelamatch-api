@@ -3,9 +3,9 @@ using FreelaMatchAPI.DTOs;
 using FreelaMatchAPI.Models;
 using FreelaMatchAPI.Interfaces;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Moq;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
@@ -62,17 +62,43 @@ namespace freela_match_api_test
         public async Task ApproveCandidate_UpdatesStatuses_AndSendsEmail()
         {
             var context = GetDbContext();
-
             var emailMock = new Mock<IEmailService>();
             emailMock.Setup(e => e.SendApproveEmail(It.IsAny<int>(), It.IsAny<int>()))
                      .Returns(Task.CompletedTask);
 
             var service = new ProposalService(context, emailMock.Object);
 
-            context.Proposal.Add(new Proposal { ProposalId = 1, OwnerId = 10, IsAvailable = true });
+            context.Proposal.Add(new Proposal
+            {
+                ProposalId = 1,
+                OwnerId = 10,
+                IsAvailable = true,
+                Title = "Test Proposal",
+                Description = "Desc",
+                Price = 100,
+                MaxDate = DateTime.UtcNow.AddDays(5),
+                CreatedDate = DateTime.UtcNow
+            });
+
             context.Candidate.AddRange(
-                new Candidate { CandidateId = 1, ProposalId = 1, UserId = 100 },
-                new Candidate { CandidateId = 2, ProposalId = 1, UserId = 200 }
+                new Candidate
+                {
+                    CandidateId = 1,
+                    ProposalId = 1,
+                    UserId = 100,
+                    Message = "msg",
+                    EstimatedDate = DateTime.UtcNow.AddDays(3).ToString(),
+                    Status = ProposalStatus.Pending
+                },
+                new Candidate
+                {
+                    CandidateId = 2,
+                    ProposalId = 1,
+                    UserId = 200,
+                    Message = "msg2",
+                    EstimatedDate = DateTime.UtcNow.AddDays(3).ToString(),
+                    Status = ProposalStatus.Pending
+                }
             );
             await context.SaveChangesAsync();
 
@@ -86,7 +112,7 @@ namespace freela_match_api_test
             Assert.Equal(ProposalStatus.Accepted, context.Candidate.First(c => c.CandidateId == 1).Status);
             Assert.Equal(ProposalStatus.Rejected, context.Candidate.First(c => c.CandidateId == 2).Status);
 
-            emailMock.Verify(e => e.SendApproveEmail(1, 1), Times.Once);
+            emailMock.Verify(e => e.SendApproveEmail(1, 100), Times.Once);
         }
 
         // ---------------------------------------------------------
@@ -97,7 +123,6 @@ namespace freela_match_api_test
         {
             var context = GetDbContext();
             var emailMock = new Mock<IEmailService>();
-
             var service = new ProposalService(context, emailMock.Object);
 
             context.Candidate.Add(new Candidate
@@ -105,6 +130,8 @@ namespace freela_match_api_test
                 CandidateId = 10,
                 ProposalId = 1,
                 UserId = 100,
+                Message = "msg",
+                EstimatedDate = DateTime.UtcNow.AddDays(3).ToString(),
                 Status = ProposalStatus.Pending
             });
             await context.SaveChangesAsync();
@@ -126,7 +153,6 @@ namespace freela_match_api_test
         public async Task Candidate_CreatesCandidate_AndSendsEmail()
         {
             var context = GetDbContext();
-
             var emailMock = new Mock<IEmailService>();
             emailMock.Setup(e => e.SendNewCandidateEmailAsync(It.IsAny<int>(), It.IsAny<int>()))
                      .Returns(Task.CompletedTask);
@@ -137,7 +163,7 @@ namespace freela_match_api_test
             {
                 ProposalId = 5,
                 UserId = 33,
-                EstimatedDate = DateTime.UtcNow.ToString(),
+                EstimatedDate = DateTime.UtcNow.AddDays(2).ToString(),
                 ProposedPrice = 150,
                 Message = "Test"
             };
@@ -157,7 +183,6 @@ namespace freela_match_api_test
         public async Task CounterProposal_CreatesAndSendsEmail()
         {
             var context = GetDbContext();
-
             var emailMock = new Mock<IEmailService>();
             emailMock.Setup(e =>
                 e.SendCounterProposalEmailAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>())
@@ -165,7 +190,16 @@ namespace freela_match_api_test
 
             var service = new ProposalService(context, emailMock.Object);
 
-            context.Proposal.Add(new Proposal { ProposalId = 7, OwnerId = 99 });
+            context.Proposal.Add(new Proposal
+            {
+                ProposalId = 7,
+                OwnerId = 99,
+                Title = "Title",
+                Description = "Desc",
+                Price = 500,
+                MaxDate = DateTime.UtcNow.AddDays(5),
+                CreatedDate = DateTime.UtcNow
+            });
             await context.SaveChangesAsync();
 
             var dto = new CounterProposalCreate
