@@ -30,10 +30,9 @@ jobs:
           mkdir -p coverage
           dotnet test ./freela-match-api-test/freela-match-api-test.csproj \
             --collect:"XPlat Code Coverage" \
-            -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover \
-            --results-directory coverage-temp
+            -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover
 
-          cp $(find coverage-temp -name "coverage.opencover.xml") coverage/coverage.opencover.xml
+          cp $(find ./freela-match-api-test/TestResults -name "coverage.opencover.xml") coverage/coverage.opencover.xml
 
       - name: Analyze with SonarCloud
         uses: SonarSource/sonarcloud-github-action@v2.2.0
