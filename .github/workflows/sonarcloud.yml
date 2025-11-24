@@ -40,19 +40,17 @@ jobs:
       - name: Build
         run: dotnet build --configuration Release --no-restore
 
-      - name: Test + Coverage (FUNCIONA 100%)
+      - name: Test + Coverage
         run: |
           dotnet test FreelaMatch.Tests/FreelaMatch.Tests.csproj \
-            --no-build \
             --configuration Release \
+            --no-build \
             --collect:"XPlat Code Coverage" \
             --settings coverlet.runsettings
 
-      - name: Debug - Mostra onde o coverage foi gerado
+      - name: Debug coverage file
         run: |
-          echo "=== Coverage files generated ==="
-          find . -name "coverage.opencover.xml" -type f || echo "Not found yet"
-          find . -path "*/TestResults/*" -name "coverage.opencover.xml" -exec echo "Found: {}" \;
+          find . -path "*/TestResults/*/coverage.opencover.xml" -type f && echo "Coverage encontrado!" || echo "Ainda não gerou"
 
       - name: Sonar End
         run: dotnet sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
