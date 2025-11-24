@@ -1,13 +1,14 @@
 ﻿using FreelaMatchAPI.Data;
+using FreelaMatchAPI.DTOs;
 using FreelaMatchAPI.Models;
+using FreelaMatchAPI.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Moq;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
+using Xunit;
 
 namespace freela_match_api_test
 {
@@ -22,22 +23,6 @@ namespace freela_match_api_test
             return new AppDbContext(options);
         }
 
-        private IConfiguration GetFakeConfig()
-        {
-            var dict = new Dictionary<string, string>
-        {
-            { "EmailSettings:From", "test@mail.com" },
-            { "EmailSettings:Host", "smtp.test.com" },
-            { "EmailSettings:Port", "465" },
-            { "EmailSettings:Username", "user" },
-            { "EmailSettings:Password", "pass" }
-        };
-
-            return new ConfigurationBuilder()
-                .AddInMemoryCollection(dict)
-                .Build();
-        }
-
         // ---------------------------------------------------------
         // CREATE PROPOSAL
         // ---------------------------------------------------------
@@ -45,9 +30,8 @@ namespace freela_match_api_test
         public async Task CreateProposal_CreatesProposalWithSkills()
         {
             var context = GetDbContext();
-            var config = GetFakeConfig();
+            var emailMock = new Mock<IEmailService>();
 
-            var emailMock = new Mock<EmailService>(context, config);
             var service = new ProposalService(context, emailMock.Object);
 
             var dto = new CreateProposal
@@ -58,10 +42,10 @@ namespace freela_match_api_test
                 MaxDate = DateTime.UtcNow.AddDays(5),
                 OwnerId = 10,
                 RequiredSkills = new List<ProposalSkillCreate>
-            {
-                new ProposalSkillCreate { SkillId = 1 },
-                new ProposalSkillCreate { SkillId = 2 }
-            }
+                {
+                    new ProposalSkillCreate { SkillId = 1 },
+                    new ProposalSkillCreate { SkillId = 2 }
+                }
             };
 
             var result = await service.CreateProposal(dto);
@@ -78,9 +62,8 @@ namespace freela_match_api_test
         public async Task ApproveCandidate_UpdatesStatuses_AndSendsEmail()
         {
             var context = GetDbContext();
-            var config = GetFakeConfig();
 
-            var emailMock = new Mock<EmailService>(context, config);
+            var emailMock = new Mock<IEmailService>();
             emailMock.Setup(e => e.SendApproveEmail(It.IsAny<int>(), It.IsAny<int>()))
                      .Returns(Task.CompletedTask);
 
@@ -103,7 +86,7 @@ namespace freela_match_api_test
             Assert.Equal(ProposalStatus.Accepted, context.Candidate.First(c => c.CandidateId == 1).Status);
             Assert.Equal(ProposalStatus.Rejected, context.Candidate.First(c => c.CandidateId == 2).Status);
 
-            emailMock.Verify(e => e.SendApproveEmail(1, 100), Times.Once);
+            emailMock.Verify(e => e.SendApproveEmail(1, 1), Times.Once);
         }
 
         // ---------------------------------------------------------
@@ -113,9 +96,7 @@ namespace freela_match_api_test
         public async Task DisapproveCandidate_SetsRejected()
         {
             var context = GetDbContext();
-            var config = GetFakeConfig();
-
-            var emailMock = new Mock<EmailService>(context, config);
+            var emailMock = new Mock<IEmailService>();
 
             var service = new ProposalService(context, emailMock.Object);
 
@@ -145,9 +126,8 @@ namespace freela_match_api_test
         public async Task Candidate_CreatesCandidate_AndSendsEmail()
         {
             var context = GetDbContext();
-            var config = GetFakeConfig();
 
-            var emailMock = new Mock<EmailService>(context, config);
+            var emailMock = new Mock<IEmailService>();
             emailMock.Setup(e => e.SendNewCandidateEmailAsync(It.IsAny<int>(), It.IsAny<int>()))
                      .Returns(Task.CompletedTask);
 
@@ -177,11 +157,11 @@ namespace freela_match_api_test
         public async Task CounterProposal_CreatesAndSendsEmail()
         {
             var context = GetDbContext();
-            var config = GetFakeConfig();
 
-            var emailMock = new Mock<EmailService>(context, config);
-            emailMock.Setup(e => e.SendCounterProposalEmailAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>()))
-                     .Returns(Task.CompletedTask);
+            var emailMock = new Mock<IEmailService>();
+            emailMock.Setup(e =>
+                e.SendCounterProposalEmailAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>())
+            ).Returns(Task.CompletedTask);
 
             var service = new ProposalService(context, emailMock.Object);
 

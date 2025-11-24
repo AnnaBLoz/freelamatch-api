@@ -7,9 +7,9 @@ using Microsoft.EntityFrameworkCore;
 public class ProposalService : IProposalService
 {
     private readonly AppDbContext _context;
-    private readonly EmailService _emailService;
+    private readonly IEmailService _emailService;
 
-    public ProposalService(AppDbContext context, EmailService emailService)
+    public ProposalService(AppDbContext context, IEmailService emailService)
     {
         _context = context;
         _emailService = emailService;
