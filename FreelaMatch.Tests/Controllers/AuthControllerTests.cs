@@ -10,7 +10,7 @@ using System;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace FreelaMatch.Tests
+namespace FreelaMatchAPI.FreelaMatch.Tests.Controllers
 {
     public class AuthControllerTests
     {

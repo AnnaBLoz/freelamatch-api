@@ -9,107 +9,110 @@ using FreelaMatchAPI.DTOs;
 using FreelaMatchAPI.Interfaces;
 using FreelaMatchAPI.Models;
 
-public class ReviewsControllerTests
+namespace FreelaMatchAPI.FreelaMatch.Tests.Controllers
 {
-    private readonly Mock<IReviewsService> _reviewsServiceMock;
-    private readonly Mock<IUserService> _userServiceMock;
-    private readonly Mock<IProposalService> _proposalServiceMock;
-    private readonly ReviewsController _controller;
-
-    public ReviewsControllerTests()
+    public class ReviewsControllerTests
     {
-        _reviewsServiceMock = new Mock<IReviewsService>();
-        _userServiceMock = new Mock<IUserService>();
-        _proposalServiceMock = new Mock<IProposalService>();
-        _controller = new ReviewsController(
-            _reviewsServiceMock.Object,
-            _userServiceMock.Object,
-            _proposalServiceMock.Object
-        );
-    }
+        private readonly Mock<IReviewsService> _reviewsServiceMock;
+        private readonly Mock<IUserService> _userServiceMock;
+        private readonly Mock<IProposalService> _proposalServiceMock;
+        private readonly ReviewsController _controller;
 
-    [Fact]
-    public async Task GetReviews_ShouldReturnOk_WhenReviewsExist()
-    {
-        _reviewsServiceMock.Setup(s => s.GetReviews(1))
-            .ReturnsAsync(new List<Reviews> { new Reviews { Id = 1, ReviewText = "Test" } });
+        public ReviewsControllerTests()
+        {
+            _reviewsServiceMock = new Mock<IReviewsService>();
+            _userServiceMock = new Mock<IUserService>();
+            _proposalServiceMock = new Mock<IProposalService>();
+            _controller = new ReviewsController(
+                _reviewsServiceMock.Object,
+                _userServiceMock.Object,
+                _proposalServiceMock.Object
+            );
+        }
 
-        var result = await _controller.GetReviews(1);
+        [Fact]
+        public async Task GetReviews_ShouldReturnOk_WhenReviewsExist()
+        {
+            _reviewsServiceMock.Setup(s => s.GetReviews(1))
+                .ReturnsAsync(new List<Reviews> { new Reviews { Id = 1, ReviewText = "Test" } });
 
-        result.Result.Should().BeOfType<OkObjectResult>();
-        var ok = result.Result as OkObjectResult;
-        var data = ok!.Value.Should().BeAssignableTo<List<Reviews>>().Subject;
-        data.Count.Should().Be(1);
-    }
+            var result = await _controller.GetReviews(1);
 
-    [Fact]
-    public async Task GetReviews_ShouldReturnNotFound_WhenEmpty()
-    {
-        _reviewsServiceMock.Setup(s => s.GetReviews(1)).ReturnsAsync(new List<Reviews>());
+            result.Result.Should().BeOfType<OkObjectResult>();
+            var ok = result.Result as OkObjectResult;
+            var data = ok!.Value.Should().BeAssignableTo<List<Reviews>>().Subject;
+            data.Count.Should().Be(1);
+        }
 
-        var result = await _controller.GetReviews(1);
+        [Fact]
+        public async Task GetReviews_ShouldReturnNotFound_WhenEmpty()
+        {
+            _reviewsServiceMock.Setup(s => s.GetReviews(1)).ReturnsAsync(new List<Reviews>());
 
-        result.Result.Should().BeOfType<NotFoundObjectResult>();
-    }
+            var result = await _controller.GetReviews(1);
 
-    [Fact]
-    public async Task GetFreelancersToReview_ShouldReturnOk_WhenFound()
-    {
-        _proposalServiceMock.Setup(s => s.GetFreelancersToReview(1))
-            .ReturnsAsync(new List<Candidate> { new Candidate { CandidateId = 1 } });
+            result.Result.Should().BeOfType<NotFoundObjectResult>();
+        }
 
-        var result = await _controller.GetFreelancersToReview(1);
+        [Fact]
+        public async Task GetFreelancersToReview_ShouldReturnOk_WhenFound()
+        {
+            _proposalServiceMock.Setup(s => s.GetFreelancersToReview(1))
+                .ReturnsAsync(new List<Candidate> { new Candidate { CandidateId = 1 } });
 
-        result.Result.Should().BeOfType<OkObjectResult>();
-    }
+            var result = await _controller.GetFreelancersToReview(1);
 
-    [Fact]
-    public async Task GetCompaniesToReview_ShouldReturnOk_WhenFound()
-    {
-        _proposalServiceMock.Setup(s => s.GetCompaniesToReview(1))
-            .ReturnsAsync(new List<Proposal> { new Proposal { ProposalId = 1 } });
+            result.Result.Should().BeOfType<OkObjectResult>();
+        }
 
-        var result = await _controller.GetCompaniesToReview(1);
+        [Fact]
+        public async Task GetCompaniesToReview_ShouldReturnOk_WhenFound()
+        {
+            _proposalServiceMock.Setup(s => s.GetCompaniesToReview(1))
+                .ReturnsAsync(new List<Proposal> { new Proposal { ProposalId = 1 } });
 
-        result.Result.Should().BeOfType<OkObjectResult>();
-    }
+            var result = await _controller.GetCompaniesToReview(1);
 
-    [Fact]
-    public async Task CreateReview_ShouldReturnOk_WhenSuccess()
-    {
-        var dto = new ReviewCreate { ReviewerId = 1, ReceiverId = 2, Rating = 5, ProposalId = 1 };
-        var createdReview = new Reviews { Id = 1, Rating = 5 };
+            result.Result.Should().BeOfType<OkObjectResult>();
+        }
 
-        _reviewsServiceMock.Setup(s => s.CreateReview(dto))
-            .ReturnsAsync(createdReview);
+        [Fact]
+        public async Task CreateReview_ShouldReturnOk_WhenSuccess()
+        {
+            var dto = new ReviewCreate { ReviewerId = 1, ReceiverId = 2, Rating = 5, ProposalId = 1 };
+            var createdReview = new Reviews { Id = 1, Rating = 5 };
 
-        var result = await _controller.CreateReview(dto);
+            _reviewsServiceMock.Setup(s => s.CreateReview(dto))
+                .ReturnsAsync(createdReview);
 
-        result.Should().BeOfType<OkObjectResult>();
-        var ok = result as OkObjectResult;
-        Assert.NotNull(ok);
-        Assert.NotNull(ok.Value);
+            var result = await _controller.CreateReview(dto);
 
-        // Usar reflexão para acessar propriedades de objetos anônimos
-        var valueType = ok.Value.GetType();
-        var reviewProperty = valueType.GetProperty("review");
-        Assert.NotNull(reviewProperty);
+            result.Should().BeOfType<OkObjectResult>();
+            var ok = result as OkObjectResult;
+            Assert.NotNull(ok);
+            Assert.NotNull(ok.Value);
 
-        var review = reviewProperty.GetValue(ok.Value) as Reviews;
-        Assert.NotNull(review);
-        Assert.Equal(1, review.Id);
-    }
+            // Usar reflexão para acessar propriedades de objetos anônimos
+            var valueType = ok.Value.GetType();
+            var reviewProperty = valueType.GetProperty("review");
+            Assert.NotNull(reviewProperty);
 
-    [Fact]
-    public async Task CreateReview_ShouldReturnBadRequest_WhenException()
-    {
-        var dto = new ReviewCreate { ReviewerId = 1, ReceiverId = 2, ProposalId = 1 };
+            var review = reviewProperty.GetValue(ok.Value) as Reviews;
+            Assert.NotNull(review);
+            Assert.Equal(1, review.Id);
+        }
 
-        _reviewsServiceMock.Setup(s => s.CreateReview(dto))
-            .ThrowsAsync(new InvalidOperationException("Error"));
+        [Fact]
+        public async Task CreateReview_ShouldReturnBadRequest_WhenException()
+        {
+            var dto = new ReviewCreate { ReviewerId = 1, ReceiverId = 2, ProposalId = 1 };
 
-        var result = await _controller.CreateReview(dto);
+            _reviewsServiceMock.Setup(s => s.CreateReview(dto))
+                .ThrowsAsync(new InvalidOperationException("Error"));
 
-        result.Should().BeOfType<BadRequestObjectResult>();
+            var result = await _controller.CreateReview(dto);
+
+            result.Should().BeOfType<BadRequestObjectResult>();
+        }
     }
 }

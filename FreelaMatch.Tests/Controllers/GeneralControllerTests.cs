@@ -8,7 +8,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace FreelaMatchAPI.Tests
+namespace FreelaMatchAPI.FreelaMatch.Tests.Controllers
 {
     public class GeneralControllerTests
     {

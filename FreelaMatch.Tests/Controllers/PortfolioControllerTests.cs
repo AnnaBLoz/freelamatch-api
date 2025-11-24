@@ -5,7 +5,7 @@ using FreelaMatchAPI.Models;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 
-namespace FreelaMatch.Tests.Controllers
+namespace FreelaMatchAPI.FreelaMatch.Tests.Controllers
 {
     public class PortfolioControllerTests
     {

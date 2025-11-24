@@ -8,7 +8,7 @@ using FreelaMatchAPI.Interfaces;
 using FreelaMatchAPI.DTOs;
 using FreelaMatchAPI.Models;
 
-namespace FreelaMatchAPI.Tests.Controllers
+namespace FreelaMatchAPI.FreelaMatch.Tests.Controllers
 {
     public class UserControllerTests
     {
