@@ -1,11 +1,12 @@
-<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8"?>
 <RunSettings>
   <DataCollectionRunSettings>
     <DataCollectors>
-      <DataCollector friendlyName="XPlat Code Coverage">
+      <DataCollector friendlyName="XPlat code coverage">
         <Configuration>
-          <Format>opencover</Format>
-          <Exclude>[*]*Migrations*,[*]*Program.cs,[*]*Tests*</Exclude>
+          <Format>cobertura</Format>
+          <OutputDirectory>coverage</OutputDirectory>
+          <UseRelativePaths>true</UseRelativePaths>
         </Configuration>
       </DataCollector>
     </DataCollectors>
