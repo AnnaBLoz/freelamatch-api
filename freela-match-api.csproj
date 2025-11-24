@@ -8,12 +8,6 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<!-- Compilar todos os arquivos de código -->
-		<Compile Include="Controllers\**\*.cs" />
-		<Compile Include="Models\**\*.cs" />
-		<Compile Include="Services\**\*.cs" />
-		<Compile Include="DTOs\**\*.cs" />
-		<Compile Include="Interfaces\**\*.cs" />
 	</ItemGroup>
 
 	<ItemGroup>

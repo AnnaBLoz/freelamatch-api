@@ -1,10 +1,10 @@
 {
   "ExpandedNodes": [
     "",
-    "\\.github",
-    "\\.github\\workflows",
+    "\\DTOs",
     "\\FreelaMatch.Tests",
-    "\\Services\\Interfaces"
+    "\\Models",
+    "\\Solution1"
   ],
   "SelectedNode": "\\freela-match-api.csproj",
   "PreviewInSolutionExplorer": false

@@ -233,3 +233,4 @@ D:\TCC\freela-match-api\obj\Debug\net8.0\refint\freela-match-api.dll
 D:\TCC\freela-match-api\obj\Debug\net8.0\freela-match-api.pdb
 D:\TCC\freela-match-api\obj\Debug\net8.0\freela-match-api.genruntimeconfig.cache
 D:\TCC\freela-match-api\obj\Debug\net8.0\ref\freela-match-api.dll
+D:\TCC\freela-match-api\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt
