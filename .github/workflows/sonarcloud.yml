@@ -1,17 +1,22 @@
-name: Analyze .NET Backend
+name: SonarCloud Analysis
 
 on:
   push:
-    branches: [ main ]
+    branches: [ "main" ]
   pull_request:
-    branches: [ main ]
+    branches: [ "main" ]
+  workflow_dispatch:
+
+permissions:
+  pull-requests: read
 
 jobs:
-  analyze:
+  build-and-analyze:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
@@ -20,39 +25,27 @@ jobs:
         with:
           dotnet-version: 8.0.x
 
-      - name: Install SonarScanner
-        run: dotnet tool install --global dotnet-sonarscanner
-
-      - name: Add tools to PATH
-        run: echo "$HOME/.dotnet/tools" >> $GITHUB_PATH
-
-      - name: Restore
+      - name: Install dependencies
         run: dotnet restore
 
-      - name: Sonar Begin
+      - name: Run tests with coverage
         run: |
-          dotnet sonarscanner begin \
-            /k:"AnnaBLoz_freelamatch-api" \
-            /o:"annabloz" \
-            /d:sonar.host.url="https://sonarcloud.io" \
-            /d:sonar.login="${{ secrets.SONAR_TOKEN }}" \
-            /d:sonar.coverage.exclusions="**/Migrations/**,**/Program.cs,**/*Tests.csproj"
-
-      - name: Build
-        run: dotnet build --configuration Release --no-restore
-
-      - name: Test + Coverage
-        run: |
-          dotnet test FreelaMatch.Tests/FreelaMatch.Tests.csproj \
-            --configuration Release \
-            --no-build \
+          mkdir -p coverage
+          dotnet test FreelaMatchAPI.Tests/FreelaMatchAPI.Tests.csproj \
             --collect:"XPlat Code Coverage" \
-            --settings coverlet.runsettings
+            --settings FreelaMatchAPI.Tests/coverlet.runsettings \
+            --results-directory coverage-temp
 
-      - name: Debug - Show coverage file
-        run: |
-          echo "=== Procurando coverage ==="
-          find . -name "coverage.opencover.xml" -type f || echo "Arquivo não encontrado"
+          cp $(find coverage-temp -name "coverage.cobertura.xml") coverage/coverage.cobertura.xml
 
-      - name: Sonar End
-        run: dotnet sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
+      - name: Analyze with SonarCloud
+        uses: SonarSource/sonarcloud-github-action@v2.2.0
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          args: >
+            -Dsonar.projectKey="SeuProjetoKey"
+            -Dsonar.organization="SuaOrg"
+            -Dsonar.cs.opencover.reportsPaths="coverage/coverage.cobertura.xml"
+            -Dsonar.verbose=true
+          projectBaseDir: .
