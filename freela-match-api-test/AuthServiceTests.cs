@@ -23,12 +23,12 @@ namespace freela_match_api_test
 
             // IConfiguration fake (JWT)
             var inMemorySettings = new Dictionary<string, string>
-        {
-            {"Jwt:Key", "supersecretkey123456789"},
-            {"Jwt:Issuer", "FreelaMatch"},
-            {"Jwt:Audience", "FreelaMatchUsers"},
-            {"Jwt:ExpiresInMinutes", "30"}
-        };
+            {
+                {"Jwt:Key", "12345678901234567890123456789012"}, // 32 bytes
+                {"Jwt:Issuer", "FreelaMatch"},
+                {"Jwt:Audience", "FreelaMatchUsers"},
+                {"Jwt:ExpiresInMinutes", "30"}
+            };
 
             IConfiguration config = new ConfigurationBuilder()
                 .AddInMemoryCollection(inMemorySettings!)
@@ -71,8 +71,14 @@ namespace freela_match_api_test
         {
             var service = CreateService(out var context);
 
-            // cria usuário antes
-            context.Users.Add(new User { Email = "anna@test.com", Password = "x", Name = "Anna" });
+            context.Users.Add(new User
+            {
+                Email = "anna@test.com",
+                Password = "x",
+                Token = "abc",
+                Name = "Anna",
+                Type = UserType.Freelancer
+            });
             context.SaveChanges();
 
             var dto = new RegisterDto
@@ -99,7 +105,8 @@ namespace freela_match_api_test
             {
                 Email = "anna@test.com",
                 Name = "Anna",
-                Type = UserType.Freelancer
+                Type = UserType.Freelancer,
+                Token = "initialtoken"
             };
 
             user.Password = hasher.HashPassword(user, "123456");
@@ -127,7 +134,8 @@ namespace freela_match_api_test
             {
                 Email = "anna@test.com",
                 Name = "Anna",
-                Type = UserType.Freelancer
+                Type = UserType.Freelancer,
+                Token = "initialtoken"
             };
 
             user.Password = hasher.HashPassword(user, "123456");
