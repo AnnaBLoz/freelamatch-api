@@ -9,6 +9,7 @@ on:
 jobs:
   analyze:
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v4
         with:
@@ -48,9 +49,10 @@ jobs:
             --collect:"XPlat Code Coverage" \
             --settings coverlet.runsettings
 
-      - name: Debug coverage file
+      - name: Debug - Show coverage file
         run: |
-          find . -path "*/TestResults/*/coverage.opencover.xml" -type f && echo "Coverage encontrado!" || echo "Ainda não gerou"
+          echo "=== Procurando coverage ==="
+          find . -name "coverage.opencover.xml" -type f || echo "Arquivo não encontrado"
 
       - name: Sonar End
         run: dotnet sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
