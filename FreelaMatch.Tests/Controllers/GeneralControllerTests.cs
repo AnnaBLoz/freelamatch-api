@@ -1,11 +1,8 @@
 ﻿using FreelaMatchAPI.Controllers;
-using FreelaMatchAPI.DTOs;
 using FreelaMatchAPI.Interfaces;
 using FreelaMatchAPI.Models;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using Xunit;
 
 namespace FreelaMatchAPI.FreelaMatch.Tests.Controllers

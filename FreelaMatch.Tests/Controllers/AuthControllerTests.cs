@@ -6,8 +6,6 @@ using FreelaMatchAPI.Models;
 using FreelaMatchAPI.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
-using System;
-using System.Threading.Tasks;
 using Xunit;
 
 namespace FreelaMatchAPI.FreelaMatch.Tests.Controllers
