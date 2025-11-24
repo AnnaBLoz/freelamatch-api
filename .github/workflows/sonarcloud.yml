@@ -28,11 +28,34 @@ jobs:
       - name: Run tests with coverage
         run: |
           mkdir -p coverage
+
+          # Roda os testes gerando cobertura
           dotnet test ./freela-match-api-test/freela-match-api-test.csproj \
             --collect:"XPlat Code Coverage" \
             -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover
 
-          cp $(find ./freela-match-api-test/TestResults -name "coverage.opencover.xml") coverage/coverage.opencover.xml
+          # Localiza o arquivo OpenCover (preferido pelo SonarCloud)
+          COV=$(find ./freela-match-api-test/TestResults -name "coverage.opencover.xml" | head -n 1)
+
+          # Se não achou OpenCover, tenta Cobertura
+          if [ -z "$COV" ]; then
+            echo "OpenCover não encontrado — tentando Cobertura"
+            COV=$(find ./freela-match-api-test/TestResults -name "coverage.cobertura.xml" | head -n 1)
+
+            if [ -z "$COV" ]; then
+              echo "Nenhum arquivo de coverage encontrado!"
+              exit 1
+            fi
+          fi
+
+          echo "Arquivo encontrado: $COV"
+          cp "$COV" coverage/coverage.opencover.xml
+
+          echo "=== Conteúdo da pasta coverage ==="
+          ls -R coverage
+
+          echo "=== Primeiras 20 linhas do coverage ==="
+          head -n 20 coverage/coverage.opencover.xml
 
       - name: Analyze with SonarCloud
         uses: SonarSource/sonarcloud-github-action@v2.2.0
