@@ -4,23 +4,26 @@
 		<TargetFramework>net8.0</TargetFramework>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
-
 		<IsPackable>false</IsPackable>
 		<IsTestProject>true</IsTestProject>
 	</PropertyGroup>
 
 	<ItemGroup>
-		<!-- Coletor de cobertura atualizado -->
+		<!-- Coletor de cobertura -->
 		<PackageReference Include="coverlet.collector" Version="6.0.4" />
 
-		<!-- Test SDK atualizado para evitar conflito de versões -->
+		<!-- SDK de teste -->
 		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.0.1" />
 
-		<!-- Dependências de teste -->
-		<PackageReference Include="xunit" Version="2.5.3" />
-		<PackageReference Include="xunit.runner.visualstudio" Version="2.5.3" />
+		<!-- xUnit alinhado com projeto principal -->
+		<PackageReference Include="xunit" Version="2.9.3" />
+		<PackageReference Include="xunit.runner.visualstudio" Version="2.9.3" />
+
+		<!-- Mock e assertions -->
 		<PackageReference Include="Moq" Version="4.20.72" />
 		<PackageReference Include="FluentAssertions" Version="8.8.0" />
+
+		<!-- EF Core InMemory -->
 		<PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="8.0.0" />
 	</ItemGroup>
 
@@ -29,8 +32,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<!-- Referência correta para o projeto principal -->
-		<ProjectReference Include="..\freela-match-api.csproj" />
+		<ProjectReference Include="..\freela-match-api\freela-match-api.csproj" />
 	</ItemGroup>
 
 </Project>
