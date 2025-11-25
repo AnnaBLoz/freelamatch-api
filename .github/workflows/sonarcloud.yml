@@ -11,6 +11,7 @@ env:
   DOTNET_NOLOGO: true
   DOTNET_CLI_TELEMETRY_OPTOUT: true
   SOLUTION_FILE: freela-match-api/freela-match-api.sln
+  TEST_PROJECT: freela-match-api-test/freela-match-api-test.csproj
   SONAR_PROJECT_KEY: AnnaBLoz_freelamatch-api
   SONAR_ORG: annabloz
 
@@ -39,7 +40,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: .sonar/scanner
-          key: ${{ runner.os }}-sonar-scanner-${{ hashFiles('**/global.json', '**/nuget.config') }}
+          key: ${{ runner.os }}-sonar-scanner
           restore-keys: ${{ runner.os }}-sonar-scanner-
 
       - name: Install SonarCloud scanner
@@ -62,22 +63,15 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         shell: pwsh
         run: |
-          $workspace = "${{ github.workspace }}"
-          Write-Host "Sonar will analyze sources in $workspace\freela-match-api"
-
           .\.sonar\scanner\dotnet-sonarscanner begin `
             /k:"${{ env.SONAR_PROJECT_KEY }}" `
             /o:"${{ env.SONAR_ORG }}" `
             /d:sonar.token="$env:SONAR_TOKEN" `
             /d:sonar.host.url="https://sonarcloud.io" `
-            /d:sonar.tests="$workspace\freela-match-api-test" `
-            /d:sonar.sources="D:\a\freelamatch-api\freelamatch-api\freela-match-api" `
-            /d:sonar.cs.analyzer.projectOutPaths="D:\a\freelamatch-api\freelamatch-api\freela-match-api\bin\Release\net8.0"
-            /d:sonar.cs.opencover.reportsPaths="$workspace\freela-match-api-test\TestResults\**\coverage.opencover.xml,$workspace\coverage.opencover.xml" `
-            /d:sonar.cs.vstest.reportsPaths="$workspace\freela-match-api-test\TestResults\**\*.trx" `
+            /d:sonar.cs.opencover.reportsPaths="**/coverage.opencover.xml" `
+            /d:sonar.cs.vstest.reportsPaths="**/TestResults/**/*.trx" `
             /d:sonar.exclusions="**/Migrations/**,**/Program.cs,**/obj/**,**/bin/**" `
-            /d:sonar.coverage.exclusions="**/Migrations/**,**/Program.cs" `
-            /d:sonar.verbose=true
+            /d:sonar.coverage.exclusions="**/Migrations/**,**/Program.cs"
 
       - name: Build solution
         run: dotnet build ${{ env.SOLUTION_FILE }} --no-restore --configuration Release
@@ -85,46 +79,37 @@ jobs:
       - name: Run tests with coverage
         shell: pwsh
         run: |
-          Write-Host "=== Running tests with coverage ==="
-
-          if (Test-Path "freela-match-api-test/TestResults") {
-            Remove-Item -Recurse -Force "freela-match-api-test/TestResults"
+          Write-Host "=== Limpando resultados anteriores ==="
+          if (Test-Path "${{ env.TEST_PROJECT }}/TestResults") {
+            Remove-Item -Recurse -Force "${{ env.TEST_PROJECT }}/TestResults"
           }
 
-          dotnet test freela-match-api-test/freela-match-api-test.csproj `
-            --no-build `
+          Write-Host "=== Executando testes com cobertura ==="
+          dotnet test ${{ env.TEST_PROJECT }} `
+            --no-restore `
             --configuration Release `
+            --logger "trx" `
             --collect:"XPlat Code Coverage" `
-            --results-directory freela-match-api-test/TestResults `
+            --results-directory "./TestResults" `
+            --settings coverlet.runsettings `
             -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover
 
-          Write-Host "=== Searching for coverage file ==="
-          $coverageFile = Get-ChildItem -Recurse -Filter "coverage.opencover.xml" -Path freela-match-api-test\TestResults | Sort-Object LastWriteTime -Descending | Select-Object -First 1
-          
-          if ($coverageFile) {
-            $dest = Join-Path (Get-Location) "coverage.opencover.xml"
-            Copy-Item $coverageFile.FullName $dest -Force
-            Write-Host "Copied coverage file to: $dest"
-            Write-Host "File size: $((Get-Item $dest).Length) bytes"
-          } else {
-            Write-Host "ERROR: Coverage file not found!"
-            Get-ChildItem -Path freela-match-api-test\TestResults -Recurse | Select-Object FullName
-            exit 1
+          Write-Host "=== Verificando arquivos gerados ==="
+          Get-ChildItem -Path "./TestResults" -Recurse -Filter "*.xml" | ForEach-Object {
+            Write-Host "Encontrado: $($_.FullName)"
           }
 
-      - name: Verify coverage file
-        shell: pwsh
-        run: |
-          if (Test-Path "coverage.opencover.xml") {
-            Write-Host "Coverage file found at root."
-            Write-Host "Full path: $(Resolve-Path 'coverage.opencover.xml')"
-            Write-Host "Size: $((Get-Item 'coverage.opencover.xml').Length) bytes"
-            Write-Host "First 10 lines of file:"
-            Get-Content "coverage.opencover.xml" -Head 10
-          } else {
-            Write-Host "ERROR: coverage.opencover.xml not found!"
+          Write-Host "=== Procurando arquivo de cobertura ==="
+          $coverageFiles = Get-ChildItem -Path "./TestResults" -Recurse -Filter "coverage.opencover.xml"
+          
+          if ($coverageFiles.Count -eq 0) {
+            Write-Host "ERRO: Nenhum arquivo coverage.opencover.xml encontrado!"
+            Write-Host "Arquivos disponíveis:"
+            Get-ChildItem -Path "./TestResults" -Recurse | Select-Object FullName
             exit 1
           }
+          
+          Write-Host "Arquivo(s) de cobertura encontrado(s): $($coverageFiles.Count)"
 
       - name: SonarCloud End
         env:
@@ -139,8 +124,8 @@ jobs:
         with:
           name: coverage-report
           path: |
-            coverage.*.xml
-            freela-match-api-test/TestResults/**/*.xml
+            **/TestResults/**/*.xml
+            **/TestResults/**/*.trx
           retention-days: 5
 
   build:
