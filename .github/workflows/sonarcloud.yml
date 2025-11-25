@@ -69,13 +69,10 @@ jobs:
             /o:"${{ env.SONAR_ORG }}" `
             /d:sonar.token="$env:SONAR_TOKEN" `
             /d:sonar.host.url="https://sonarcloud.io" `
-            /d:sonar.projectBaseDir="${{ github.workspace }}" `
-            /d:sonar.sources="freela-match-api" `
-            /d:sonar.tests="freela-match-api-test" `
-            /d:sonar.test.inclusions="**/*Test*.cs,**/*Tests.cs" `
             /d:sonar.cs.opencover.reportsPaths="**/TestResults/**/coverage.opencover.xml" `
-            /d:sonar.exclusions="**/Migrations/**,**/Program.cs,**/obj/**,**/bin/**" `
-            /d:sonar.coverage.exclusions="**/Migrations/**,**/Program.cs"
+            /d:sonar.exclusions="**/Migrations/**,**/Program.cs,**/obj/**,**/bin/**,**/TestResults/**" `
+            /d:sonar.coverage.exclusions="**/Migrations/**,**/Program.cs" `
+            /d:sonar.verbose=true
 
       - name: Build solution
         run: dotnet build ${{ env.SOLUTION_FILE }} --no-restore --configuration Release
