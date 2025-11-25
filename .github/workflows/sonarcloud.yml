@@ -80,37 +80,32 @@ jobs:
       - name: Build solution
         run: dotnet build ${{ env.SOLUTION_FILE }} --no-restore --configuration Release
 
-      # AQUI ESTÁ A MÁGICA QUE NUNCA FALHA (2025)
-      - name: Run tests + Generate OpenCover coverage
+      # VERSÃO QUE FUNCIONA MESMO SEM coverlet.collector NO CSPROJ
+      - name: Run tests + Generate coverage (FORÇA O COVERLET)
         shell: pwsh
         run: |
-          # Cria pasta temporária na raiz do repo
-          New-Item -Path "coverage-reports" -ItemType Directory -Force
+          # Instala o coverlet globalmente como fallback
+          dotnet tool install --global coverlet.console
 
-          dotnet test ${{ env.TEST_PROJECT }} `
-            --no-build `
-            --logger trx `
-            /p:CollectCoverage=true `
-            /p:CoverletOutputFormat=opencover `
-            /p:CoverletOutput="coverage-reports/" `
-            /p:Exclude="[*.Tests]*"
+          # Roda os testes forçando o coverlet via linha de comando
+          coverlet `
+            "freela-match-api-test/bin/Release/net8.0/freela-match-api-test.dll" `
+            --target "dotnet" `
+            --targetargs "test ${{ env.TEST_PROJECT }} --no-build --logger trx" `
+            --format opencover `
+            --output "${{ github.workspace }}/coverage.xml"
 
-          # Encontra o arquivo gerado (sempre tem um GUID no nome)
-          $file = Get-ChildItem -Path "coverage-reports" -Filter "*.xml" | Select-Object -First 1
-          
-          if (-not $file) {
-            Write-Error "Nenhum arquivo de cobertura foi gerado!"
+          # Verifica se gerou
+          if (Test-Path "coverage.xml") {
+            Write-Host "coverage.xml gerado com sucesso!"
+          } else {
+            Write-Error "FALHA: coverage.xml não foi gerado!"
             exit 1
           }
 
-          # Move e renomeia para coverage.xml na raiz
-          Move-Item $file.FullName "${{ github.workspace }}\coverage.xml" -Force
-          Write-Host "Cobertura gerada com sucesso: coverage.xml"
-
-      - name: Verify coverage.xml exists
+      - name: Show coverage file
         run: |
-          Get-ChildItem coverage.xml
-          Get-Content coverage.xml -Head 10
+          Get-Content coverage.xml -Head 20
 
       - name: SonarCloud End
         env:
