@@ -16,8 +16,8 @@ env:
   SONAR_ORG: annabloz
 
 permissions:
-  contents: read
   pull-requests: write
+  contents: read
 
 jobs:
   sonarcloud:
@@ -40,7 +40,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: .sonar/scanner
-          key: ${{ runner.os }}-sonar-scanner-2025
+          key: ${{ runner.os }}-sonar-scanner-${{ hashFiles('**/global.json', '**/nuget.config') }}
           restore-keys: ${{ runner.os }}-sonar-scanner-
 
       - name: Install SonarCloud scanner
@@ -50,6 +50,15 @@ jobs:
           New-Item -Path .sonar/scanner -ItemType Directory -Force
           dotnet tool update --tool-path .sonar/scanner dotnet-sonarscanner
 
+      - name: Install dotnet-coverage tool
+        run: dotnet tool install --global dotnet-coverage
+
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      # ===== INÍCIO DA ANÁLISE SONARCLOUD =====
       - name: SonarCloud Begin
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
@@ -60,19 +69,12 @@ jobs:
             /o:"${{ env.SONAR_ORG }}" `
             /d:sonar.token="${{ secrets.SONAR_TOKEN }}" `
             /d:sonar.host.url="https://sonarcloud.io" `
-            /d:sonar.projectBaseDir="${{ github.workspace }}" `
-            /d:sonar.scanner.metadataFilePath="${{ runner.temp }}/sonar-metadata.json" `
+            /d:sonar.cs.vscoveragexml.reportsPaths="coverage.xml" `
             /d:sonar.sources="freela-match-api" `
             /d:sonar.tests="freela-match-api-test" `
-            /d:sonar.cs.opencover.reportsPaths="coverage.xml" `
-            /d:sonar.cs.vstest.reportsPaths="**/*.trx" `
-            /d:sonar.exclusions="**/*Program.cs,**/*Migrations/*,**/*.dll,**/*obj/**,**/*bin/**" `
+            /d:sonar.exclusions="**/*.dll,**/Migrations/**,**/Program.cs,**/obj/**,**/bin/**" `
+            /d:sonar.coverage.exclusions="**/Migrations/**,**/Program.cs" `
             /d:sonar.verbose=true
-
-      - name: Setup .NET 8
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: 8.0.x
 
       - name: Restore dependencies
         run: dotnet restore ${{ env.SOLUTION_FILE }}
@@ -80,33 +82,24 @@ jobs:
       - name: Build solution
         run: dotnet build ${{ env.SOLUTION_FILE }} --no-restore --configuration Release
 
-      # VERSÃO QUE FUNCIONA MESMO SEM coverlet.collector NO CSPROJ
-      - name: Run tests + Generate coverage (FORÇA O COVERLET)
+      # ===== TESTES + COBERTURA =====
+      - name: Run tests with coverage
         shell: pwsh
         run: |
-          # Instala o coverlet globalmente como fallback
-          dotnet tool install --global coverlet.console
+          dotnet-coverage collect "dotnet test ${{ env.TEST_PROJECT }} --no-build --configuration Release --logger trx" -f xml -o "coverage.xml"
 
-          # Roda os testes forçando o coverlet via linha de comando
-          coverlet `
-            "freela-match-api-test/bin/Release/net8.0/freela-match-api-test.dll" `
-            --target "dotnet" `
-            --targetargs "test ${{ env.TEST_PROJECT }} --no-build --logger trx" `
-            --format opencover `
-            --output "${{ github.workspace }}/coverage.xml"
-
-          # Verifica se gerou
+      - name: Verify coverage file was generated
+        shell: pwsh
+        run: |
           if (Test-Path "coverage.xml") {
-            Write-Host "coverage.xml gerado com sucesso!"
+            Write-Host "Coverage file found"
+            Get-Item "coverage.xml" | Format-List
           } else {
-            Write-Error "FALHA: coverage.xml não foi gerado!"
-            exit 1
+            Write-Host "Coverage file NOT found"
+            Get-ChildItem -Recurse -Filter "*.xml" | Format-List
           }
 
-      - name: Show coverage file
-        run: |
-          Get-Content coverage.xml -Head 20
-
+      # ===== FIM DA ANÁLISE SONARCLOUD =====
       - name: SonarCloud End
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
@@ -114,18 +107,24 @@ jobs:
         run: |
           .\.sonar\scanner\dotnet-sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
 
+  # Job opcional: build e testes rápidos sem Sonar
   build:
     name: Build & Test (fast)
     needs: sonarcloud
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Setup .NET 8
+      
+      - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 8.0.x
-      - name: Restore & Build & Test
-        run: |
-          dotnet restore ${{ env.SOLUTION_FILE }}
-          dotnet build ${{ env.SOLUTION_FILE }} --no-restore
-          dotnet test ${{ env.TEST_PROJECT }} --no-build
+
+      - name: Restore
+        run: dotnet restore ${{ env.SOLUTION_FILE }}
+
+      - name: Build
+        run: dotnet build ${{ env.SOLUTION_FILE }} --no-restore --configuration Release
+
+      - name: Test
+        run: dotnet test ${{ env.TEST_PROJECT }} --no-build --configuration Release --verbosity normal
