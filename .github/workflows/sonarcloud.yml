@@ -10,7 +10,6 @@ on:
 env:
   DOTNET_NOLOGO: true
   DOTNET_CLI_TELEMETRY_OPTOUT: true
-  # Caminhos corrigidos baseados na estrutura real
   SOLUTION_FILE: freela-match-api/freela-match-api.sln
   SONAR_PROJECT_KEY: AnnaBLoz_freelamatch-api
   SONAR_ORG: annabloz
@@ -70,7 +69,6 @@ jobs:
       - name: Restore dependencies
         run: dotnet restore ${{ env.SOLUTION_FILE }}
 
-      # ===== INÍCIO DA ANÁLISE SONARCLOUD =====
       - name: SonarCloud Begin
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
@@ -81,7 +79,7 @@ jobs:
             /o:"${{ env.SONAR_ORG }}" `
             /d:sonar.token="$env:SONAR_TOKEN" `
             /d:sonar.host.url="https://sonarcloud.io" `
-            /d:sonar.cs.opencover.reportsPaths="coverage.opencover.xml,freela-match-api\coverage.opencover.xml" `
+            /d:sonar.cs.opencover.reportsPaths="**/coverage.opencover.xml" `
             /d:sonar.exclusions="**/Migrations/**,**/Program.cs,**/obj/**,**/bin/**" `
             /d:sonar.coverage.exclusions="**/Migrations/**,**/Program.cs" `
             /d:sonar.verbose=true
@@ -89,154 +87,47 @@ jobs:
       - name: Build solution
         run: dotnet build ${{ env.SOLUTION_FILE }} --no-restore --configuration Release
 
-      # ===== TESTES COM COBERTURA =====
       - name: Run tests with coverage
         shell: pwsh
         run: |
           Write-Host "=== Running tests with coverage ==="
           
-          # Limpar TestResults antigos
-          if (Test-Path "TestResults") {
-            Remove-Item -Recurse -Force "TestResults"
+          if (Test-Path "freela-match-api-test/TestResults") {
+            Remove-Item -Recurse -Force "freela-match-api-test/TestResults"
           }
-          
-          # Executar testes com cobertura - usando a solution para rodar todos os testes
-          dotnet test "${{ env.SOLUTION_FILE }}" `
+
+          dotnet test freela-match-api-test/freela-match-api-test.csproj `
             --no-build `
             --configuration Release `
             --collect:"XPlat Code Coverage" `
-            --results-directory TestResults/ `
+            --results-directory freela-match-api-test/TestResults `
             -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover
-          
-          Write-Host ""
-          Write-Host "=== Test execution completed ==="
-          Write-Host "=== Listing TestResults folder ==="
-          if (Test-Path "TestResults") {
-            Get-ChildItem -Path TestResults -Recurse | Select-Object FullName, Length
-          }
 
-      - name: Find and copy coverage file
-        shell: pwsh
-        run: |
-          Write-Host "=== Processing coverage files ==="
-          Write-Host "Current directory: $(Get-Location)"
+          Write-Host "=== Searching for coverage file ==="
+          $coverageFile = Get-ChildItem -Recurse -Filter "coverage.opencover.xml" -Path freela-match-api-test\TestResults | Sort-Object LastWriteTime -Descending | Select-Object -First 1
           
-          # Procurar por arquivos OpenCover
-          $openCoverFiles = Get-ChildItem -Path TestResults -Recurse -Filter "coverage.opencover.xml" -ErrorAction SilentlyContinue
-          
-          if ($openCoverFiles.Count -eq 0) {
-            Write-Host "No OpenCover files found. Looking for Cobertura..."
-            $coberturaFiles = Get-ChildItem -Path TestResults -Recurse -Filter "coverage.cobertura.xml" -ErrorAction SilentlyContinue
-            
-            if ($coberturaFiles.Count -gt 0) {
-              Write-Host "Found $($coberturaFiles.Count) Cobertura file(s):"
-              $coberturaFiles | ForEach-Object {
-                Write-Host "  - $($_.FullName): $($_.Length) bytes"
-              }
-              
-              # Filtrar arquivos muito pequenos (vazios)
-              $validFiles = $coberturaFiles | Where-Object { $_.Length -gt 1000 }
-              
-              if ($validFiles.Count -eq 0) {
-                Write-Host "ERROR: All Cobertura files are too small (empty)!"
-                Write-Host "File contents:"
-                $coberturaFiles | ForEach-Object {
-                  Write-Host "`nFile: $($_.FullName)"
-                  Get-Content $_.FullName
-                }
-                exit 1
-              }
-              
-              # Pegar o maior arquivo válido
-              $largestFile = $validFiles | Sort-Object Length -Descending | Select-Object -First 1
-              Write-Host "`nUsing largest file: $($largestFile.FullName) ($($largestFile.Length) bytes)"
-              
-              # Copiar para a raiz
-              Copy-Item $largestFile.FullName -Destination "coverage.cobertura.xml"
-              Write-Host "Copied to: $(Resolve-Path 'coverage.cobertura.xml')"
-              
-              # Verificar conteúdo
-              [xml]$xml = Get-Content "coverage.cobertura.xml"
-              $packageCount = $xml.coverage.packages.package.Count
-              Write-Host "Packages in coverage: $packageCount"
-              
-              if ($packageCount -eq 0) {
-                Write-Host "ERROR: Coverage file has no packages!"
-                exit 1
-              }
-              
-              Write-Host "Coverage file ready for SonarCloud (Cobertura format)!"
-              exit 0
-            }
-            
-            Write-Host "ERROR: No coverage files found!"
-            Write-Host "Contents of TestResults:"
-            Get-ChildItem -Path TestResults -Recurse | Select-Object FullName
-            exit 1
-          }
-          
-          # Se chegou aqui, encontrou OpenCover
-          Write-Host "Found $($openCoverFiles.Count) OpenCover file(s):"
-          $openCoverFiles | ForEach-Object {
-            Write-Host "  - $($_.FullName): $($_.Length) bytes"
-          }
-          
-          # Filtrar válidos
-          $validFiles = $openCoverFiles | Where-Object { $_.Length -gt 1000 }
-          
-          if ($validFiles.Count -eq 0) {
-            Write-Host "ERROR: All OpenCover files are too small!"
-            exit 1
-          }
-          
-          $largestFile = $validFiles | Sort-Object Length -Descending | Select-Object -First 1
-          Write-Host "`nUsing: $($largestFile.FullName) ($($largestFile.Length) bytes)"
-          
-          Copy-Item $largestFile.FullName -Destination "coverage.opencover.xml"
-          
-          $content = Get-Content "coverage.opencover.xml" -Raw
-          $moduleCount = ([regex]::Matches($content, '<Module ')).Count
-          $methodCount = ([regex]::Matches($content, '<Method ')).Count
-          
-          Write-Host "`nCoverage Statistics:"
-          Write-Host "  - Modules: $moduleCount"
-          Write-Host "  - Methods: $methodCount"
-          
-          if ($methodCount -eq 0) {
-            Write-Host "ERROR: No methods in coverage!"
-            exit 1
-          }
-          
-          Write-Host "`nCoverage file copied to: $(Resolve-Path 'coverage.opencover.xml')"
-          Write-Host "File size: $((Get-Item 'coverage.opencover.xml').Length) bytes"
-          Write-Host "Coverage file ready for SonarCloud (OpenCover format)!"
-      
-      - name: Verify coverage file before SonarCloud End
-        shell: pwsh
-        run: |
-          Write-Host "=== Final verification before SonarCloud End ==="
-          Write-Host "Current directory: $(Get-Location)"
-          
-          if (Test-Path "coverage.opencover.xml") {
-            Write-Host "SUCCESS: coverage.opencover.xml exists in root"
-            Write-Host "  Full path: $(Resolve-Path 'coverage.opencover.xml')"
-            Write-Host "  Size: $((Get-Item 'coverage.opencover.xml').Length) bytes"
-            
-            # IMPORTANTE: Copiar também para a pasta do projeto
-            Write-Host "`nCopying to freela-match-api folder..."
-            Copy-Item "coverage.opencover.xml" -Destination "freela-match-api/coverage.opencover.xml"
-            Write-Host "Copied to: $(Resolve-Path 'freela-match-api/coverage.opencover.xml')"
-            
-            Write-Host "`nFirst 50 lines of the file:"
-            Get-Content "coverage.opencover.xml" -Head 50
+          if ($coverageFile) {
+            Copy-Item $coverageFile.FullName coverage.opencover.xml
+            Write-Host "Copied coverage file to root: $($coverageFile.FullName)"
+            Write-Host "Coverage file size: $((Get-Item 'coverage.opencover.xml').Length) bytes"
           } else {
-            Write-Host "ERROR: coverage.opencover.xml NOT FOUND!"
-            Write-Host "Files in current directory:"
-            Get-ChildItem | Select-Object Name, Length
+            Write-Host "ERROR: Coverage file not found!"
+            Get-ChildItem -Path freela-match-api-test\TestResults -Recurse | Select-Object FullName
             exit 1
           }
 
-      # ===== FIM DA ANÁLISE SONARCLOUD =====
+      - name: Verify coverage file
+        shell: pwsh
+        run: |
+          if (Test-Path "coverage.opencover.xml") {
+            Write-Host "Coverage file found at root."
+            Write-Host "Full path: $(Resolve-Path 'coverage.opencover.xml')"
+            Write-Host "Size: $((Get-Item 'coverage.opencover.xml').Length) bytes"
+          } else {
+            Write-Host "ERROR: coverage.opencover.xml not found!"
+            exit 1
+          }
+
       - name: SonarCloud End
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
@@ -251,7 +142,7 @@ jobs:
           name: coverage-report
           path: |
             coverage.*.xml
-            TestResults/**/*.xml
+            freela-match-api-test/TestResults/**/*.xml
           retention-days: 5
 
   build:
