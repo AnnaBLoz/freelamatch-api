@@ -82,19 +82,15 @@ jobs:
         run: |
           Write-Host "=== Running tests with Coverlet MSBuild ==="
           
-          # Definir exclusões sem caracteres problemáticos
-          $exclude = "[*.Tests]*,[*]*.Migrations.*,[*]*.Program"
-          $excludeByFile = "**/Migrations/**/*.cs,**/Program.cs"
-          
-          # Executar testes com coverlet.msbuild
-          dotnet test ${{ env.TEST_PROJECT }} `
+          # Executar testes com coverlet.msbuild usando aspas duplas escapadas
+          dotnet test "${{ env.TEST_PROJECT }}" `
             --no-build `
             --configuration Release `
             /p:CollectCoverage=true `
             /p:CoverletOutputFormat=opencover `
-            /p:CoverletOutput=../../coverage.opencover.xml `
-            /p:Exclude=$exclude `
-            /p:ExcludeByFile=$excludeByFile `
+            /p:CoverletOutput="../../coverage.opencover.xml" `
+            "/p:Exclude=`"[*.Tests]*,[*]*.Migrations.*,[*]*.Program`"" `
+            "/p:ExcludeByFile=`"**/Migrations/**/*.cs,**/Program.cs`"" `
             /p:SkipAutoProps=true
           
           Write-Host ""
