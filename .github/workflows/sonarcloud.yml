@@ -17,12 +17,12 @@ env:
 
 permissions:
   contents: read
-  pull-requests: write   # necessário para o SonarCloud comentar no PR
+  pull-requests: write
 
 jobs:
   sonarcloud:
     name: SonarCloud Analysis
-    runs-on: windows-latest   # obrigatório para estabilidade do SonarScanner .NET
+    runs-on: windows-latest
     steps:
       - name: Set up JDK 17
         uses: actions/setup-java@v4
@@ -49,9 +49,6 @@ jobs:
         run: |
           New-Item -Path .sonar/scanner -ItemType Directory -Force
           dotnet tool update --tool-path .sonar/scanner dotnet-sonarscanner
-
-      - name: Install dotnet-coverage tool
-        run: dotnet tool install --global dotnet-coverage --version 17.11.3
 
       - name: SonarCloud Begin
         env:
@@ -84,14 +81,43 @@ jobs:
       - name: Build solution
         run: dotnet build ${{ env.SOLUTION_FILE }} --no-restore --configuration Release
 
-      - name: Run tests + Generate coverage
+      - name: Run tests + Generate coverage (forma mais estável de 2025)
+        shell: pwsh
         run: |
-          dotnet-coverage collect "dotnet test ${{ env.TEST_PROJECT }} --no-build --logger trx --collect:\"XPlat Code Coverage\"" `
-            -f xml -o "coverage.xml"
+          Set-Location $env:GITHUB_WORKSPACE
 
-      - name: Verify coverage file exists
+          dotnet test ${{ env.TEST_PROJECT }} `
+            --no-build `
+            --logger trx `
+            --collect:"XPlat Code Coverage" `
+            --results-directory:"./TestResults" `
+            -- `
+            DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=xml
+
+          # Encontra o arquivo gerado pelo Coverlet
+          $covFile = Get-ChildItem -Path "./TestResults" -Recurse -Filter "coverage.cobertura.xml" | Select-Object -First 1
+
+          if (-not $covFile) {
+            Write-Error "Arquivo de cobertura não foi gerado pelo Coverlet!"
+            exit 1
+          }
+
+          Write-Host "Arquivo encontrado: $($covFile.FullName)"
+
+          # Converte para o formato que o SonarCloud entende perfeitamente
+          dotnet tool run dotnet-coverage merge $covFile.FullName --output coverage.xml --output-format xml
+
+          if (Test-Path "coverage.xml") {
+            Write-Host "coverage.xml gerado com sucesso na raiz do projeto!"
+          } else {
+            Write-Error "Falha ao converter o arquivo de cobertura!"
+            exit 1
+          }
+
+      - name: Verify final coverage file
         run: |
-          if (Test-Path "coverage.xml") { Write-Host "coverage.xml encontrado!" } else { Write-Error "coverage.xml NÃO foi gerado!" }
+          Get-ChildItem -Path . -Name coverage.xml
+          Get-Content coverage.xml -Head 10
 
       - name: SonarCloud End
         env:
@@ -100,24 +126,20 @@ jobs:
         run: |
           .\.sonar\scanner\dotnet-sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
 
-  # Job rápido de build/teste (roda em paralelo no Linux - mais rápido e barato)
+  # Build rápido e barato (roda em paralelo)
   build:
     name: Build & Test (fast)
     needs: sonarcloud
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
       - name: Setup .NET 8
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 8.0.x
-
       - name: Restore
         run: dotnet restore ${{ env.SOLUTION_FILE }}
-
       - name: Build
         run: dotnet build ${{ env.SOLUTION_FILE }} --no-restore --configuration Release
-
       - name: Test
         run: dotnet test ${{ env.TEST_PROJECT }} --no-build --verbosity normal
