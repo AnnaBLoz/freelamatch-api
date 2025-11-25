@@ -27,19 +27,15 @@ jobs:
 
       - name: Run tests with coverage
         run: |
-          # Cria pasta de saída fixa
           mkdir -p ./freela-match-api-test/coverage
 
-          # Roda testes com coverlet direto e saída fixa
           dotnet test ./freela-match-api-test/freela-match-api-test.csproj \
             /p:CollectCoverage=true \
             /p:CoverletOutput=./freela-match-api-test/coverage/coverage.opencover.xml \
-            /p:CoverletOutputFormat=opencover \
-            --settings ./freela-match-api-test/coverlet.runsettings
+            /p:CoverletOutputFormat=opencover
 
-          # Confirma que o arquivo foi criado
           if [ ! -f ./freela-match-api-test/coverage/coverage.opencover.xml ]; then
-            echo "Arquivo de cobertura não encontrado!"
+            echo "Arquivo de cobertura NÃO encontrado!"
             exit 1
           fi
 
