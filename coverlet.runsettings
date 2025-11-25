@@ -5,9 +5,9 @@
       <DataCollector friendlyName="XPlat code coverage">
         <Configuration>
           <Format>opencover</Format>
-          <Exclude>[*]*.Migrations.*,[*]*.Program</Exclude>
-          <ExcludeByFile>**/Migrations/**/*.cs,**/Program.cs</ExcludeByFile>
-          <IncludeDirectory>../freela-match-api/</IncludeDirectory>
+          <Include>[freela-match-api]*</Include>
+          <Exclude>[freela-match-api-test]*,[*]*.Migrations.*,[*]*Program</Exclude>
+          <ExcludeByFile>**/Migrations/**,**/Program.cs</ExcludeByFile>
         </Configuration>
       </DataCollector>
     </DataCollectors>

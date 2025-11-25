@@ -80,36 +80,42 @@ jobs:
         shell: pwsh
         run: |
           Write-Host "=== Limpando resultados anteriores ==="
-          if (Test-Path "${{ env.TEST_PROJECT }}/TestResults") {
-            Remove-Item -Recurse -Force "${{ env.TEST_PROJECT }}/TestResults"
+          if (Test-Path "./TestResults") {
+            Remove-Item -Recurse -Force "./TestResults"
           }
 
           Write-Host "=== Executando testes com cobertura ==="
           dotnet test ${{ env.TEST_PROJECT }} `
-            --no-restore `
             --configuration Release `
+            --no-build `
             --logger "trx" `
             --collect:"XPlat Code Coverage" `
             --results-directory "./TestResults" `
-            --settings coverlet.runsettings `
-            -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover
+            --settings coverlet.runsettings
 
-          Write-Host "=== Verificando arquivos gerados ==="
-          Get-ChildItem -Path "./TestResults" -Recurse -Filter "*.xml" | ForEach-Object {
-            Write-Host "Encontrado: $($_.FullName)"
-          }
-
-          Write-Host "=== Procurando arquivo de cobertura ==="
+          Write-Host ""
+          Write-Host "=== Verificando arquivos de cobertura gerados ==="
           $coverageFiles = Get-ChildItem -Path "./TestResults" -Recurse -Filter "coverage.opencover.xml"
           
           if ($coverageFiles.Count -eq 0) {
             Write-Host "ERRO: Nenhum arquivo coverage.opencover.xml encontrado!"
             Write-Host "Arquivos disponíveis:"
-            Get-ChildItem -Path "./TestResults" -Recurse | Select-Object FullName
+            Get-ChildItem -Path "./TestResults" -Recurse | Select-Object FullName, Length
             exit 1
           }
           
           Write-Host "Arquivo(s) de cobertura encontrado(s): $($coverageFiles.Count)"
+          foreach ($file in $coverageFiles) {
+            Write-Host "  - $($file.FullName) ($($file.Length) bytes)"
+            
+            # Verificar se tem cobertura do projeto principal
+            $content = Get-Content $file.FullName -Raw
+            if ($content -match 'freela-match-api\.dll') {
+              Write-Host "    Contém cobertura do freela-match-api"
+            } else {
+              Write-Host "    NÃO contém cobertura do freela-match-api (apenas testes)"
+            }
+          }
 
       - name: SonarCloud End
         env:
