@@ -67,7 +67,7 @@ jobs:
           .\.sonar\scanner\dotnet-sonarscanner begin `
             /k:"${{ env.SONAR_PROJECT_KEY }}" `
             /o:"${{ env.SONAR_ORG }}" `
-            /d:sonar.token="${{ secrets.SONAR_TOKEN }}" `
+            /d:sonar.token="$env:SONAR_TOKEN" `
             /d:sonar.host.url="https://sonarcloud.io" `
             /d:sonar.cs.vscoveragexml.reportsPaths="coverage.xml" `
             /d:sonar.sources="freela-match-api" `
@@ -105,7 +105,7 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         shell: pwsh
         run: |
-          .\.sonar\scanner\dotnet-sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
+          .\.sonar\scanner\dotnet-sonarscanner end /d:sonar.token="$env:SONAR_TOKEN"
 
   # Job opcional: build e testes rápidos sem Sonar
   build:
