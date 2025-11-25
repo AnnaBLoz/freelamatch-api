@@ -26,7 +26,7 @@ jobs:
           dotnet-version: 8.0.x
 
       - name: Restore dependencies
-        run: dotnet restore
+        run: dotnet restore freela-match-api/freela-match-api.sln
 
       - name: Run tests with coverage (runsettings)
         run: |
@@ -44,13 +44,10 @@ jobs:
           args: >
             -Dsonar.projectKey=AnnaBLoz_freelamatch-api
             -Dsonar.organization=annabloz
-
             -Dsonar.sources=freela-match-api
             -Dsonar.tests=freela-match-api-test
             -Dsonar.test.inclusions=**/*.cs
             -Dsonar.exclusions=**/*.dll
-
             -Dsonar.cs.cobertura.reportsPaths=freela-match-api-test/TestResults/*/coverage.cobertura.xml
-
             -Dsonar.verbose=true
           projectBaseDir: .
