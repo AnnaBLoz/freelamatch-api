@@ -1,149 +1,122 @@
-name: .NET 8 CI with SonarCloud
+name: .NET 8 CI with Coverage
 
 on:
   push:
     branches: [ "main" ]
   pull_request:
-    types: [ opened, synchronize, reopened ]
+    branches: [ "main" ]
   workflow_dispatch:
 
 env:
   DOTNET_NOLOGO: true
   DOTNET_CLI_TELEMETRY_OPTOUT: true
-  SOLUTION_FILE: freela-match-api/freela-match-api.sln
-  TEST_PROJECT: freela-match-api-test/freela-match-api-test.csproj
-  SONAR_PROJECT_KEY: AnnaBLoz_freelamatch-api
-  SONAR_ORG: annabloz
 
 permissions:
+  contents: write
   pull-requests: write
-  contents: read
+  pages: write
+  id-token: write
 
 jobs:
-  sonarcloud:
-    name: SonarCloud Analysis
-    runs-on: windows-latest
+  build-test-coverage:
+    name: Build, Test & Coverage Report
+    runs-on: ubuntu-latest
     
     steps:
-      - name: Set up JDK 17
-        uses: actions/setup-java@v4
-        with:
-          java-version: 17
-          distribution: zulu
-
-      - name: Checkout repository
+      - name: Checkout
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Cache SonarCloud scanner
-        id: cache-sonar-scanner
-        uses: actions/cache@v4
-        with:
-          path: .sonar/scanner
-          key: ${{ runner.os }}-sonar-scanner
-          restore-keys: ${{ runner.os }}-sonar-scanner-
-
-      - name: Install SonarCloud scanner
-        if: steps.cache-sonar-scanner.outputs.cache-hit != 'true'
-        shell: pwsh
-        run: |
-          New-Item -Path .sonar/scanner -ItemType Directory -Force
-          dotnet tool update --tool-path .sonar/scanner dotnet-sonarscanner
-
+      
       - name: Setup .NET 8
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 8.0.x
 
-      - name: Restore dependencies
-        run: dotnet restore ${{ env.SOLUTION_FILE }}
-
-      - name: SonarCloud Begin
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        shell: pwsh
+      - name: Restore
         run: |
-          .\.sonar\scanner\dotnet-sonarscanner begin `
-            /k:"${{ env.SONAR_PROJECT_KEY }}" `
-            /o:"${{ env.SONAR_ORG }}" `
-            /d:sonar.token="$env:SONAR_TOKEN" `
-            /d:sonar.host.url="https://sonarcloud.io" `
-            /d:sonar.cs.opencover.reportsPaths="**/TestResults/**/coverage.opencover.xml" `
-            /d:sonar.exclusions="**/Migrations/**,**/Program.cs,**/obj/**,**/bin/**,**/TestResults/**" `
-            /d:sonar.coverage.exclusions="**/Migrations/**,**/Program.cs" `
-            /d:sonar.verbose=true
+          dotnet restore freela-match-api/freela-match-api.csproj
+          dotnet restore freela-match-api-test/freela-match-api-test.csproj
 
-      - name: Build solution
-        run: dotnet build ${{ env.SOLUTION_FILE }} --no-restore --configuration Release
+      - name: Build
+        run: |
+          dotnet build freela-match-api/freela-match-api.csproj --no-restore --configuration Release
+          dotnet build freela-match-api-test/freela-match-api-test.csproj --no-restore --configuration Release
 
       - name: Run tests with coverage
-        shell: pwsh
         run: |
-          Write-Host "=== Running tests with coverage ==="
-          
-          dotnet test ${{ env.TEST_PROJECT }} `
-            --configuration Release `
-            --no-build `
-            --collect:"XPlat Code Coverage" `
-            --results-directory ./TestResults `
+          dotnet test freela-match-api-test/freela-match-api-test.csproj \
+            --configuration Release \
+            --no-build \
+            --verbosity normal \
+            --collect:"XPlat Code Coverage" \
+            --results-directory ./TestResults \
             --settings coverlet.runsettings
 
-          Write-Host "`n=== Verifying coverage files ==="
-          $coverageFiles = Get-ChildItem -Path ./TestResults -Recurse -Filter "coverage.opencover.xml"
-          
-          if ($coverageFiles.Count -eq 0) {
-            Write-Host "ERROR: No coverage files found!"
-            exit 1
-          }
-          
-          Write-Host "Found $($coverageFiles.Count) coverage file(s):"
-          foreach ($file in $coverageFiles) {
-            Write-Host "  - $($file.FullName) ($($file.Length) bytes)"
-            
-            $content = Get-Content $file.FullName -Raw
-            if ($content -match 'freela-match-api\.dll') {
-              Write-Host "    Contains freela-match-api coverage" -ForegroundColor Green
-            } else {
-              Write-Host "    Does NOT contain freela-match-api coverage!" -ForegroundColor Red
-            }
-          }
-
-      - name: SonarCloud End
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        shell: pwsh
+      - name: Generate Coverage Report
         run: |
-          .\.sonar\scanner\dotnet-sonarscanner end /d:sonar.token="$env:SONAR_TOKEN"
+          dotnet tool install -g dotnet-reportgenerator-globaltool
+          reportgenerator \
+            -reports:"./TestResults/**/coverage.opencover.xml" \
+            -targetdir:"./CoverageReport" \
+            -reporttypes:"Html;Badges;MarkdownSummaryGithub;JsonSummary;Cobertura" \
+            -title:"FreelaMatch API - Coverage Report" \
+            -verbosity:"Info"
 
-      - name: Upload coverage as artifact
-        if: always()
+      - name: Extract Coverage Percentage
+        id: coverage
+        run: |
+          COVERAGE=$(grep -oP '(?<=Line coverage: )\d+' ./CoverageReport/Summary.txt | head -1)
+          echo "coverage=$COVERAGE" >> $GITHUB_OUTPUT
+          echo "Coverage: $COVERAGE%"
+
+      - name: Add coverage to job summary
+        run: |
+          echo "## Code Coverage Report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          cat ./CoverageReport/SummaryGithub.md >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "[View Full HTML Report](https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/coverage/)" >> $GITHUB_STEP_SUMMARY
+
+      - name: Comment coverage on PR
+        if: github.event_name == 'pull_request'
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          header: coverage-report
+          recreate: true
+          message: |
+            ## Code Coverage Report
+            
+            $(cat ./CoverageReport/SummaryGithub.md)
+            
+            ---
+            
+            **Coverage: ${{ steps.coverage.outputs.coverage }}%**
+            
+            [View detailed HTML report](https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/coverage/)
+
+      - name: Upload coverage report
         uses: actions/upload-artifact@v4
         with:
           name: coverage-report
-          path: |
-            **/TestResults/**/*.xml
-            **/TestResults/**/*.trx
-          retention-days: 5
+          path: ./CoverageReport
+          retention-days: 30
 
-  build:
-    name: Build & Test (fast)
-    needs: sonarcloud
-    runs-on: ubuntu-latest
-    
-    steps:
-      - uses: actions/checkout@v4
-      
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v4
+      - name: Deploy to GitHub Pages
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        uses: peaceiris/actions-gh-pages@v3
         with:
-          dotnet-version: 8.0.x
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./CoverageReport
+          destination_dir: coverage
+          user_name: 'github-actions[bot]'
+          user_email: 'github-actions[bot]@users.noreply.github.com'
 
-      - name: Restore
-        run: dotnet restore ${{ env.SOLUTION_FILE }}
-
-      - name: Build
-        run: dotnet build ${{ env.SOLUTION_FILE }} --no-restore --configuration Release
-
-      - name: Test
-        run: dotnet test ${{ env.SOLUTION_FILE }} --no-build --configuration Release --verbosity normal
+      - name: Coverage Check
+        run: |
+          COVERAGE=$(grep -oP '(?<=Line coverage: )\d+' ./CoverageReport/Summary.txt | head -1)
+          THRESHOLD=50
+          
+          if [ "$COVERAGE" -lt "$THRESHOLD" ]; then
+            echo "Coverage ($COVERAGE%) is below threshold ($THRESHOLD%)"
+          else
+            echo "Coverage ($COVERAGE%) meets threshold ($THRESHOLD%)"
+          fi
