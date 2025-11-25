@@ -64,12 +64,14 @@ jobs:
         run: |
           $workDir = Get-Location
           Write-Host "Running Sonar Begin in $workDir"
+
           .\.sonar\scanner\dotnet-sonarscanner begin `
             /k:"${{ env.SONAR_PROJECT_KEY }}" `
             /o:"${{ env.SONAR_ORG }}" `
             /d:sonar.token="$env:SONAR_TOKEN" `
             /d:sonar.host.url="https://sonarcloud.io" `
             /d:sonar.sources="freela-match-api" `
+            /d:sonar.tests="freela-match-api-test" `
             /d:sonar.cs.analyzer.projectOutPaths="freela-match-api/bin/Release/net8.0" `
             /d:sonar.cs.opencover.reportsPaths="$workDir\freela-match-api-test\TestResults\**\coverage.opencover.xml,$workDir\coverage.opencover.xml" `
             /d:sonar.cs.vstest.reportsPaths="$workDir\freela-match-api-test\TestResults\**\*.trx" `
