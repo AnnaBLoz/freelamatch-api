@@ -69,8 +69,11 @@ jobs:
             /o:"${{ env.SONAR_ORG }}" `
             /d:sonar.token="$env:SONAR_TOKEN" `
             /d:sonar.host.url="https://sonarcloud.io" `
-            /d:sonar.cs.opencover.reportsPaths="**/coverage.opencover.xml" `
-            /d:sonar.cs.vstest.reportsPaths="**/TestResults/**/*.trx" `
+            /d:sonar.projectBaseDir="${{ github.workspace }}" `
+            /d:sonar.sources="freela-match-api" `
+            /d:sonar.tests="freela-match-api-test" `
+            /d:sonar.test.inclusions="**/*Test*.cs,**/*Tests.cs" `
+            /d:sonar.cs.opencover.reportsPaths="**/TestResults/**/coverage.opencover.xml" `
             /d:sonar.exclusions="**/Migrations/**,**/Program.cs,**/obj/**,**/bin/**" `
             /d:sonar.coverage.exclusions="**/Migrations/**,**/Program.cs"
 
@@ -101,9 +104,8 @@ jobs:
           foreach ($file in $coverageFiles) {
             Write-Host "  - $($file.FullName) ($($file.Length) bytes)"
             
-            # Verify it contains the main project
             $content = Get-Content $file.FullName -Raw
-            if ($content -match 'freela-match-api') {
+            if ($content -match 'freela-match-api\.dll') {
               Write-Host "    Contains freela-match-api coverage" -ForegroundColor Green
             } else {
               Write-Host "    Does NOT contain freela-match-api coverage!" -ForegroundColor Red
