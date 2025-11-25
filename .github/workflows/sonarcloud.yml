@@ -34,18 +34,6 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Debug - Show repository structure
-        shell: pwsh
-        run: |
-          Write-Host "=== Repository Root Contents ==="
-          Get-ChildItem -Force | Select-Object Name, Mode
-          Write-Host ""
-          Write-Host "=== Looking for solution files ==="
-          Get-ChildItem -Recurse -Filter "*.sln" | Select-Object FullName
-          Write-Host ""
-          Write-Host "=== Looking for test projects ==="
-          Get-ChildItem -Recurse -Filter "*test*.csproj" | Select-Object FullName
-
       - name: Cache SonarCloud scanner
         id: cache-sonar-scanner
         uses: actions/cache@v4
@@ -80,8 +68,11 @@ jobs:
             /d:sonar.token="$env:SONAR_TOKEN" `
             /d:sonar.host.url="https://sonarcloud.io" `
             /d:sonar.cs.opencover.reportsPaths="**/coverage.opencover.xml" `
+            /d:sonar.cs.vstest.reportsPaths="freela-match-api-test/TestResults/**/*.trx" `
+            /d:sonar.sources="freela-match-api" `
             /d:sonar.exclusions="**/Migrations/**,**/Program.cs,**/obj/**,**/bin/**" `
             /d:sonar.coverage.exclusions="**/Migrations/**,**/Program.cs" `
+            /d:sonar.cpd.exclusions="**/*.cs" `
             /d:sonar.verbose=true
 
       - name: Build solution
@@ -91,7 +82,7 @@ jobs:
         shell: pwsh
         run: |
           Write-Host "=== Running tests with coverage ==="
-          
+
           if (Test-Path "freela-match-api-test/TestResults") {
             Remove-Item -Recurse -Force "freela-match-api-test/TestResults"
           }
@@ -123,6 +114,8 @@ jobs:
             Write-Host "Coverage file found at root."
             Write-Host "Full path: $(Resolve-Path 'coverage.opencover.xml')"
             Write-Host "Size: $((Get-Item 'coverage.opencover.xml').Length) bytes"
+            Write-Host "First 10 lines of file:"
+            Get-Content "coverage.opencover.xml" -Head 10
           } else {
             Write-Host "ERROR: coverage.opencover.xml not found!"
             exit 1
