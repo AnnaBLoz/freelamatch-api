@@ -70,6 +70,7 @@ jobs:
             /d:sonar.token="$env:SONAR_TOKEN" `
             /d:sonar.host.url="https://sonarcloud.io" `
             /d:sonar.sources="freela-match-api" `
+            /d:sonar.cs.analyzer.projectOutPaths="freela-match-api/bin/Release/net8.0" `
             /d:sonar.cs.opencover.reportsPaths="$workDir\freela-match-api-test\TestResults\**\coverage.opencover.xml,$workDir\coverage.opencover.xml" `
             /d:sonar.cs.vstest.reportsPaths="$workDir\freela-match-api-test\TestResults\**\*.trx" `
             /d:sonar.exclusions="**/Migrations/**,**/Program.cs,**/obj/**,**/bin/**" `
