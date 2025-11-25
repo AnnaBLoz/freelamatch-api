@@ -69,7 +69,7 @@ jobs:
             /o:"${{ env.SONAR_ORG }}" `
             /d:sonar.token="$env:SONAR_TOKEN" `
             /d:sonar.host.url="https://sonarcloud.io" `
-            /d:sonar.cs.vscoveragexml.reportsPaths="coverage.xml" `
+            /d:sonar.cs.vscoveragexml.reportsPaths="${{ github.workspace }}/coverage.xml" `
             /d:sonar.sources="freela-match-api" `
             /d:sonar.tests="freela-match-api-test" `
             /d:sonar.exclusions="**/*.dll,**/Migrations/**,**/Program.cs,**/obj/**,**/bin/**" `
@@ -86,17 +86,25 @@ jobs:
       - name: Run tests with coverage
         shell: pwsh
         run: |
-          dotnet-coverage collect "dotnet test ${{ env.TEST_PROJECT }} --no-build --configuration Release --logger trx" -f xml -o "coverage.xml"
+          dotnet-coverage collect `
+            "dotnet test ${{ env.TEST_PROJECT }} --no-build --configuration Release --logger trx --verbosity normal" `
+            -f xml `
+            -o "${{ github.workspace }}/coverage.xml"
 
-      - name: Verify coverage file was generated
+      - name: Verify coverage file
         shell: pwsh
         run: |
-          if (Test-Path "coverage.xml") {
-            Write-Host "Coverage file found"
-            Get-Item "coverage.xml" | Format-List
+          $coveragePath = "${{ github.workspace }}/coverage.xml"
+          if (Test-Path $coveragePath) {
+            Write-Host "Coverage file found at: $coveragePath"
+            Write-Host "File size: $((Get-Item $coveragePath).Length) bytes"
+            # Show first few lines to verify it's valid XML
+            Get-Content $coveragePath -Head 10
           } else {
-            Write-Host "Coverage file NOT found"
-            Get-ChildItem -Recurse -Filter "*.xml" | Format-List
+            Write-Host "Coverage file NOT found at: $coveragePath"
+            Write-Host "Searching for coverage files..."
+            Get-ChildItem -Path "${{ github.workspace }}" -Recurse -Filter "*coverage*.xml" | Format-Table FullName, Length
+            exit 1
           }
 
       # ===== FIM DA ANÁLISE SONARCLOUD =====
