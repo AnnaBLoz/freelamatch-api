@@ -41,7 +41,10 @@ jobs:
           args: >
             -Dsonar.projectKey="AnnaBLoz_freelamatch-api"
             -Dsonar.organization="annabloz"
-            -Dsonar.sources=.
+            -Dsonar.sources=freela-match-api
+            -Dsonar.tests=freela-match-api-test
+            -Dsonar.test.inclusions=**/*.cs
+            -Dsonar.exclusions=**/*.dll
             -Dsonar.cs.cobertura.reportsPaths=**/TestResults/**/coverage.cobertura.xml
             -Dsonar.verbose=true
           projectBaseDir: .
