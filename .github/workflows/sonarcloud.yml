@@ -1,78 +1,122 @@
-name: SonarCloud Analysis
+name: .NET 8 CI with SonarCloud
 
 on:
   push:
     branches: [ "main" ]
   pull_request:
-    branches: [ "main" ]
+    types: [ opened, synchronize, reopened ]
   workflow_dispatch:
 
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+  SOLUTION_FILE: freela-match-api/freela-match-api.sln
+  TEST_PROJECT: freela-match-api-test/freela-match-api-test.csproj
+  SONAR_PROJECT_KEY: AnnaBLoz_freelamatch-api
+  SONAR_ORG: annabloz
+
 permissions:
-  pull-requests: read
+  pull-requests: write   # necessário para o SonarCloud postar comentários
+  contents: read
 
 jobs:
-  build-and-analyze:
-    runs-on: ubuntu-latest
-
+  sonarcloud:
+    name: SonarCloud Analysis
+    runs-on: windows-latest   # SonarScanner for .NET roda MUITO mais estável no Windows
     steps:
-      # ============================================================
-      # CHECKOUT DO REPOSITÓRIO
-      # ============================================================
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: 17
+          distribution: zulu
+
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      # ============================================================
-      # SETUP DO .NET
-      # ============================================================
+      # Cache do scanner e pacotes do Sonar (acelera muito)
+      - name: Cache SonarCloud scanner
+        id: cache-sonar-scanner
+        uses: actions/cache@v4
+        with:
+          path: .sonar/scanner
+          key: ${{ runner.os }}-sonar-scanner-${{ hashFiles('**/global.json', '**/nuget.config') }}
+          restore-keys: ${{ runner.os }}-sonar-scanner-
+
+      - name: Install SonarCloud scanner
+        if: steps.cache-sonar-scanner.outputs.cache-hit != 'true'
+        shell: pwsh
+        run: |
+          New-Item -Path .sonar/scanner -ItemType Directory -Force
+          dotnet tool update --tool-path .sonar/scanner dotnet-sonarscanner
+
+      - name: Install dotnet-coverage tool
+        run: dotnet tool install --global dotnet-coverage
+
+      # ===== INÍCIO DA ANÁLISE SONARCLOUD =====
+      - name: SonarCloud Begin
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        shell: pwsh
+        run: |
+          .\.sonar\scanner\dotnet-sonarscanner begin `
+            /k:"${{ env.SONAR_PROJECT_KEY }}" `
+            /o:"${{ env.SONAR_ORG }}" `
+            /d:sonar.token="${{ secrets.SONAR_TOKEN }}" `
+            /d:sonar.host.url="https://sonarcloud.io" `
+            /d:sonar.cs.vscoveragexml.reportsPaths="coverage.xml" `
+            /d:sonar.sources="freela-match-api" `
+            /d:sonar.tests="freela-match-api-test" `
+            /d:sonar.test.inclusions="**/*.cs" `
+            /d:sonar.exclusions="**/*.dll,**/*Migrations/*,**/*Program.cs" `
+            /d:sonar.verbose=true
+
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Restore dependencies
+        run: dotnet restore ${{ env.SOLUTION_FILE }}
+
+      - name: Build solution
+        run: dotnet build ${{ env.SOLUTION_FILE }} --no-restore --configuration Release
+
+      # ===== TESTES + COBERTURA =====
+      - name: Run tests with coverage
+        run: |
+          dotnet-coverage collect "dotnet test ${{ env.TEST_PROJECT }} --no-build --logger trx" `
+            -f xml -o "coverage.xml"
+
+      - name: Verify coverage file was generated
+        run: Get-ChildItem -Path . -Recurse -Include coverage.xml | Format-List
+
+      # ===== FIM DA ANÁLISE SONARCLOUD =====
+      - name: SonarCloud End
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        shell: pwsh
+        run: |
+          .\.sonar\scanner\dotnet-sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
+
+  # Job opcional: build e testes rápidos sem Sonar (roda em paralelo no Linux, mais rápido)
+  build:
+    name: Build & Test (fast)
+    needs: sonarcloud
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 8.0.x
 
-      # ============================================================
-      # RESTORE E BUILD DO SOLUTION
-      # ============================================================
-      - name: Restore solution
-        run: dotnet restore freela-match-api/freela-match-api.sln
+      - name: Restore
+        run: dotnet restore ${{ env.SOLUTION_FILE }}
 
-      - name: Build solution
-        run: dotnet build freela-match-api/freela-match-api.sln --no-restore
+      - name: Build
+        run: dotnet build ${{ env.SOLUTION_FILE }} --no-restore --configuration Release
 
-      # ============================================================
-      # RODAR TESTES + COVERAGE
-      # ============================================================
-      - name: Run tests with coverage (runsettings)
-        run: |
-          dotnet test freela-match-api-test/freela-match-api-test.csproj \
-            --settings freela-match-api-test/coverlet.runsettings \
-            --logger "trx"
-
-          echo "Procurando arquivo de cobertura..."
-          find . -type f -name "coverage.cobertura.xml"
-
-      # Debug extra (opcional, pode remover depois)
-      - name: Debug Coverage Path
-        run: |
-          echo "Conteúdo de freela-match-api-test/TestResults:"
-          ls -R freela-match-api-test/TestResults || true
-
-      # ============================================================
-      # SONARCLOUD
-      # ============================================================
-      - name: Analyze with SonarCloud
-        uses: SonarSource/sonarcloud-github-action@v2.2.0
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        with:
-          args: >
-            -Dsonar.projectKey="AnnaBLoz_freelamatch-api"
-            -Dsonar.organization="annabloz"
-            -Dsonar.sources=freela-match-api
-            -Dsonar.tests=freela-match-api-test
-            -Dsonar.test.inclusions=**/*.cs
-            -Dsonar.exclusions=**/*.dll
-            -Dsonar.cs.cobertura.reportsPaths=freela-match-api-test/TestResults/**/coverage.cobertura.xml
-            -Dsonar.verbose=true
-          projectBaseDir: .
+      - name: Test
+        run: dotnet test ${{ env.TEST_PROJECT }} --no-build --verbosity normal
