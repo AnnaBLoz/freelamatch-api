@@ -64,7 +64,7 @@ jobs:
             /d:sonar.scanner.metadataFilePath="${{ runner.temp }}/sonar-metadata.json" `
             /d:sonar.sources="freela-match-api" `
             /d:sonar.tests="freela-match-api-test" `
-            /d:sonar.cs.vscoveragexml.reportsPaths="coverage.xml" `
+            /d:sonar.cs.opencover.reportsPaths="coverage.xml" `
             /d:sonar.cs.vstest.reportsPaths="**/*.trx" `
             /d:sonar.exclusions="**/*Program.cs,**/*Migrations/*,**/*.dll,**/*obj/**,**/*bin/**" `
             /d:sonar.verbose=true
@@ -83,29 +83,27 @@ jobs:
       - name: Run tests + Generate coverage (100% confiável)
         shell: pwsh
         run: |
+          # Força o Coverlet a gerar o arquivo na raiz do repositório
           dotnet test ${{ env.TEST_PROJECT }} `
             --no-build `
             --logger trx `
             /p:CollectCoverage=true `
             /p:CoverletOutputFormat=opencover `
-            /p:CoverletOutput="./coverage.xml" `
+            /p:CoverletOutput="${{ github.workspace }}/coverage.xml" `
             /p:Exclude="[*.Tests]*"
 
-      # Verifica se o arquivo foi gerado na raiz
-      - name: Verify coverage.xml exists
-        run: |
-          if (Test-Path "freela-match-api-test/coverage.xml") {
-            Write-Host "Cobertura gerada com sucesso!"
-            Copy-Item "freela-match-api-test/coverage.xml" -Destination "coverage.xml"
+          # Verifica se foi gerado
+          if (Test-Path "${{ github.workspace }}/coverage.xml") {
+            Write-Host "coverage.xml gerado com sucesso na raiz!"
           } else {
-            Write-Error "coverage.xml não foi gerado!"
-            Get-ChildItem -Recurse -Include coverage.xml -ErrorAction SilentlyContinue
+            Write-Error "ERRO: coverage.xml não foi gerado!"
+            Get-ChildItem -Recurse -Include coverage.* -ErrorAction SilentlyContinue
             exit 1
           }
 
-      - name: Show final coverage file
+      - name: Show coverage file (primeiras linhas)
         run: |
-          Get-Content coverage.xml -Head 10
+          Get-Content coverage.xml -Head 15
 
       - name: SonarCloud End
         env:
