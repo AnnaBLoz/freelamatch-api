@@ -84,32 +84,46 @@ jobs:
       - name: Run tests with coverage
         shell: pwsh
         run: |
-          # Usar coverlet integrado com melhor suporte para projetos referenciados
+          # Usar coverlet com arquivo de configuração
           dotnet test ${{ env.SOLUTION_FILE }} `
             --no-build `
             --configuration Release `
             --logger trx `
             --collect:"XPlat Code Coverage" `
             --results-directory TestResults/ `
-            --settings coverlet.runsettings `
-            -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=cobertura
+            --settings freela-match-api-test/coverlet.runsettings
 
-      - name: Convert coverage to XML format
+      - name: Convert coverage to SonarCloud format
         shell: pwsh
         run: |
-          # Encontrar o arquivo de coverage gerado
-          $coverageFile = Get-ChildItem -Path TestResults -Recurse -Filter "coverage.cobertura.xml" | Select-Object -First 1
+          Write-Host "=== Searching for coverage files ==="
+          $coverageFiles = Get-ChildItem -Path TestResults -Recurse -Filter "coverage.cobertura.xml"
           
-          if ($coverageFile) {
-            Write-Host "Found coverage file: $($coverageFile.FullName)"
-            
-            # Converter para formato XML que o SonarCloud entende
-            dotnet-coverage merge $coverageFile.FullName -f xml -o coverage.xml
-            
-            Write-Host "Converted to coverage.xml"
-          } else {
-            Write-Host "No coverage file found!"
+          Write-Host "Found $($coverageFiles.Count) coverage file(s)"
+          $coverageFiles | ForEach-Object { Write-Host "  - $($_.FullName)" }
+          
+          if ($coverageFiles.Count -eq 0) {
+            Write-Host "ERROR: No coverage files found!"
             Get-ChildItem -Path TestResults -Recurse | Format-Table Name, FullName
+            exit 1
+          }
+          
+          # Converter para formato Visual Studio XML
+          Write-Host ""
+          Write-Host "=== Converting to VS XML format ==="
+          if ($coverageFiles.Count -eq 1) {
+            dotnet-coverage merge $coverageFiles[0].FullName -f xml -o coverage.xml
+          } else {
+            # Se houver múltiplos arquivos, fazer merge de todos
+            $paths = $coverageFiles | ForEach-Object { $_.FullName }
+            dotnet-coverage merge ($paths -join ',') -f xml -o coverage.xml
+          }
+          
+          if (Test-Path "coverage.xml") {
+            Write-Host "coverage.xml created successfully"
+            Write-Host "  Size: $((Get-Item coverage.xml).Length) bytes"
+          } else {
+            Write-Host "ERROR: Failed to create coverage.xml"
             exit 1
           }
 
