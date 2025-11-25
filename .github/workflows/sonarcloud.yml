@@ -62,17 +62,18 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         shell: pwsh
         run: |
+          $workDir = Get-Location
+          Write-Host "Running Sonar Begin in $workDir"
           .\.sonar\scanner\dotnet-sonarscanner begin `
             /k:"${{ env.SONAR_PROJECT_KEY }}" `
             /o:"${{ env.SONAR_ORG }}" `
             /d:sonar.token="$env:SONAR_TOKEN" `
             /d:sonar.host.url="https://sonarcloud.io" `
-            /d:sonar.cs.opencover.reportsPaths="**/coverage.opencover.xml" `
-            /d:sonar.cs.vstest.reportsPaths="freela-match-api-test/TestResults/**/*.trx" `
             /d:sonar.sources="freela-match-api" `
+            /d:sonar.cs.opencover.reportsPaths="$workDir\freela-match-api-test\TestResults\**\coverage.opencover.xml,$workDir\coverage.opencover.xml" `
+            /d:sonar.cs.vstest.reportsPaths="$workDir\freela-match-api-test\TestResults\**\*.trx" `
             /d:sonar.exclusions="**/Migrations/**,**/Program.cs,**/obj/**,**/bin/**" `
             /d:sonar.coverage.exclusions="**/Migrations/**,**/Program.cs" `
-            /d:sonar.cpd.exclusions="**/*.cs" `
             /d:sonar.verbose=true
 
       - name: Build solution
@@ -98,9 +99,10 @@ jobs:
           $coverageFile = Get-ChildItem -Recurse -Filter "coverage.opencover.xml" -Path freela-match-api-test\TestResults | Sort-Object LastWriteTime -Descending | Select-Object -First 1
           
           if ($coverageFile) {
-            Copy-Item $coverageFile.FullName coverage.opencover.xml
-            Write-Host "Copied coverage file to root: $($coverageFile.FullName)"
-            Write-Host "Coverage file size: $((Get-Item 'coverage.opencover.xml').Length) bytes"
+            $dest = Join-Path (Get-Location) "coverage.opencover.xml"
+            Copy-Item $coverageFile.FullName $dest -Force
+            Write-Host "Copied coverage file to: $dest"
+            Write-Host "File size: $((Get-Item $dest).Length) bytes"
           } else {
             Write-Host "ERROR: Coverage file not found!"
             Get-ChildItem -Path freela-match-api-test\TestResults -Recurse | Select-Object FullName
