@@ -1,12 +1,13 @@
-<?xml version="1.0" encoding="utf-8"?>
 <RunSettings>
 	<DataCollectionRunSettings>
 		<DataCollectors>
 			<DataCollector friendlyName="XPlat code coverage">
 				<Configuration>
 					<Format>cobertura</Format>
-					<OutputDirectory>coverage</OutputDirectory>
-					<UseRelativePaths>true</UseRelativePaths>
+					<Exclude>[*]*.Migrations.*,[*.Tests]*,[*]*.Program</Exclude>
+					<ExcludeByFile>**/Migrations/**/*.cs,**/Program.cs</ExcludeByFile>
+					<IncludeTestAssembly>false</IncludeTestAssembly>
+					<SkipAutoProps>true</SkipAutoProps>
 				</Configuration>
 			</DataCollector>
 		</DataCollectors>

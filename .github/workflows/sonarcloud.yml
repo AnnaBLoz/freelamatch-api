@@ -69,9 +69,7 @@ jobs:
             /o:"${{ env.SONAR_ORG }}" `
             /d:sonar.token="$env:SONAR_TOKEN" `
             /d:sonar.host.url="https://sonarcloud.io" `
-            /d:sonar.cs.vscoveragexml.reportsPaths="${{ github.workspace }}/coverage.xml" `
-            /d:sonar.sources="freela-match-api" `
-            /d:sonar.tests="freela-match-api-test" `
+            /d:sonar.cs.vscoveragexml.reportsPaths="coverage.xml" `
             /d:sonar.exclusions="**/*.dll,**/Migrations/**,**/Program.cs,**/obj/**,**/bin/**" `
             /d:sonar.coverage.exclusions="**/Migrations/**,**/Program.cs" `
             /d:sonar.verbose=true
@@ -86,24 +84,60 @@ jobs:
       - name: Run tests with coverage
         shell: pwsh
         run: |
-          dotnet-coverage collect `
-            "dotnet test ${{ env.TEST_PROJECT }} --no-build --configuration Release --logger trx --verbosity normal" `
-            -f xml `
-            -o "${{ github.workspace }}/coverage.xml"
+          # Usar coverlet integrado com melhor suporte para projetos referenciados
+          dotnet test ${{ env.SOLUTION_FILE }} `
+            --no-build `
+            --configuration Release `
+            --logger trx `
+            --collect:"XPlat Code Coverage" `
+            --results-directory TestResults/ `
+            --settings coverlet.runsettings `
+            -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=cobertura
 
-      - name: Verify coverage file
+      - name: Convert coverage to XML format
         shell: pwsh
         run: |
-          $coveragePath = "${{ github.workspace }}/coverage.xml"
-          if (Test-Path $coveragePath) {
-            Write-Host "Coverage file found at: $coveragePath"
-            Write-Host "File size: $((Get-Item $coveragePath).Length) bytes"
-            # Show first few lines to verify it's valid XML
-            Get-Content $coveragePath -Head 10
+          # Encontrar o arquivo de coverage gerado
+          $coverageFile = Get-ChildItem -Path TestResults -Recurse -Filter "coverage.cobertura.xml" | Select-Object -First 1
+          
+          if ($coverageFile) {
+            Write-Host "Found coverage file: $($coverageFile.FullName)"
+            
+            # Converter para formato XML que o SonarCloud entende
+            dotnet-coverage merge $coverageFile.FullName -f xml -o coverage.xml
+            
+            Write-Host "Converted to coverage.xml"
           } else {
-            Write-Host "Coverage file NOT found at: $coveragePath"
-            Write-Host "Searching for coverage files..."
-            Get-ChildItem -Path "${{ github.workspace }}" -Recurse -Filter "*coverage*.xml" | Format-Table FullName, Length
+            Write-Host "No coverage file found!"
+            Get-ChildItem -Path TestResults -Recurse | Format-Table Name, FullName
+            exit 1
+          }
+
+      - name: Verify and debug coverage file
+        shell: pwsh
+        run: |
+          Write-Host "=== Coverage File Check ==="
+          if (Test-Path "coverage.xml") {
+            Write-Host "Coverage file found"
+            $fileInfo = Get-Item "coverage.xml"
+            Write-Host "  Path: $($fileInfo.FullName)"
+            Write-Host "  Size: $($fileInfo.Length) bytes"
+            Write-Host ""
+            Write-Host "=== First 20 lines of coverage.xml ==="
+            Get-Content "coverage.xml" -Head 20
+            Write-Host ""
+            Write-Host "=== Checking for source file references ==="
+            $content = Get-Content "coverage.xml" -Raw
+            if ($content -match 'source') {
+              Write-Host "Found source references in coverage file"
+            } else {
+              Write-Host "No source references found - this might be the problem!"
+            }
+          } else {
+            Write-Host "Coverage file NOT found!"
+            Write-Host "Current directory: $(Get-Location)"
+            Write-Host "Searching for any coverage files..."
+            Get-ChildItem -Recurse -Filter "*coverage*" | Select-Object FullName, Length
             exit 1
           }
 
@@ -114,6 +148,14 @@ jobs:
         shell: pwsh
         run: |
           .\.sonar\scanner\dotnet-sonarscanner end /d:sonar.token="$env:SONAR_TOKEN"
+
+      - name: Upload coverage as artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage.xml
+          retention-days: 5
 
   # Job opcional: build e testes rápidos sem Sonar
   build:
