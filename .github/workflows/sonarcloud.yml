@@ -81,8 +81,7 @@ jobs:
             /o:"${{ env.SONAR_ORG }}" `
             /d:sonar.token="$env:SONAR_TOKEN" `
             /d:sonar.host.url="https://sonarcloud.io" `
-            /d:sonar.cs.opencover.reportsPaths="coverage.opencover.xml" `
-            /d:sonar.cs.cobertura.reportsPaths="coverage.cobertura.xml" `
+            /d:sonar.cs.opencover.reportsPaths="coverage.opencover.xml,freela-match-api\coverage.opencover.xml" `
             /d:sonar.exclusions="**/Migrations/**,**/Program.cs,**/obj/**,**/bin/**" `
             /d:sonar.coverage.exclusions="**/Migrations/**,**/Program.cs" `
             /d:sonar.verbose=true
@@ -219,9 +218,14 @@ jobs:
           Write-Host "Current directory: $(Get-Location)"
           
           if (Test-Path "coverage.opencover.xml") {
-            Write-Host "SUCCESS: coverage.opencover.xml exists"
+            Write-Host "SUCCESS: coverage.opencover.xml exists in root"
             Write-Host "  Full path: $(Resolve-Path 'coverage.opencover.xml')"
             Write-Host "  Size: $((Get-Item 'coverage.opencover.xml').Length) bytes"
+            
+            # IMPORTANTE: Copiar também para a pasta do projeto
+            Write-Host "`nCopying to freela-match-api folder..."
+            Copy-Item "coverage.opencover.xml" -Destination "freela-match-api/coverage.opencover.xml"
+            Write-Host "Copied to: $(Resolve-Path 'freela-match-api/coverage.opencover.xml')"
             
             Write-Host "`nFirst 50 lines of the file:"
             Get-Content "coverage.opencover.xml" -Head 50
