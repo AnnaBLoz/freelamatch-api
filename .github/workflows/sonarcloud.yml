@@ -25,29 +25,48 @@ jobs:
         with:
           dotnet-version: 8.0.x
 
-      - name: Restore dependencies
-        run: dotnet restore freela-match-api/freela-match-api.sln
+      # ============================================================
+      # RESTORE E BUILD DO SOLUTION
+      # ============================================================
+      - name: Restore solution
+        run: dotnet restore freela-match-api.sln
 
+      - name: Build solution
+        run: dotnet build freela-match-api.sln --no-restore
+
+      # ============================================================
+      # RODAR TESTES + COVERAGE
+      # ============================================================
       - name: Run tests with coverage (runsettings)
         run: |
           dotnet test ./freela-match-api-test/freela-match-api-test.csproj \
-            --settings ./freela-match-api-test/coverlet.runsettings
+            --settings ./freela-match-api-test/coverlet.runsettings \
+            --logger "trx"
 
           echo "Procurando arquivo de cobertura..."
           find . -type f -name "coverage.cobertura.xml"
 
+      # Debug extra (opcional, pode remover depois)
+      - name: Debug Coverage Path
+        run: |
+          echo "Conteúdo de freela-match-api-test/TestResults:"
+          ls -R freela-match-api-test/TestResults || true
+
+      # ============================================================
+      # SONARCLOUD
+      # ============================================================
       - name: Analyze with SonarCloud
         uses: SonarSource/sonarcloud-github-action@v2.2.0
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
           args: >
-            -Dsonar.projectKey=AnnaBLoz_freelamatch-api
-            -Dsonar.organization=annabloz
+            -Dsonar.projectKey="AnnaBLoz_freelamatch-api"
+            -Dsonar.organization="annabloz"
             -Dsonar.sources=freela-match-api
             -Dsonar.tests=freela-match-api-test
             -Dsonar.test.inclusions=**/*.cs
             -Dsonar.exclusions=**/*.dll
-            -Dsonar.cs.cobertura.reportsPaths=freela-match-api-test/TestResults/*/coverage.cobertura.xml
+            -Dsonar.cs.cobertura.reportsPaths=freela-match-api-test/TestResults/**/coverage.cobertura.xml
             -Dsonar.verbose=true
           projectBaseDir: .
