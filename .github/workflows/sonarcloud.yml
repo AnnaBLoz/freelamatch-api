@@ -16,13 +16,13 @@ env:
   SONAR_ORG: annabloz
 
 permissions:
-  pull-requests: write   # necessário para o SonarCloud postar comentários
   contents: read
+  pull-requests: write   # necessário para o SonarCloud comentar no PR
 
 jobs:
   sonarcloud:
     name: SonarCloud Analysis
-    runs-on: windows-latest   # SonarScanner for .NET roda MUITO mais estável no Windows
+    runs-on: windows-latest   # obrigatório para estabilidade do SonarScanner .NET
     steps:
       - name: Set up JDK 17
         uses: actions/setup-java@v4
@@ -35,13 +35,12 @@ jobs:
         with:
           fetch-depth: 0
 
-      # Cache do scanner e pacotes do Sonar (acelera muito)
       - name: Cache SonarCloud scanner
         id: cache-sonar-scanner
         uses: actions/cache@v4
         with:
           path: .sonar/scanner
-          key: ${{ runner.os }}-sonar-scanner-${{ hashFiles('**/global.json', '**/nuget.config') }}
+          key: ${{ runner.os }}-sonar-scanner-2025
           restore-keys: ${{ runner.os }}-sonar-scanner-
 
       - name: Install SonarCloud scanner
@@ -52,9 +51,8 @@ jobs:
           dotnet tool update --tool-path .sonar/scanner dotnet-sonarscanner
 
       - name: Install dotnet-coverage tool
-        run: dotnet tool install --global dotnet-coverage
+        run: dotnet tool install --global dotnet-coverage --version 17.11.3
 
-      # ===== INÍCIO DA ANÁLISE SONARCLOUD =====
       - name: SonarCloud Begin
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
@@ -65,11 +63,14 @@ jobs:
             /o:"${{ env.SONAR_ORG }}" `
             /d:sonar.token="${{ secrets.SONAR_TOKEN }}" `
             /d:sonar.host.url="https://sonarcloud.io" `
-            /d:sonar.cs.vscoveragexml.reportsPaths="coverage.xml" `
+            /d:sonar.projectBaseDir="${{ github.workspace }}" `
+            /d:sonar.scanner.metadataFilePath="${{ runner.temp }}/sonar-metadata.json" `
             /d:sonar.sources="freela-match-api" `
             /d:sonar.tests="freela-match-api-test" `
             /d:sonar.test.inclusions="**/*.cs" `
-            /d:sonar.exclusions="**/*.dll,**/*Migrations/*,**/*Program.cs" `
+            /d:sonar.cs.vscoveragexml.reportsPaths="coverage.xml" `
+            /d:sonar.cs.vstest.reportsPaths="**/*.trx" `
+            /d:sonar.exclusions="**/*Program.cs,**/*Migrations/*,**/*.dll,**/*obj/**,**/*bin/**" `
             /d:sonar.verbose=true
 
       - name: Setup .NET 8
@@ -83,16 +84,15 @@ jobs:
       - name: Build solution
         run: dotnet build ${{ env.SOLUTION_FILE }} --no-restore --configuration Release
 
-      # ===== TESTES + COBERTURA =====
-      - name: Run tests with coverage
+      - name: Run tests + Generate coverage
         run: |
-          dotnet-coverage collect "dotnet test ${{ env.TEST_PROJECT }} --no-build --logger trx" `
+          dotnet-coverage collect "dotnet test ${{ env.TEST_PROJECT }} --no-build --logger trx --collect:\"XPlat Code Coverage\"" `
             -f xml -o "coverage.xml"
 
-      - name: Verify coverage file was generated
-        run: Get-ChildItem -Path . -Recurse -Include coverage.xml | Format-List
+      - name: Verify coverage file exists
+        run: |
+          if (Test-Path "coverage.xml") { Write-Host "coverage.xml encontrado!" } else { Write-Error "coverage.xml NÃO foi gerado!" }
 
-      # ===== FIM DA ANÁLISE SONARCLOUD =====
       - name: SonarCloud End
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
@@ -100,14 +100,15 @@ jobs:
         run: |
           .\.sonar\scanner\dotnet-sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
 
-  # Job opcional: build e testes rápidos sem Sonar (roda em paralelo no Linux, mais rápido)
+  # Job rápido de build/teste (roda em paralelo no Linux - mais rápido e barato)
   build:
     name: Build & Test (fast)
     needs: sonarcloud
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Setup .NET
+
+      - name: Setup .NET 8
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 8.0.x
