@@ -25,22 +25,13 @@ jobs:
         with:
           dotnet-version: 8.0.x
 
-      - name: Run tests with coverage
+      - name: Run tests with coverage (runsettings)
         run: |
-          mkdir -p ./freela-match-api-test/coverage
-
           dotnet test ./freela-match-api-test/freela-match-api-test.csproj \
-            /p:CollectCoverage=true \
-            /p:CoverletOutput=./freela-match-api-test/coverage/coverage.opencover.xml \
-            /p:CoverletOutputFormat=opencover
+            --settings ./freela-match-api-test/coverlet.runsettings
 
-          if [ ! -f ./freela-match-api-test/coverage/coverage.opencover.xml ]; then
-            echo "Arquivo de cobertura NÃO encontrado!"
-            exit 1
-          fi
-
-          echo "Arquivo de cobertura gerado:"
-          ls -l ./freela-match-api-test/coverage
+          echo "Procurando arquivo de cobertura..."
+          find . -type f -name "coverage.cobertura.xml"
 
       - name: Analyze with SonarCloud
         uses: SonarSource/sonarcloud-github-action@v2.2.0
@@ -51,6 +42,6 @@ jobs:
             -Dsonar.projectKey="AnnaBLoz_freelamatch-api"
             -Dsonar.organization="annabloz"
             -Dsonar.sources=.
-            -Dsonar.cs.opencover.reportsPaths=freela-match-api-test/coverage/coverage.opencover.xml
+            -Dsonar.cs.cobertura.reportsPaths=**/TestResults/**/coverage.cobertura.xml
             -Dsonar.verbose=true
           projectBaseDir: .
