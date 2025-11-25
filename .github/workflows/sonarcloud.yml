@@ -28,10 +28,15 @@ jobs:
       - name: Run tests with coverage (runsettings)
         run: |
           dotnet test ./freela-match-api-test/freela-match-api-test.csproj \
-            --settings ./freela-match-api-test/coverlet.runsettings
+            --settings ./freela-match-api-test/coverlet.runsettings \
+            --logger "trx;LogFileName=test_results.trx"
 
           echo "Procurando arquivo de cobertura..."
-          find . -type f -name "coverage.cobertura.xml"
+          find freela-match-api-test/TestResults -name "coverage.cobertura.xml"
+
+          COVERAGE_FILE=$(find freela-match-api-test/TestResults -name "coverage.cobertura.xml" | sort | tail -n 1)
+          echo "COVERAGE_FILE=$COVERAGE_FILE" >> $GITHUB_ENV
+          echo "Arquivo selecionado: $COVERAGE_FILE"
 
       - name: Analyze with SonarCloud
         uses: SonarSource/sonarcloud-github-action@v2.2.0
@@ -39,12 +44,12 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
           args: >
-            -Dsonar.projectKey="AnnaBLoz_freelamatch-api"
-            -Dsonar.organization="annabloz"
+            -Dsonar.projectKey=AnnaBLoz_freelamatch-api
+            -Dsonar.organization=annabloz
             -Dsonar.sources=freela-match-api
             -Dsonar.tests=freela-match-api-test
-            -Dsonar.test.inclusions=**/*.cs
-            -Dsonar.exclusions=**/*.dll
-            -Dsonar.cs.cobertura.reportsPaths=**/TestResults/**/coverage.cobertura.xml
+            -Dsonar.test.inclusions=freela-match-api-test/**/*.cs
+            -Dsonar.exclusions=freela-match-api-test/**/bin/**,freela-match-api-test/**/obj/**
+            -Dsonar.cs.cobertura.reportsPaths="${{ env.COVERAGE_FILE }}"
             -Dsonar.verbose=true
           projectBaseDir: .
