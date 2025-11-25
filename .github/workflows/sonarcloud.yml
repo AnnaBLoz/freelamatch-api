@@ -15,11 +15,17 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # ============================================================
+      # CHECKOUT DO REPOSITÓRIO
+      # ============================================================
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
+      # ============================================================
+      # SETUP DO .NET
+      # ============================================================
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
@@ -29,18 +35,18 @@ jobs:
       # RESTORE E BUILD DO SOLUTION
       # ============================================================
       - name: Restore solution
-        run: dotnet restore freela-match-api.sln
+        run: dotnet restore freela-match-api/freela-match-api.sln
 
       - name: Build solution
-        run: dotnet build freela-match-api.sln --no-restore
+        run: dotnet build freela-match-api/freela-match-api.sln --no-restore
 
       # ============================================================
       # RODAR TESTES + COVERAGE
       # ============================================================
       - name: Run tests with coverage (runsettings)
         run: |
-          dotnet test ./freela-match-api-test/freela-match-api-test.csproj \
-            --settings ./freela-match-api-test/coverlet.runsettings \
+          dotnet test freela-match-api-test/freela-match-api-test.csproj \
+            --settings freela-match-api-test/coverlet.runsettings \
             --logger "trx"
 
           echo "Procurando arquivo de cobertura..."
