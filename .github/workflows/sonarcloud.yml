@@ -64,7 +64,6 @@ jobs:
             /d:sonar.scanner.metadataFilePath="${{ runner.temp }}/sonar-metadata.json" `
             /d:sonar.sources="freela-match-api" `
             /d:sonar.tests="freela-match-api-test" `
-            /d:sonar.test.inclusions="**/*.cs" `
             /d:sonar.cs.vscoveragexml.reportsPaths="coverage.xml" `
             /d:sonar.cs.vstest.reportsPaths="**/*.trx" `
             /d:sonar.exclusions="**/*Program.cs,**/*Migrations/*,**/*.dll,**/*obj/**,**/*bin/**" `
@@ -81,42 +80,31 @@ jobs:
       - name: Build solution
         run: dotnet build ${{ env.SOLUTION_FILE }} --no-restore --configuration Release
 
-      - name: Run tests + Generate coverage (forma mais estável de 2025)
+      - name: Run tests + Generate coverage (100% confiável)
         shell: pwsh
         run: |
-          Set-Location $env:GITHUB_WORKSPACE
-
           dotnet test ${{ env.TEST_PROJECT }} `
             --no-build `
             --logger trx `
-            --collect:"XPlat Code Coverage" `
-            --results-directory:"./TestResults" `
-            -- `
-            DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=xml
+            /p:CollectCoverage=true `
+            /p:CoverletOutputFormat=opencover `
+            /p:CoverletOutput="./coverage.xml" `
+            /p:Exclude="[*.Tests]*"
 
-          # Encontra o arquivo gerado pelo Coverlet
-          $covFile = Get-ChildItem -Path "./TestResults" -Recurse -Filter "coverage.cobertura.xml" | Select-Object -First 1
-
-          if (-not $covFile) {
-            Write-Error "Arquivo de cobertura não foi gerado pelo Coverlet!"
-            exit 1
-          }
-
-          Write-Host "Arquivo encontrado: $($covFile.FullName)"
-
-          # Converte para o formato que o SonarCloud entende perfeitamente
-          dotnet tool run dotnet-coverage merge $covFile.FullName --output coverage.xml --output-format xml
-
-          if (Test-Path "coverage.xml") {
-            Write-Host "coverage.xml gerado com sucesso na raiz do projeto!"
-          } else {
-            Write-Error "Falha ao converter o arquivo de cobertura!"
-            exit 1
-          }
-
-      - name: Verify final coverage file
+      # Verifica se o arquivo foi gerado na raiz
+      - name: Verify coverage.xml exists
         run: |
-          Get-ChildItem -Path . -Name coverage.xml
+          if (Test-Path "freela-match-api-test/coverage.xml") {
+            Write-Host "Cobertura gerada com sucesso!"
+            Copy-Item "freela-match-api-test/coverage.xml" -Destination "coverage.xml"
+          } else {
+            Write-Error "coverage.xml não foi gerado!"
+            Get-ChildItem -Recurse -Include coverage.xml -ErrorAction SilentlyContinue
+            exit 1
+          }
+
+      - name: Show final coverage file
+        run: |
           Get-Content coverage.xml -Head 10
 
       - name: SonarCloud End
@@ -126,7 +114,7 @@ jobs:
         run: |
           .\.sonar\scanner\dotnet-sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
 
-  # Build rápido e barato (roda em paralelo)
+  # Build rápido (Linux)
   build:
     name: Build & Test (fast)
     needs: sonarcloud
@@ -137,9 +125,8 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 8.0.x
-      - name: Restore
-        run: dotnet restore ${{ env.SOLUTION_FILE }}
-      - name: Build
-        run: dotnet build ${{ env.SOLUTION_FILE }} --no-restore --configuration Release
-      - name: Test
-        run: dotnet test ${{ env.TEST_PROJECT }} --no-build --verbosity normal
+      - name: Restore & Build & Test
+        run: |
+          dotnet restore ${{ env.SOLUTION_FILE }}
+          dotnet build ${{ env.SOLUTION_FILE }} --no-restore
+          dotnet test ${{ env.TEST_PROJECT }} --no-build
