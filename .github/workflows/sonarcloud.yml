@@ -120,6 +120,7 @@ jobs:
         shell: pwsh
         run: |
           Write-Host "=== Processing coverage files ==="
+          Write-Host "Current directory: $(Get-Location)"
           
           # Procurar por arquivos OpenCover
           $openCoverFiles = Get-ChildItem -Path TestResults -Recurse -Filter "coverage.opencover.xml" -ErrorAction SilentlyContinue
@@ -153,7 +154,7 @@ jobs:
               
               # Copiar para a raiz
               Copy-Item $largestFile.FullName -Destination "coverage.cobertura.xml"
-              Write-Host "Copied to: coverage.cobertura.xml"
+              Write-Host "Copied to: $(Resolve-Path 'coverage.cobertura.xml')"
               
               # Verificar conteúdo
               [xml]$xml = Get-Content "coverage.cobertura.xml"
@@ -207,7 +208,29 @@ jobs:
             exit 1
           }
           
+          Write-Host "`nCoverage file copied to: $(Resolve-Path 'coverage.opencover.xml')"
+          Write-Host "File size: $((Get-Item 'coverage.opencover.xml').Length) bytes"
           Write-Host "Coverage file ready for SonarCloud (OpenCover format)!"
+      
+      - name: Verify coverage file before SonarCloud End
+        shell: pwsh
+        run: |
+          Write-Host "=== Final verification before SonarCloud End ==="
+          Write-Host "Current directory: $(Get-Location)"
+          
+          if (Test-Path "coverage.opencover.xml") {
+            Write-Host "SUCCESS: coverage.opencover.xml exists"
+            Write-Host "  Full path: $(Resolve-Path 'coverage.opencover.xml')"
+            Write-Host "  Size: $((Get-Item 'coverage.opencover.xml').Length) bytes"
+            
+            Write-Host "`nFirst 50 lines of the file:"
+            Get-Content "coverage.opencover.xml" -Head 50
+          } else {
+            Write-Host "ERROR: coverage.opencover.xml NOT FOUND!"
+            Write-Host "Files in current directory:"
+            Get-ChildItem | Select-Object Name, Length
+            exit 1
+          }
 
       # ===== FIM DA ANÁLISE SONARCLOUD =====
       - name: SonarCloud End

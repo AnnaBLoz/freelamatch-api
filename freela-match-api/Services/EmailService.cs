@@ -1,6 +1,7 @@
 ﻿using freela_match_api.Migrations;
 using FreelaMatchAPI.Data;
 using FreelaMatchAPI.DTOs;
+using FreelaMatchAPI.Interfaces;
 using FreelaMatchAPI.Models;
 using MailKit.Net.Smtp;
 using MailKit.Security;
