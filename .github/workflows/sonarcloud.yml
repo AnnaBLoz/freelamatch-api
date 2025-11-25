@@ -1,4 +1,4 @@
-name: .NET 8 CI with SonarCloud
+name: .NET 8 CI with SonarCloud (Alternative)
 
 on:
   push:
@@ -35,32 +35,6 @@ jobs:
         with:
           fetch-depth: 0
 
-      # Diagnóstico da estrutura do projeto
-      - name: Debug - Show project structure
-        shell: pwsh
-        run: |
-          Write-Host "=== Repository Root Structure ==="
-          Get-ChildItem -Force | Select-Object Name, Mode
-          Write-Host ""
-          Write-Host "=== Solution File Location ==="
-          if (Test-Path "${{ env.SOLUTION_FILE }}") {
-            Write-Host "Solution found at: ${{ env.SOLUTION_FILE }}"
-            Write-Host "Content of solution directory:"
-            Get-ChildItem (Split-Path "${{ env.SOLUTION_FILE }}") | Select-Object Name
-          } else {
-            Write-Host "Solution NOT found at: ${{ env.SOLUTION_FILE }}"
-          }
-          Write-Host ""
-          Write-Host "=== Test Project Location ==="
-          if (Test-Path "${{ env.TEST_PROJECT }}") {
-            Write-Host "Test project found at: ${{ env.TEST_PROJECT }}"
-          } else {
-            Write-Host "Test project NOT found at: ${{ env.TEST_PROJECT }}"
-          }
-          Write-Host ""
-          Write-Host "=== Looking for .csproj files ==="
-          Get-ChildItem -Recurse -Filter "*.csproj" | Select-Object FullName
-
       - name: Cache SonarCloud scanner
         id: cache-sonar-scanner
         uses: actions/cache@v4
@@ -75,9 +49,6 @@ jobs:
         run: |
           New-Item -Path .sonar/scanner -ItemType Directory -Force
           dotnet tool update --tool-path .sonar/scanner dotnet-sonarscanner
-
-      - name: Install dotnet-coverage tool
-        run: dotnet tool install --global dotnet-coverage
 
       - name: Setup .NET 8
         uses: actions/setup-dotnet@v4
@@ -98,149 +69,71 @@ jobs:
             /o:"${{ env.SONAR_ORG }}" `
             /d:sonar.token="$env:SONAR_TOKEN" `
             /d:sonar.host.url="https://sonarcloud.io" `
-            /d:sonar.cs.vscoveragexml.reportsPaths="coverage.xml" `
+            /d:sonar.cs.opencover.reportsPaths="coverage.opencover.xml" `
             /d:sonar.exclusions="**/*.dll,**/Migrations/**,**/Program.cs,**/obj/**,**/bin/**" `
-            /d:sonar.coverage.exclusions="**/Migrations/**,**/Program.cs" `
-            /d:sonar.verbose=true
+            /d:sonar.coverage.exclusions="**/Migrations/**,**/Program.cs"
 
       - name: Build solution
         run: dotnet build ${{ env.SOLUTION_FILE }} --no-restore --configuration Release
 
-      # ===== TESTES COM COBERTURA (MÉTODO SIMPLIFICADO) =====
-      - name: Run tests with coverage (Coverlet)
+      # ===== TESTES COM COVERLET MSBUILD =====
+      - name: Run tests with Coverlet MSBuild
         shell: pwsh
         run: |
-          Write-Host "=== Running tests with Coverlet coverage ==="
+          Write-Host "=== Running tests with Coverlet MSBuild ==="
           
-          # Limpar resultados anteriores
-          if (Test-Path "TestResults") {
-            Remove-Item -Recurse -Force "TestResults"
-          }
-          
-          # Executar testes com cobertura usando coverlet.collector
-          dotnet test ${{ env.SOLUTION_FILE }} `
+          # Executar testes com coverlet.msbuild
+          dotnet test ${{ env.TEST_PROJECT }} `
             --no-build `
             --configuration Release `
-            --collect:"XPlat Code Coverage" `
-            --results-directory TestResults/ `
-            -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=cobertura,opencover `
-               DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Exclude="[*]*.Migrations.*,[*]*.Program" `
-               DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.SkipAutoProps=true
+            /p:CollectCoverage=true `
+            /p:CoverletOutputFormat=opencover `
+            /p:CoverletOutput=../../coverage.opencover.xml `
+            /p:Exclude="[*.Tests]*,[*]*.Migrations.*,[*]*.Program" `
+            /p:ExcludeByFile="**/Migrations/**/*.cs,**/Program.cs" `
+            /p:SkipAutoProps=true
           
           Write-Host ""
           Write-Host "=== Test execution completed ==="
 
-      - name: Debug - List all generated files
+      - name: Verify coverage file
         shell: pwsh
         run: |
-          Write-Host "=== All files in TestResults ==="
-          if (Test-Path "TestResults") {
-            Get-ChildItem -Path TestResults -Recurse | Select-Object FullName, Length
-          } else {
-            Write-Host "TestResults directory does not exist!"
-          }
-
-      - name: Convert coverage to VS XML format
-        shell: pwsh
-        run: |
-          Write-Host "=== Converting coverage to Visual Studio XML format ==="
+          Write-Host "=== Checking coverage file ==="
           
-          # Procurar por arquivos de cobertura
-          $coverageFiles = Get-ChildItem -Path TestResults -Recurse -Filter "coverage.cobertura.xml" -ErrorAction SilentlyContinue
-          
-          if ($coverageFiles.Count -eq 0) {
-            Write-Host "No cobertura files found, trying opencover format..."
-            $coverageFiles = Get-ChildItem -Path TestResults -Recurse -Filter "coverage.opencover.xml" -ErrorAction SilentlyContinue
-          }
-          
-          if ($coverageFiles.Count -eq 0) {
-            Write-Host "No coverage files found at all!"
-            Write-Host "Looking for any coverage-related files:"
-            Get-ChildItem -Path TestResults -Recurse -Filter "*coverage*" | Select-Object FullName
-            exit 1
-          }
-          
-          Write-Host "Found $($coverageFiles.Count) coverage file(s):"
-          $coverageFiles | ForEach-Object { 
-            Write-Host "  - $($_.FullName) ($($_.Length) bytes)"
-          }
-          
-          # Converter para formato Visual Studio XML
-          Write-Host ""
-          Write-Host "=== Converting to VS XML ==="
-          
-          if ($coverageFiles.Count -eq 1) {
-            $inputFile = $coverageFiles[0].FullName
-            Write-Host "Converting single file: $inputFile"
-            dotnet-coverage merge $inputFile -f xml -o coverage.xml
-          } else {
-            # Merge múltiplos arquivos
-            $paths = ($coverageFiles | ForEach-Object { $_.FullName }) -join ','
-            Write-Host "Merging multiple files"
-            dotnet-coverage merge $paths -f xml -o coverage.xml
-          }
-          
-          # Verificar resultado
-          if (Test-Path "coverage.xml") {
-            $size = (Get-Item "coverage.xml").Length
-            Write-Host "coverage.xml created successfully ($size bytes)"
+          if (Test-Path "coverage.opencover.xml") {
+            $fileInfo = Get-Item "coverage.opencover.xml"
+            Write-Host "Coverage file found"
+            Write-Host "  Path: $($fileInfo.FullName)"
+            Write-Host "  Size: $($fileInfo.Length) bytes"
             
-            if ($size -lt 200) {
-              Write-Host "WARNING: Coverage file is very small, might be empty!"
-              Write-Host "Content:"
-              Get-Content "coverage.xml"
-              exit 1
-            }
-          } else {
-            Write-Host "Failed to create coverage.xml"
-            exit 1
-          }
-
-      - name: Verify coverage content
-        shell: pwsh
-        run: |
-          Write-Host "=== Coverage File Analysis ==="
-          
-          if (Test-Path "coverage.xml") {
-            $content = Get-Content "coverage.xml" -Raw
-            $fileSize = (Get-Item "coverage.xml").Length
-            
-            Write-Host "File size: $fileSize bytes"
-            Write-Host ""
-            Write-Host "=== First 50 lines ==="
-            Get-Content "coverage.xml" -Head 50
-            Write-Host ""
-            
-            # Verificar se tem conteúdo útil
-            if ($content -match '<source') {
-              Write-Host "Found source file references"
-            } else {
-              Write-Host "No source file references found"
-            }
-            
-            if ($content -match '<module') {
-              Write-Host "Found module information"
-            } else {
-              Write-Host "No module information found"
-            }
-            
-            # Contar elementos importantes
-            $sourceCount = ([regex]::Matches($content, '<source')).Count
-            $methodCount = ([regex]::Matches($content, '<method')).Count
+            # Análise do conteúdo
+            $content = Get-Content "coverage.opencover.xml" -Raw
+            $moduleCount = ([regex]::Matches($content, '<Module ')).Count
+            $methodCount = ([regex]::Matches($content, '<Method ')).Count
+            $sequencePointCount = ([regex]::Matches($content, '<SequencePoint ')).Count
             
             Write-Host ""
-            Write-Host "Statistics:"
-            Write-Host "  - Source files referenced: $sourceCount"
-            Write-Host "  - Methods covered: $methodCount"
+            Write-Host "Coverage Statistics:"
+            Write-Host "  - Modules: $moduleCount"
+            Write-Host "  - Methods: $methodCount"
+            Write-Host "  - Sequence Points: $sequencePointCount"
             
             if ($methodCount -eq 0) {
               Write-Host ""
-              Write-Host "ERROR: No methods found in coverage report!"
-              Write-Host "This means the coverage data is empty or invalid."
+              Write-Host "ERROR: No methods found in coverage!"
+              Write-Host "First 30 lines of coverage file:"
+              Get-Content "coverage.opencover.xml" -Head 30
               exit 1
             }
+            
+            Write-Host ""
+            Write-Host "Coverage file looks good!"
           } else {
-            Write-Host "coverage.xml not found!"
+            Write-Host "ERROR: Coverage file not found!"
+            Write-Host "Current directory: $(Get-Location)"
+            Write-Host "Looking for coverage files:"
+            Get-ChildItem -Recurse -Filter "*coverage*" | Select-Object FullName
             exit 1
           }
 
@@ -257,9 +150,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: coverage-report
-          path: |
-            coverage.xml
-            TestResults/**/*.xml
+          path: coverage.opencover.xml
           retention-days: 5
 
   build:
