@@ -23,6 +23,7 @@ jobs:
   sonarcloud:
     name: SonarCloud Analysis
     runs-on: windows-latest
+    
     steps:
       - name: Set up JDK 17
         uses: actions/setup-java@v4
@@ -79,41 +80,33 @@ jobs:
       - name: Run tests with coverage
         shell: pwsh
         run: |
-          Write-Host "=== Limpando resultados anteriores ==="
-          if (Test-Path "./TestResults") {
-            Remove-Item -Recurse -Force "./TestResults"
-          }
-
-          Write-Host "=== Executando testes com cobertura ==="
+          Write-Host "=== Running tests with coverage ==="
+          
           dotnet test ${{ env.TEST_PROJECT }} `
             --configuration Release `
             --no-build `
-            --logger "trx" `
             --collect:"XPlat Code Coverage" `
-            --results-directory "./TestResults" `
+            --results-directory ./TestResults `
             --settings coverlet.runsettings
 
-          Write-Host ""
-          Write-Host "=== Verificando arquivos de cobertura gerados ==="
-          $coverageFiles = Get-ChildItem -Path "./TestResults" -Recurse -Filter "coverage.opencover.xml"
+          Write-Host "`n=== Verifying coverage files ==="
+          $coverageFiles = Get-ChildItem -Path ./TestResults -Recurse -Filter "coverage.opencover.xml"
           
           if ($coverageFiles.Count -eq 0) {
-            Write-Host "ERRO: Nenhum arquivo coverage.opencover.xml encontrado!"
-            Write-Host "Arquivos disponíveis:"
-            Get-ChildItem -Path "./TestResults" -Recurse | Select-Object FullName, Length
+            Write-Host "ERROR: No coverage files found!"
             exit 1
           }
           
-          Write-Host "Arquivo(s) de cobertura encontrado(s): $($coverageFiles.Count)"
+          Write-Host "Found $($coverageFiles.Count) coverage file(s):"
           foreach ($file in $coverageFiles) {
             Write-Host "  - $($file.FullName) ($($file.Length) bytes)"
             
-            # Verificar se tem cobertura do projeto principal
+            # Verify it contains the main project
             $content = Get-Content $file.FullName -Raw
-            if ($content -match 'freela-match-api\.dll') {
-              Write-Host "    Contém cobertura do freela-match-api"
+            if ($content -match 'freela-match-api') {
+              Write-Host "    Contains freela-match-api coverage" -ForegroundColor Green
             } else {
-              Write-Host "    NÃO contém cobertura do freela-match-api (apenas testes)"
+              Write-Host "    Does NOT contain freela-match-api coverage!" -ForegroundColor Red
             }
           }
 
@@ -138,6 +131,7 @@ jobs:
     name: Build & Test (fast)
     needs: sonarcloud
     runs-on: ubuntu-latest
+    
     steps:
       - uses: actions/checkout@v4
       
