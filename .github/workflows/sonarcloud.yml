@@ -84,14 +84,14 @@ jobs:
       - name: Run tests with coverage
         shell: pwsh
         run: |
-          # Usar coverlet com arquivo de configuração
+          # Usar coverlet com arquivo de configuração na raiz
           dotnet test ${{ env.SOLUTION_FILE }} `
             --no-build `
             --configuration Release `
             --logger trx `
             --collect:"XPlat Code Coverage" `
             --results-directory TestResults/ `
-            --settings freela-match-api-test/coverlet.runsettings
+            --settings coverlet.runsettings
 
       - name: Convert coverage to SonarCloud format
         shell: pwsh
