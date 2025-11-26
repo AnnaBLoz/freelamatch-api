@@ -30,11 +30,11 @@ namespace freela_match_api_test.Services
 
             // -------- CRIA USERS NECESSÁRIOS PARA OS INCLUDE --------
             context.Users.AddRange(
-                new User { Id = 10, Name = "User 10" },
-                new User { Id = 20, Name = "User 20" },
-                new User { Id = 30, Name = "User 30" },
-                new User { Id = 77, Name = "User 77" },
-                new User { Id = 99, Name = "User 99" }
+                new User { Id = 10, Name = "User 10", Email = "u10@test.com", Password = "123", Token = "A" },
+                new User { Id = 20, Name = "User 20", Email = "u20@test.com", Password = "123", Token = "A" },
+                new User { Id = 30, Name = "User 30", Email = "u30@test.com", Password = "123", Token = "A" },
+                new User { Id = 77, Name = "User 77", Email = "u77@test.com", Password = "123", Token = "A" },
+                new User { Id = 99, Name = "User 99", Email = "u99@test.com", Password = "123", Token = "A" }
             );
             await context.SaveChangesAsync();
 
@@ -64,8 +64,10 @@ namespace freela_match_api_test.Services
 
             var service = GetService(context);
 
+            // -------- EXECUTA --------
             var result = await service.GetReviews(10);
 
+            // -------- ASSERTS --------
             Assert.Equal(2, result.Count);
             Assert.Contains(result, r => r.Id == 1);
             Assert.Contains(result, r => r.Id == 2);
