@@ -1,0 +1,162 @@
+﻿using FreelaMatchAPI.Data;
+using FreelaMatchAPI.Models;
+using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace freela_match_api_test.Services
+{
+    public class ReviewsServiceTests
+    {
+        private AppDbContext GetDbContext()
+        {
+            var options = new DbContextOptionsBuilder<AppDbContext>()
+                .UseInMemoryDatabase(Guid.NewGuid().ToString())
+                .Options;
+
+            return new AppDbContext(options);
+        }
+
+        private ReviewsService GetService(AppDbContext context)
+        {
+            return new ReviewsService(context);
+        }
+
+        // ============================================================
+        // GET REVIEWS
+        // ============================================================
+        [Fact]
+        public async Task GetReviews_ShouldReturnReviewsForUser()
+        {
+            var context = GetDbContext();
+
+            context.Reviews.Add(new Reviews
+            {
+                Id = 1,
+                ReviewerId = 10,
+                ReceiverId = 20
+            });
+
+            context.Reviews.Add(new Reviews
+            {
+                Id = 2,
+                ReviewerId = 30,
+                ReceiverId = 10
+            });
+
+            await context.SaveChangesAsync();
+
+            var service = GetService(context);
+
+            var result = await service.GetReviews(10);
+
+            Assert.Equal(2, result.Count);
+            Assert.Contains(result, r => r.Id == 1);
+            Assert.Contains(result, r => r.Id == 2);
+        }
+
+        // ============================================================
+        // CREATE REVIEW - CASO NORMAL
+        // ============================================================
+        [Fact]
+        public async Task CreateReview_ShouldCreateReview()
+        {
+            var context = GetDbContext();
+            var service = GetService(context);
+
+            var dto = new ReviewCreate
+            {
+                ReviewerId = 1,
+                ReceiverId = 2,
+                ReviewText = "Ótimo trabalho",
+                Rating = 5,
+                ProposalId = 99
+            };
+
+            var result = await service.CreateReview(dto);
+
+            Assert.NotNull(result);
+            Assert.Equal("Ótimo trabalho", result.ReviewText);
+            Assert.Equal(5, result.Rating);
+
+            var reviewInDb = await context.Reviews.FirstOrDefaultAsync();
+            Assert.NotNull(reviewInDb);
+        }
+
+        // ============================================================
+        // CREATE REVIEW - ATUALIZAÇÃO DO CANDIDATE
+        // ============================================================
+        [Fact]
+        public async Task CreateReview_ShouldUpdateCandidateStatus_WhenAcceptedCandidateExists()
+        {
+            var context = GetDbContext();
+
+            // Candidate existente e Accepted
+            context.Candidate.Add(new Candidate
+            {
+                CandidateId = 50,
+                UserId = 2,
+                ProposalId = 99,
+                Status = ProposalStatus.Accepted
+            });
+
+            await context.SaveChangesAsync();
+
+            var service = GetService(context);
+
+            var dto = new ReviewCreate
+            {
+                ReviewerId = 1,
+                ReceiverId = 2,
+                ReviewText = "Bom trabalho",
+                Rating = 4,
+                ProposalId = 99
+            };
+
+            var result = await service.CreateReview(dto);
+
+            var candidate = await context.Candidate.FirstAsync();
+
+            Assert.Equal(ProposalStatus.Reviewed, candidate.Status);
+        }
+
+        // ============================================================
+        // CREATE REVIEW - NÃO ATUALIZAR CANDIDATE
+        // ============================================================
+        [Fact]
+        public async Task CreateReview_ShouldNotUpdateCandidate_WhenNoAcceptedCandidateExists()
+        {
+            var context = GetDbContext();
+
+            context.Candidate.Add(new Candidate
+            {
+                CandidateId = 50,
+                UserId = 2,
+                ProposalId = 99,
+                Status = ProposalStatus.Pending // não é Accepted
+            });
+
+            await context.SaveChangesAsync();
+
+            var service = GetService(context);
+
+            var dto = new ReviewCreate
+            {
+                ReviewerId = 1,
+                ReceiverId = 2,
+                ReviewText = "Bom trabalho",
+                Rating = 4,
+                ProposalId = 99
+            };
+
+            var result = await service.CreateReview(dto);
+
+            var candidate = await context.Candidate.FirstAsync();
+
+            Assert.Equal(ProposalStatus.Pending, candidate.Status);
+        }
+    }
+}
