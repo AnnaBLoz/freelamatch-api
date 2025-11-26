@@ -1,11 +1,6 @@
 ﻿using FreelaMatchAPI.Data;
 using FreelaMatchAPI.Models;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace freela_match_api_test.Services
 {
@@ -47,13 +42,20 @@ namespace freela_match_api_test.Services
                 ReceiverId = 10
             });
 
+            context.Reviews.Add(new Reviews
+            {
+                Id = 3,
+                ReviewerId = 99,
+                ReceiverId = 77
+            });
+
             await context.SaveChangesAsync();
 
             var service = GetService(context);
 
             var result = await service.GetReviews(10);
 
-            Assert.Equal(2, result.Count);
+            Assert.Equal(2, result.Count);   // Somente os dois ligados ao usuário 10
             Assert.Contains(result, r => r.Id == 1);
             Assert.Contains(result, r => r.Id == 2);
         }
@@ -94,13 +96,16 @@ namespace freela_match_api_test.Services
         {
             var context = GetDbContext();
 
-            // Candidate existente e Accepted
             context.Candidate.Add(new Candidate
             {
                 CandidateId = 50,
                 UserId = 2,
                 ProposalId = 99,
-                Status = ProposalStatus.Accepted
+                Status = ProposalStatus.Accepted,
+
+                // CAMPOS OBRIGATÓRIOS DO MODELO
+                EstimatedDate = DateTime.UtcNow.ToString(),
+                Message = "Teste"
             });
 
             await context.SaveChangesAsync();
@@ -136,7 +141,11 @@ namespace freela_match_api_test.Services
                 CandidateId = 50,
                 UserId = 2,
                 ProposalId = 99,
-                Status = ProposalStatus.Pending // não é Accepted
+                Status = ProposalStatus.Pending,
+
+                // CAMPOS OBRIGATÓRIOS DO MODELO
+                EstimatedDate = DateTime.UtcNow.ToString(),
+                Message = "Teste"
             });
 
             await context.SaveChangesAsync();
@@ -147,8 +156,8 @@ namespace freela_match_api_test.Services
             {
                 ReviewerId = 1,
                 ReceiverId = 2,
-                ReviewText = "Bom trabalho",
-                Rating = 4,
+                ReviewText = "Avaliação",
+                Rating = 3,
                 ProposalId = 99
             };
 
