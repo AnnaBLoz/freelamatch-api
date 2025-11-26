@@ -335,6 +335,7 @@ namespace freela_match_api_test.Services
         // -----------------------------
         // GET PROPOSAL BY ID AND CANDIDATE
         // -----------------------------
+        // Fix for GetProposalByIdAndCandidate_ReturnsProposalWithCandidate
         [Fact]
         public async Task GetProposalByIdAndCandidate_ReturnsProposalWithCandidate()
         {
@@ -347,9 +348,17 @@ namespace freela_match_api_test.Services
                 ProposalId = 1,
                 OwnerId = 1,
                 Title = "T",
-                Description = "D"
+                Description = "D",
+                IsAvailable = true,
+                Price = 100,
+                MaxDate = DateTime.UtcNow.AddDays(5),
+                CreatedDate = DateTime.UtcNow
             };
 
+            context.Proposal.Add(proposal);
+            await context.SaveChangesAsync();
+
+            // Add candidate AFTER proposal is saved and has a valid ID
             var candidate = new Candidate
             {
                 CandidateId = 100,
@@ -357,13 +366,9 @@ namespace freela_match_api_test.Services
                 ProposalId = 1,
                 EstimatedDate = DateTime.UtcNow.AddDays(3).ToString(),
                 Message = "Test message",
-                Status = ProposalStatus.Pending,
-                Proposal = proposal
+                Status = ProposalStatus.Pending
             };
 
-            proposal.Candidates = new List<Candidate> { candidate };
-
-            context.Proposal.Add(proposal);
             context.Candidate.Add(candidate);
             await context.SaveChangesAsync();
 
@@ -384,14 +389,22 @@ namespace freela_match_api_test.Services
             var emailMock = new Mock<IEmailService>();
             var service = new ProposalService(context, emailMock.Object);
 
-            context.Proposal.Add(new Proposal
+            var proposal = new Proposal
             {
                 ProposalId = 1,
                 OwnerId = 10,
                 Title = "T",
-                Description = "D"
-            });
+                Description = "D",
+                IsAvailable = true,
+                Price = 100,
+                MaxDate = DateTime.UtcNow.AddDays(5),
+                CreatedDate = DateTime.UtcNow
+            };
 
+            context.Proposal.Add(proposal);
+            await context.SaveChangesAsync();
+
+            // Add counter proposal AFTER the proposal is saved
             context.CounterProposal.Add(new CounterProposal
             {
                 CounterProposalId = 1,
