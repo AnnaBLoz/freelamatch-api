@@ -3,14 +3,14 @@
 
 |||
 |:---|:---|
-| Generated on: | 11/26/2025 - 05:19:23 |
+| Generated on: | 11/26/2025 - 05:28:07 |
 | Parser: | MultiReport (2x OpenCover) |
 | Assemblies: | 1 |
 | Classes: | 45 |
 | Files: | 44 |
-| **Line coverage:** | 74.4% (1205 of 1618) |
-| Covered lines: | 1205 |
-| Uncovered lines: | 413 |
+| **Line coverage:** | 76% (1230 of 1618) |
+| Covered lines: | 1230 |
+| Uncovered lines: | 388 |
 | Coverable lines: | 1618 |
 | Total lines: | 3325 |
 | **Branch coverage:** | 67.5% (208 of 308) |
@@ -21,11 +21,11 @@
 </details>
 
 ## Coverage
-<details><summary>freela-match-api - 74.4%</summary>
+<details><summary>freela-match-api - 76%</summary>
 
 |**Name**|**Line**|**Branch**|
 |:---|---:|---:|
-|**freela-match-api**|**74.4%**|**67.5%**|
+|**freela-match-api**|**76%**|**67.5%**|
 |AuthService|100%|100%|
 |EmailService|48.6%|44.1%|
 |FreelaMatchAPI.Controllers.AuthController|100%|100%|
@@ -39,17 +39,17 @@
 |FreelaMatchAPI.Models.Candidate|80%||
 |FreelaMatchAPI.Models.CandidateApprove|66.6%||
 |FreelaMatchAPI.Models.CandidateProposal|83.3%||
-|FreelaMatchAPI.Models.Company|0%||
+|FreelaMatchAPI.Models.Company|28.5%||
 |FreelaMatchAPI.Models.CounterProposal|79.1%||
 |FreelaMatchAPI.Models.CounterProposalCreate|100%||
 |FreelaMatchAPI.Models.CreatePortfolio|100%||
 |FreelaMatchAPI.Models.CreateProposal|100%||
-|FreelaMatchAPI.Models.Freelancer|0%||
-|FreelaMatchAPI.Models.Portfolio|80%||
-|FreelaMatchAPI.Models.Profile|65%||
-|FreelaMatchAPI.Models.ProfileResume|0%||
+|FreelaMatchAPI.Models.Freelancer|33.3%||
+|FreelaMatchAPI.Models.Portfolio|90%||
+|FreelaMatchAPI.Models.Profile|70%||
+|FreelaMatchAPI.Models.ProfileResume|50%||
 |FreelaMatchAPI.Models.Proposal|95.4%||
-|FreelaMatchAPI.Models.ProposalSkill|50%||
+|FreelaMatchAPI.Models.ProposalSkill|66.6%||
 |FreelaMatchAPI.Models.ProposalSkillCreate|50%||
 |FreelaMatchAPI.Models.ReviewCreate|100%||
 |FreelaMatchAPI.Models.Reviews|65%||
@@ -60,9 +60,9 @@
 |FreelaMatchAPI.Models.UpdateUser|100%||
 |FreelaMatchAPI.Models.User|94.4%||
 |FreelaMatchAPI.Models.UserAuthResponseDto|100%||
-|FreelaMatchAPI.Models.UserResume|0%||
-|FreelaMatchAPI.Models.UserSkill|31.2%||
-|FreelaMatchAPI.Models.UserSkillResume|0%||
+|FreelaMatchAPI.Models.UserResume|33.3%||
+|FreelaMatchAPI.Models.UserSkill|43.7%||
+|FreelaMatchAPI.Models.UserSkillResume|30%||
 |FreelaMatchAPI.Services.GeneralService|100%||
 |FreelaMatchAPI.Services.UserService|50%|50%|
 |PortfolioService|100%|100%|
