@@ -214,7 +214,7 @@ var assemblies = [
     "name": "freela-match-api",
     "classes": [
       { "name": "AuthService", "rp": "freela_match_api_AuthService.html", "cl": 90, "ucl": 0, "cal": 90, "tl": 179, "cb": 12, "tb": 12, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
-      { "name": "EmailService", "rp": "freela_match_api_EmailService.html", "cl": 110, "ucl": 120, "cal": 230, "tl": 356, "cb": 28, "tb": 68, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "EmailService", "rp": "freela_match_api_EmailService.html", "cl": 112, "ucl": 118, "cal": 230, "tl": 356, "cb": 30, "tb": 68, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "FreelaMatchAPI.Controllers.AuthController", "rp": "freela_match_api_AuthController.html", "cl": 66, "ucl": 0, "cal": 66, "tl": 137, "cb": 4, "tb": 4, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "FreelaMatchAPI.Controllers.GeneralController", "rp": "freela_match_api_GeneralController.html", "cl": 44, "ucl": 4, "cal": 48, "tl": 139, "cb": 24, "tb": 32, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "FreelaMatchAPI.Controllers.PortfolioController", "rp": "freela_match_api_PortfolioController.html", "cl": 34, "ucl": 2, "cal": 36, "tl": 119, "cb": 14, "tb": 16, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },

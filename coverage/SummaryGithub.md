@@ -3,31 +3,31 @@
 
 |||
 |:---|:---|
-| Generated on: | 11/26/2025 - 05:12:54 |
+| Generated on: | 11/26/2025 - 05:19:23 |
 | Parser: | MultiReport (2x OpenCover) |
 | Assemblies: | 1 |
 | Classes: | 45 |
 | Files: | 44 |
-| **Line coverage:** | 74.3% (1203 of 1618) |
-| Covered lines: | 1203 |
-| Uncovered lines: | 415 |
+| **Line coverage:** | 74.4% (1205 of 1618) |
+| Covered lines: | 1205 |
+| Uncovered lines: | 413 |
 | Coverable lines: | 1618 |
 | Total lines: | 3325 |
-| **Branch coverage:** | 66.8% (206 of 308) |
-| Covered branches: | 206 |
+| **Branch coverage:** | 67.5% (208 of 308) |
+| Covered branches: | 208 |
 | Total branches: | 308 |
 | **Method coverage:** | [Feature is only available for sponsors](https://reportgenerator.io/pro) |
 
 </details>
 
 ## Coverage
-<details><summary>freela-match-api - 74.3%</summary>
+<details><summary>freela-match-api - 74.4%</summary>
 
 |**Name**|**Line**|**Branch**|
 |:---|---:|---:|
-|**freela-match-api**|**74.3%**|**66.8%**|
+|**freela-match-api**|**74.4%**|**67.5%**|
 |AuthService|100%|100%|
-|EmailService|47.8%|41.1%|
+|EmailService|48.6%|44.1%|
 |FreelaMatchAPI.Controllers.AuthController|100%|100%|
 |FreelaMatchAPI.Controllers.GeneralController|91.6%|75%|
 |FreelaMatchAPI.Controllers.PortfolioController|94.4%|87.5%|
