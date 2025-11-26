@@ -663,5 +663,358 @@ namespace freela_match_api_test.Services
                 Assert.Equal(level, updated.ExperienceLevel);
             }
         }
+
+        [Fact]
+        public async Task UpdateProfileAsync_ShouldHandleMultipleSkillChanges_Simultaneously()
+        {
+            var context = GetDbContext();
+
+            var profile = new Profile
+            {
+                ProfileId = 1,
+                UserId = 1,
+                Biography = "Bio",
+                PricePerHour = 50,
+                ExperienceLevel = ExperienceLevel.Junior
+            };
+
+            var user = new User
+            {
+                Id = 1,
+                Name = "Fulano",
+                Email = "fulano@test.com",
+                Password = "123",
+                Token = "A",
+                Profile = profile,
+                UserSkills = new List<UserSkill>()
+            };
+
+            context.Users.Add(user);
+            context.Skills.AddRange(
+                new Skill { SkillId = 1, Name = "C#" },
+                new Skill { SkillId = 2, Name = "Angular" },
+                new Skill { SkillId = 3, Name = "React" },
+                new Skill { SkillId = 4, Name = "Vue" }
+            );
+            await context.SaveChangesAsync();
+
+            // Skills iniciais: 1 e 2 (ativas)
+            context.UserSkills.AddRange(
+                new UserSkill { UserId = 1, SkillId = 1, ProfileId = 1, IsActive = true },
+                new UserSkill { UserId = 1, SkillId = 2, ProfileId = 1, IsActive = true }
+            );
+            await context.SaveChangesAsync();
+
+            var service = new ProfileService(context, GetFakeConfig());
+
+            // Atualizar: manter skill 1, remover skill 2, adicionar skills 3 e 4
+            var updatedProfile = new UpdateProfile
+            {
+                Biography = "Bio",
+                PricePerHour = 50,
+                ExperienceLevel = ExperienceLevel.Junior,
+                UserSkills = new List<UserSkill>
+        {
+            new UserSkill { SkillId = 1 },
+            new UserSkill { SkillId = 3 },
+            new UserSkill { SkillId = 4 }
+        }
+            };
+
+            var (success, message, _) = await service.UpdateProfileAsync(1, updatedProfile);
+
+            Assert.True(success);
+
+            var allSkills = context.UserSkills.Where(us => us.UserId == 1).ToList();
+
+            var skill1 = allSkills.First(us => us.SkillId == 1);
+            var skill2 = allSkills.First(us => us.SkillId == 2);
+            var skill3 = allSkills.First(us => us.SkillId == 3);
+            var skill4 = allSkills.First(us => us.SkillId == 4);
+
+            Assert.True(skill1.IsActive);  // Mantida
+            Assert.False(skill2.IsActive); // Removida
+            Assert.True(skill3.IsActive);  // Adicionada
+            Assert.True(skill4.IsActive);  // Adicionada
+        }
+
+        [Fact]
+        public async Task UpdateProfileAsync_ShouldHandleZeroPricePerHour()
+        {
+            var context = GetDbContext();
+
+            var profile = new Profile
+            {
+                ProfileId = 1,
+                UserId = 1,
+                Biography = "Bio",
+                PricePerHour = 100,
+                ExperienceLevel = ExperienceLevel.Junior
+            };
+
+            var user = new User
+            {
+                Id = 1,
+                Name = "Fulano",
+                Email = "fulano@test.com",
+                Password = "123",
+                Token = "A",
+                Profile = profile,
+                UserSkills = new List<UserSkill>()
+            };
+
+            context.Users.Add(user);
+            await context.SaveChangesAsync();
+
+            var service = new ProfileService(context, GetFakeConfig());
+
+            var updatedProfile = new UpdateProfile
+            {
+                Biography = "Bio",
+                PricePerHour = 0,
+                ExperienceLevel = ExperienceLevel.Junior,
+                UserSkills = new List<UserSkill>()
+            };
+
+            var (success, message, updated) = await service.UpdateProfileAsync(1, updatedProfile);
+
+            Assert.True(success);
+            Assert.Equal(0, updated.PricePerHour);
+        }
+
+        [Fact]
+        public async Task UpdateProfileAsync_ShouldHandleHighPricePerHour()
+        {
+            var context = GetDbContext();
+
+            var profile = new Profile
+            {
+                ProfileId = 1,
+                UserId = 1,
+                Biography = "Bio",
+                PricePerHour = 50,
+                ExperienceLevel = ExperienceLevel.Junior
+            };
+
+            var user = new User
+            {
+                Id = 1,
+                Name = "Fulano",
+                Email = "fulano@test.com",
+                Password = "123",
+                Token = "A",
+                Profile = profile,
+                UserSkills = new List<UserSkill>()
+            };
+
+            context.Users.Add(user);
+            await context.SaveChangesAsync();
+
+            var service = new ProfileService(context, GetFakeConfig());
+
+            var updatedProfile = new UpdateProfile
+            {
+                Biography = "Bio",
+                PricePerHour = 999999,
+                ExperienceLevel = ExperienceLevel.Junior,
+                UserSkills = new List<UserSkill>()
+            };
+
+            var (success, message, updated) = await service.UpdateProfileAsync(1, updatedProfile);
+
+            Assert.True(success);
+            Assert.Equal(999999, updated.PricePerHour);
+        }
+
+        [Fact]
+        public async Task UpdateProfileAsync_ShouldHandleEmptyBiography()
+        {
+            var context = GetDbContext();
+
+            var profile = new Profile
+            {
+                ProfileId = 1,
+                UserId = 1,
+                Biography = "Old Bio",
+                PricePerHour = 50,
+                ExperienceLevel = ExperienceLevel.Junior
+            };
+
+            var user = new User
+            {
+                Id = 1,
+                Name = "Fulano",
+                Email = "fulano@test.com",
+                Password = "123",
+                Token = "A",
+                Profile = profile,
+                UserSkills = new List<UserSkill>()
+            };
+
+            context.Users.Add(user);
+            await context.SaveChangesAsync();
+
+            var service = new ProfileService(context, GetFakeConfig());
+
+            var updatedProfile = new UpdateProfile
+            {
+                Biography = "",
+                PricePerHour = 50,
+                ExperienceLevel = ExperienceLevel.Junior,
+                UserSkills = new List<UserSkill>()
+            };
+
+            var (success, message, updated) = await service.UpdateProfileAsync(1, updatedProfile);
+
+            Assert.True(success);
+            Assert.Equal("", updated.Biography);
+        }
+
+        [Fact]
+        public async Task UpdateProfileAsync_ShouldHandleLongBiography()
+        {
+            var context = GetDbContext();
+
+            var profile = new Profile
+            {
+                ProfileId = 1,
+                UserId = 1,
+                Biography = "Short",
+                PricePerHour = 50,
+                ExperienceLevel = ExperienceLevel.Junior
+            };
+
+            var user = new User
+            {
+                Id = 1,
+                Name = "Fulano",
+                Email = "fulano@test.com",
+                Password = "123",
+                Token = "A",
+                Profile = profile,
+                UserSkills = new List<UserSkill>()
+            };
+
+            context.Users.Add(user);
+            await context.SaveChangesAsync();
+
+            var service = new ProfileService(context, GetFakeConfig());
+
+            var longBio = new string('A', 5000); // Bio muito longa
+
+            var updatedProfile = new UpdateProfile
+            {
+                Biography = longBio,
+                PricePerHour = 50,
+                ExperienceLevel = ExperienceLevel.Junior,
+                UserSkills = new List<UserSkill>()
+            };
+
+            var (success, message, updated) = await service.UpdateProfileAsync(1, updatedProfile);
+
+            Assert.True(success);
+            Assert.Equal(longBio, updated.Biography);
+        }
+
+        [Fact]
+        public async Task UpdateProfileAsync_ShouldReactivateMultipleInactiveSkills()
+        {
+            var context = GetDbContext();
+
+            var profile = new Profile
+            {
+                ProfileId = 1,
+                UserId = 1,
+                Biography = "Bio",
+                PricePerHour = 50,
+                ExperienceLevel = ExperienceLevel.Junior
+            };
+
+            var user = new User
+            {
+                Id = 1,
+                Name = "Fulano",
+                Email = "fulano@test.com",
+                Password = "123",
+                Token = "A",
+                Profile = profile,
+                UserSkills = new List<UserSkill>()
+            };
+
+            context.Users.Add(user);
+            context.Skills.AddRange(
+                new Skill { SkillId = 1, Name = "C#" },
+                new Skill { SkillId = 2, Name = "Angular" },
+                new Skill { SkillId = 3, Name = "React" }
+            );
+            await context.SaveChangesAsync();
+
+            // Adicionar todas as skills como inativas
+            context.UserSkills.AddRange(
+                new UserSkill { UserId = 1, SkillId = 1, ProfileId = 1, IsActive = false },
+                new UserSkill { UserId = 1, SkillId = 2, ProfileId = 1, IsActive = false },
+                new UserSkill { UserId = 1, SkillId = 3, ProfileId = 1, IsActive = false }
+            );
+            await context.SaveChangesAsync();
+
+            var service = new ProfileService(context, GetFakeConfig());
+
+            // Reativar todas
+            var updatedProfile = new UpdateProfile
+            {
+                Biography = "Bio",
+                PricePerHour = 50,
+                ExperienceLevel = ExperienceLevel.Junior,
+                UserSkills = new List<UserSkill>
+        {
+            new UserSkill { SkillId = 1 },
+            new UserSkill { SkillId = 2 },
+            new UserSkill { SkillId = 3 }
+        }
+            };
+
+            var (success, message, _) = await service.UpdateProfileAsync(1, updatedProfile);
+
+            Assert.True(success);
+
+            var allSkills = context.UserSkills.Where(us => us.UserId == 1).ToList();
+            Assert.All(allSkills, skill => Assert.True(skill.IsActive));
+        }
+
+        [Fact]
+        public async Task GetProfileByUserIdAsync_ShouldReturnCorrectProfileId()
+        {
+            var context = GetDbContext();
+
+            var profile = new Profile
+            {
+                ProfileId = 42,
+                UserId = 1,
+                Biography = "Bio",
+                PricePerHour = 100,
+                ExperienceLevel = ExperienceLevel.Pleno
+            };
+
+            var user = new User
+            {
+                Id = 1,
+                Name = "Fulano",
+                Email = "fulano@test.com",
+                Password = "123",
+                Token = "A",
+                Profile = profile,
+                UserSkills = new List<UserSkill>()
+            };
+
+            context.Users.Add(user);
+            await context.SaveChangesAsync();
+
+            var service = new ProfileService(context, GetFakeConfig());
+
+            var result = await service.GetProfileByUserIdAsync(1);
+
+            Assert.NotNull(result);
+            Assert.Equal(42, result.ProfileId);
+        }
     }
 }
