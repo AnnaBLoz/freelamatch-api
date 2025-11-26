@@ -122,7 +122,15 @@ namespace freela_match_api_test.Services
             var emailMock = new Mock<IEmailService>();
             var service = new ProposalService(context, emailMock.Object);
 
-            context.Candidate.Add(new Candidate { CandidateId = 10, ProposalId = 1, UserId = 100, Message = "msg", EstimatedDate = DateTime.UtcNow.AddDays(3).ToString(), Status = ProposalStatus.Pending });
+            context.Candidate.Add(new Candidate
+            {
+                CandidateId = 10,
+                ProposalId = 1,
+                UserId = 100,
+                Message = "msg",
+                EstimatedDate = DateTime.UtcNow.AddDays(3).ToString(),
+                Status = ProposalStatus.Pending
+            });
             await context.SaveChangesAsync();
 
             var result = await service.DisapproveCandidate(new CandidateApprove { CandidateId = 10, ProposalId = 1 });
@@ -160,7 +168,25 @@ namespace freela_match_api_test.Services
 
             var service = new ProposalService(context, emailMock.Object);
 
-            var dto = new CandidateProposal { ProposalId = 5, UserId = 33, EstimatedDate = DateTime.UtcNow.AddDays(2).ToString(), ProposedPrice = 150, Message = "Test" };
+            var dto = new CandidateProposal
+            {
+                ProposalId = 5,
+                UserId = 33,
+                EstimatedDate = DateTime.UtcNow.AddDays(2).ToString(),
+                ProposedPrice = 150,
+                Message = "Test"
+            };
+
+            // Adiciona Proposal obrigatório
+            context.Proposal.Add(new Proposal
+            {
+                ProposalId = 5,
+                OwnerId = 99,
+                Title = "Title",
+                Description = "Desc",
+                Price = 100
+            });
+            await context.SaveChangesAsync();
 
             var result = await service.Candidate(dto);
 
@@ -181,7 +207,16 @@ namespace freela_match_api_test.Services
 
             var service = new ProposalService(context, emailMock.Object);
 
-            context.Proposal.Add(new Proposal { ProposalId = 7, OwnerId = 99, Title = "Title", Description = "Desc", Price = 500, MaxDate = DateTime.UtcNow.AddDays(5), CreatedDate = DateTime.UtcNow });
+            context.Proposal.Add(new Proposal
+            {
+                ProposalId = 7,
+                OwnerId = 99,
+                Title = "Title",
+                Description = "Desc",
+                Price = 500,
+                MaxDate = DateTime.UtcNow.AddDays(5),
+                CreatedDate = DateTime.UtcNow
+            });
             await context.SaveChangesAsync();
 
             var dto = new CounterProposalCreate
@@ -213,7 +248,17 @@ namespace freela_match_api_test.Services
             var emailMock = new Mock<IEmailService>();
             var service = new ProposalService(context, emailMock.Object);
 
-            var dto = new CounterProposalCreate { ProposalId = 999, FreelancerId = 1, CompanyId = 1, EstimatedDate = DateTime.UtcNow, ProposedPrice = 100, Message = "Test", IsAccepted = false, IsSendedByCompany = true };
+            var dto = new CounterProposalCreate
+            {
+                ProposalId = 999,
+                FreelancerId = 1,
+                CompanyId = 1,
+                EstimatedDate = DateTime.UtcNow,
+                ProposedPrice = 100,
+                Message = "Test",
+                IsAccepted = false,
+                IsSendedByCompany = true
+            };
 
             var result = await service.CounterProposal(dto);
 
@@ -232,8 +277,8 @@ namespace freela_match_api_test.Services
             var emailMock = new Mock<IEmailService>();
             var service = new ProposalService(context, emailMock.Object);
 
-            context.Proposal.Add(new Proposal { ProposalId = 1, OwnerId = 10, IsAvailable = true });
-            context.Proposal.Add(new Proposal { ProposalId = 2, OwnerId = 20, IsAvailable = true });
+            context.Proposal.Add(new Proposal { ProposalId = 1, OwnerId = 10, IsAvailable = true, Title = "T", Description = "D" });
+            context.Proposal.Add(new Proposal { ProposalId = 2, OwnerId = 20, IsAvailable = true, Title = "T2", Description = "D2" });
             await context.SaveChangesAsync();
 
             var result = await service.GetProposals(10);
@@ -252,8 +297,8 @@ namespace freela_match_api_test.Services
             var emailMock = new Mock<IEmailService>();
             var service = new ProposalService(context, emailMock.Object);
 
-            context.Proposal.Add(new Proposal { ProposalId = 1, OwnerId = 1, IsAvailable = true });
-            context.Proposal.Add(new Proposal { ProposalId = 2, OwnerId = 2, IsAvailable = false });
+            context.Proposal.Add(new Proposal { ProposalId = 1, OwnerId = 1, IsAvailable = true, Title = "T1", Description = "D1" });
+            context.Proposal.Add(new Proposal { ProposalId = 2, OwnerId = 2, IsAvailable = false, Title = "T2", Description = "D2" });
             await context.SaveChangesAsync();
 
             var result = await service.GetAllProposals();
@@ -272,7 +317,7 @@ namespace freela_match_api_test.Services
             var emailMock = new Mock<IEmailService>();
             var service = new ProposalService(context, emailMock.Object);
 
-            context.Proposal.Add(new Proposal { ProposalId = 1, OwnerId = 1 });
+            context.Proposal.Add(new Proposal { ProposalId = 1, OwnerId = 1, Title = "T", Description = "D" });
             await context.SaveChangesAsync();
 
             var result = await service.GetProposalById(1);
@@ -291,7 +336,7 @@ namespace freela_match_api_test.Services
             var emailMock = new Mock<IEmailService>();
             var service = new ProposalService(context, emailMock.Object);
 
-            context.Proposal.Add(new Proposal { ProposalId = 1, OwnerId = 1 });
+            context.Proposal.Add(new Proposal { ProposalId = 1, OwnerId = 1, Title = "T", Description = "D" });
 
             var candidate = new Candidate
             {
@@ -323,7 +368,13 @@ namespace freela_match_api_test.Services
             var emailMock = new Mock<IEmailService>();
             var service = new ProposalService(context, emailMock.Object);
 
-            context.Proposal.Add(new Proposal { ProposalId = 1, OwnerId = 10 });
+            context.Proposal.Add(new Proposal
+            {
+                ProposalId = 1,
+                OwnerId = 10,
+                Title = "T",
+                Description = "D"
+            });
 
             context.CounterProposal.Add(new CounterProposal
             {
@@ -359,6 +410,8 @@ namespace freela_match_api_test.Services
             context.Proposal.Add(new Proposal
             {
                 ProposalId = 1,
+                Title = "T",
+                Description = "D",
                 Candidates = new List<Candidate>
                 {
                     new Candidate
