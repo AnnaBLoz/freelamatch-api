@@ -1,6 +1,6 @@
 # FreelaMatch API
 
-[![.NET 8 CI](https://github.com/AnnaBLoz/freelamatch-api/actions/workflows/coverage.yml/badge.svg)](https://github.com/AnnaBLoz/freelamatch-api/actions/workflows/coverage.yml)
+[![.NET 8 CI](https://github.com/AnnaBLoz/freelamatch-api/actions/workflows/sonarcloud.yml/badge.svg)](https://github.com/AnnaBLoz/freelamatch-api/actions/workflows/sonarcloud.yml)
 [![Coverage Report](https://img.shields.io/badge/coverage-view%20report-brightgreen)](https://annabloz.github.io/freelamatch-api/coverage/)
 
 > API para gerenciamento de freelancers e projetos
