@@ -180,5 +180,320 @@ namespace freela_match_api_test.Services
 
             Assert.Equal(ProposalStatus.Pending, candidate.Status);
         }
+
+        [Fact]
+        public async Task GetReviews_ShouldReturnEmptyList_WhenNoReviewsExist()
+        {
+            var context = GetDbContext();
+            var service = GetService(context);
+
+            var result = await service.GetReviews(999);
+
+            Assert.Empty(result);
+        }
+
+        [Fact]
+        public async Task GetReviews_ShouldReturnOnlyReviewsWhereUserIsReceiver()
+        {
+            var context = GetDbContext();
+
+            context.Users.AddRange(
+                new User { Id = 1, Name = "User 1", Email = "u1@test.com", Password = "123", Token = "A" },
+                new User { Id = 2, Name = "User 2", Email = "u2@test.com", Password = "123", Token = "A" }
+            );
+            await context.SaveChangesAsync();
+
+            context.Reviews.Add(new Reviews
+            {
+                Id = 1,
+                ReviewerId = 2,
+                ReceiverId = 1,
+                ReviewText = "Good",
+                Rating = 5
+            });
+            await context.SaveChangesAsync();
+
+            var service = GetService(context);
+            var result = await service.GetReviews(1);
+
+            Assert.Single(result);
+            Assert.Equal(1, result[0].ReceiverId);
+        }
+
+        [Fact]
+        public async Task GetReviews_ShouldReturnOnlyReviewsWhereUserIsReviewer()
+        {
+            var context = GetDbContext();
+
+            context.Users.AddRange(
+                new User { Id = 1, Name = "User 1", Email = "u1@test.com", Password = "123", Token = "A" },
+                new User { Id = 2, Name = "User 2", Email = "u2@test.com", Password = "123", Token = "A" }
+            );
+            await context.SaveChangesAsync();
+
+            context.Reviews.Add(new Reviews
+            {
+                Id = 1,
+                ReviewerId = 1,
+                ReceiverId = 2,
+                ReviewText = "Good",
+                Rating = 5
+            });
+            await context.SaveChangesAsync();
+
+            var service = GetService(context);
+            var result = await service.GetReviews(1);
+
+            Assert.Single(result);
+            Assert.Equal(1, result[0].ReviewerId);
+        }
+
+        [Fact]
+        public async Task GetReviews_ShouldIncludeReviewerAndReceiverNavigationProperties()
+        {
+            var context = GetDbContext();
+
+            context.Users.AddRange(
+                new User { Id = 1, Name = "Reviewer Name", Email = "reviewer@test.com", Password = "123", Token = "A" },
+                new User { Id = 2, Name = "Receiver Name", Email = "receiver@test.com", Password = "123", Token = "A" }
+            );
+            await context.SaveChangesAsync();
+
+            context.Reviews.Add(new Reviews
+            {
+                Id = 1,
+                ReviewerId = 1,
+                ReceiverId = 2,
+                ReviewText = "Test",
+                Rating = 5
+            });
+            await context.SaveChangesAsync();
+
+            var service = GetService(context);
+            var result = await service.GetReviews(1);
+
+            Assert.Single(result);
+            Assert.NotNull(result[0].Reviewer);
+            Assert.NotNull(result[0].Receiver);
+            Assert.Equal("Reviewer Name", result[0].Reviewer.Name);
+            Assert.Equal("Receiver Name", result[0].Receiver.Name);
+        }
+
+        [Fact]
+        public async Task CreateReview_ShouldSetCreatedAtTimestamp()
+        {
+            var context = GetDbContext();
+            var service = GetService(context);
+
+            var beforeCreate = DateTime.UtcNow;
+
+            var dto = new ReviewCreate
+            {
+                ReviewerId = 1,
+                ReceiverId = 2,
+                ReviewText = "Test",
+                Rating = 5,
+                ProposalId = 99
+            };
+
+            var result = await service.CreateReview(dto);
+
+            var afterCreate = DateTime.UtcNow;
+
+            Assert.NotNull(result.CreatedAt);
+            Assert.True(result.CreatedAt >= beforeCreate);
+            Assert.True(result.CreatedAt <= afterCreate);
+        }
+
+        [Fact]
+        public async Task CreateReview_ShouldSetAllFields_Correctly()
+        {
+            var context = GetDbContext();
+            var service = GetService(context);
+
+            var dto = new ReviewCreate
+            {
+                ReviewerId = 10,
+                ReceiverId = 20,
+                ReviewText = "Excelente profissional",
+                Rating = 5,
+                ProposalId = 123
+            };
+
+            var result = await service.CreateReview(dto);
+
+            Assert.NotNull(result);
+            Assert.Equal(10, result.ReviewerId);
+            Assert.Equal(20, result.ReceiverId);
+            Assert.Equal("Excelente profissional", result.ReviewText);
+            Assert.Equal(5, result.Rating);
+            Assert.Equal(123, result.ProposalId);
+        }
+
+        [Fact]
+        public async Task CreateReview_ShouldPersistToDatabase()
+        {
+            var context = GetDbContext();
+            var service = GetService(context);
+
+            var dto = new ReviewCreate
+            {
+                ReviewerId = 1,
+                ReceiverId = 2,
+                ReviewText = "Test",
+                Rating = 4,
+                ProposalId = 99
+            };
+
+            var result = await service.CreateReview(dto);
+
+            var reviewInDb = await context.Reviews.FindAsync(result.Id);
+
+            Assert.NotNull(reviewInDb);
+            Assert.Equal(result.Id, reviewInDb.Id);
+            Assert.Equal("Test", reviewInDb.ReviewText);
+        }
+
+        [Theory]
+        [InlineData(1)]
+        [InlineData(2)]
+        [InlineData(3)]
+        [InlineData(4)]
+        [InlineData(5)]
+        public async Task CreateReview_ShouldAcceptDifferentRatings(int rating)
+        {
+            var context = GetDbContext();
+            var service = GetService(context);
+
+            var dto = new ReviewCreate
+            {
+                ReviewerId = 1,
+                ReceiverId = 2,
+                ReviewText = "Test",
+                Rating = rating,
+                ProposalId = 99
+            };
+
+            var result = await service.CreateReview(dto);
+
+            Assert.Equal(rating, result.Rating);
+        }
+
+        [Fact]
+        public async Task CreateReview_ShouldHandleEmptyReviewText()
+        {
+            var context = GetDbContext();
+            var service = GetService(context);
+
+            var dto = new ReviewCreate
+            {
+                ReviewerId = 1,
+                ReceiverId = 2,
+                ReviewText = "",
+                Rating = 5,
+                ProposalId = 99
+            };
+
+            var result = await service.CreateReview(dto);
+
+            Assert.NotNull(result);
+            Assert.Equal("", result.ReviewText);
+        }
+
+        [Fact]
+        public async Task CreateReview_ShouldHandleLongReviewText()
+        {
+            var context = GetDbContext();
+            var service = GetService(context);
+
+            var longText = new string('A', 5000);
+
+            var dto = new ReviewCreate
+            {
+                ReviewerId = 1,
+                ReceiverId = 2,
+                ReviewText = longText,
+                Rating = 5,
+                ProposalId = 99
+            };
+
+            var result = await service.CreateReview(dto);
+
+            Assert.NotNull(result);
+            Assert.Equal(longText, result.ReviewText);
+        }
+
+        [Fact]
+        public async Task CreateReview_ShouldHandleSpecialCharactersInReviewText()
+        {
+            var context = GetDbContext();
+            var service = GetService(context);
+
+            var specialText = "Ótimo trabalho! @#$%^&*() ção çã é";
+
+            var dto = new ReviewCreate
+            {
+                ReviewerId = 1,
+                ReceiverId = 2,
+                ReviewText = specialText,
+                Rating = 5,
+                ProposalId = 99
+            };
+
+            var result = await service.CreateReview(dto);
+
+            Assert.NotNull(result);
+            Assert.Equal(specialText, result.ReviewText);
+        }
+
+        [Fact]
+        public async Task CreateReview_ShouldGenerateId()
+        {
+            var context = GetDbContext();
+            var service = GetService(context);
+
+            var dto = new ReviewCreate
+            {
+                ReviewerId = 1,
+                ReceiverId = 2,
+                ReviewText = "Test",
+                Rating = 5,
+                ProposalId = 99
+            };
+
+            var result = await service.CreateReview(dto);
+
+            Assert.True(result.Id > 0);
+        }
+
+        [Fact]
+        public async Task CreateReview_ShouldGenerateUniqueIds_ForMultipleReviews()
+        {
+            var context = GetDbContext();
+            var service = GetService(context);
+
+            var dto1 = new ReviewCreate
+            {
+                ReviewerId = 1,
+                ReceiverId = 2,
+                ReviewText = "Test 1",
+                Rating = 5,
+                ProposalId = 99
+            };
+
+            var dto2 = new ReviewCreate
+            {
+                ReviewerId = 2,
+                ReceiverId = 1,
+                ReviewText = "Test 2",
+                Rating = 4,
+                ProposalId = 100
+            };
+
+            var result1 = await service.CreateReview(dto1);
+            var result2 = await service.CreateReview(dto2);
+
+            Assert.NotEqual(result1.Id, result2.Id);
+        }
     }
 }
