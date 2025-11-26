@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE coverage SYSTEM "http://cobertura.sourceforge.net/xml/coverage-04.dtd">
-<coverage line-rate="0.6452410383189122" branch-rate="0.5097402597402597" lines-covered="1044" lines-valid="1618" branches-covered="157" branches-valid="308" complexity="394" version="0" timestamp="1764130898">
+<coverage line-rate="0.6477132262051916" branch-rate="0.5292207792207793" lines-covered="1048" lines-valid="1618" branches-covered="163" branches-valid="308" complexity="394" version="0" timestamp="1764131294">
   <sources />
   <packages>
-    <package name="freela-match-api" line-rate="0.6452410383189122" branch-rate="0.5097402597402597" complexity="394">
+    <package name="freela-match-api" line-rate="0.6477132262051916" branch-rate="0.5292207792207793" complexity="394">
       <classes>
         <class name="AuthService" filename="/home/runner/work/freelamatch-api/freelamatch-api/freela-match-api/Services/AuthService.cs" line-rate="1" branch-rate="1" complexity="8">
           <methods>
@@ -1409,67 +1409,67 @@
           <methods>
             <method name="Users" signature="()" line-rate="1" branch-rate="1" complexity="NaN">
               <lines>
-                <line number="10" hits="71" branch="false" />
+                <line number="10" hits="95" branch="false" />
               </lines>
             </method>
             <method name="Freelancers" signature="()" line-rate="1" branch-rate="1" complexity="NaN">
               <lines>
-                <line number="11" hits="43" branch="false" />
+                <line number="11" hits="52" branch="false" />
               </lines>
             </method>
             <method name="Companies" signature="()" line-rate="1" branch-rate="1" complexity="NaN">
               <lines>
-                <line number="12" hits="43" branch="false" />
+                <line number="12" hits="52" branch="false" />
               </lines>
             </method>
             <method name="Profiles" signature="()" line-rate="1" branch-rate="1" complexity="NaN">
               <lines>
-                <line number="13" hits="46" branch="false" />
+                <line number="13" hits="58" branch="false" />
               </lines>
             </method>
             <method name="Skills" signature="()" line-rate="1" branch-rate="1" complexity="NaN">
               <lines>
-                <line number="14" hits="49" branch="false" />
+                <line number="14" hits="63" branch="false" />
               </lines>
             </method>
             <method name="UserSkills" signature="()" line-rate="1" branch-rate="1" complexity="NaN">
               <lines>
-                <line number="15" hits="46" branch="false" />
+                <line number="15" hits="63" branch="false" />
               </lines>
             </method>
             <method name="Portfolio" signature="()" line-rate="1" branch-rate="1" complexity="NaN">
               <lines>
-                <line number="16" hits="49" branch="false" />
+                <line number="16" hits="58" branch="false" />
               </lines>
             </method>
             <method name="Sector" signature="()" line-rate="1" branch-rate="1" complexity="NaN">
               <lines>
-                <line number="17" hits="45" branch="false" />
+                <line number="17" hits="55" branch="false" />
               </lines>
             </method>
             <method name="Proposal" signature="()" line-rate="1" branch-rate="1" complexity="NaN">
               <lines>
-                <line number="18" hits="62" branch="false" />
+                <line number="18" hits="71" branch="false" />
               </lines>
             </method>
             <method name="ProposalSkill" signature="()" line-rate="1" branch-rate="1" complexity="NaN">
               <lines>
-                <line number="19" hits="46" branch="false" />
+                <line number="19" hits="55" branch="false" />
               </lines>
             </method>
             <method name="Candidate" signature="()" line-rate="1" branch-rate="1" complexity="NaN">
               <lines>
-                <line number="20" hits="64" branch="false" />
+                <line number="20" hits="73" branch="false" />
               </lines>
             </method>
             <method name="Reviews" signature="()" line-rate="1" branch-rate="1" complexity="NaN">
               <lines>
-                <line number="21" hits="48" branch="false" />
+                <line number="21" hits="57" branch="false" />
               </lines>
             </method>
             <method name="CounterProposal" signature="()" line-rate="1" branch-rate="1" complexity="NaN">
               <lines>
-                <line number="22" hits="45" branch="false" />
+                <line number="22" hits="54" branch="false" />
               </lines>
             </method>
             <method name="OnModelCreating" signature="(Microsoft.EntityFrameworkCore.ModelBuilder)" line-rate="1" branch-rate="1" complexity="1">
@@ -1484,25 +1484,25 @@
             </method>
             <method name=".ctor" signature="(Microsoft.EntityFrameworkCore.DbContextOptions`1&lt;FreelaMatchAPI.Data.AppDbContext&gt;)" line-rate="1" branch-rate="1" complexity="1">
               <lines>
-                <line number="8" hits="86" branch="false" />
+                <line number="8" hits="104" branch="false" />
               </lines>
             </method>
           </methods>
           <lines>
-            <line number="8" hits="86" branch="false" />
-            <line number="10" hits="71" branch="false" />
-            <line number="11" hits="43" branch="false" />
-            <line number="12" hits="43" branch="false" />
-            <line number="13" hits="46" branch="false" />
-            <line number="14" hits="49" branch="false" />
-            <line number="15" hits="46" branch="false" />
-            <line number="16" hits="49" branch="false" />
-            <line number="17" hits="45" branch="false" />
-            <line number="18" hits="62" branch="false" />
-            <line number="19" hits="46" branch="false" />
-            <line number="20" hits="64" branch="false" />
-            <line number="21" hits="48" branch="false" />
-            <line number="22" hits="45" branch="false" />
+            <line number="8" hits="104" branch="false" />
+            <line number="10" hits="95" branch="false" />
+            <line number="11" hits="52" branch="false" />
+            <line number="12" hits="52" branch="false" />
+            <line number="13" hits="58" branch="false" />
+            <line number="14" hits="63" branch="false" />
+            <line number="15" hits="63" branch="false" />
+            <line number="16" hits="58" branch="false" />
+            <line number="17" hits="55" branch="false" />
+            <line number="18" hits="71" branch="false" />
+            <line number="19" hits="55" branch="false" />
+            <line number="20" hits="73" branch="false" />
+            <line number="21" hits="57" branch="false" />
+            <line number="22" hits="54" branch="false" />
             <line number="28" hits="1" branch="false" />
             <line number="30" hits="1" branch="false" />
             <line number="31" hits="1" branch="false" />
@@ -2649,11 +2649,11 @@
             <line number="111" hits="12" branch="false" />
           </lines>
         </class>
-        <class name="FreelaMatchAPI.Models.Profile" filename="/home/runner/work/freelamatch-api/freelamatch-api/freela-match-api/Models/Profile.cs" line-rate="0.7" branch-rate="1" complexity="NaN">
+        <class name="FreelaMatchAPI.Models.Profile" filename="/home/runner/work/freelamatch-api/freelamatch-api/freela-match-api/Models/Profile.cs" line-rate="0.8" branch-rate="1" complexity="NaN">
           <methods>
             <method name="ProfileId" signature="()" line-rate="1" branch-rate="1" complexity="NaN">
               <lines>
-                <line number="15" hits="7" branch="false" />
+                <line number="15" hits="15" branch="false" />
               </lines>
             </method>
             <method name="User" signature="()" line-rate="0" branch-rate="1" complexity="NaN">
@@ -2663,27 +2663,27 @@
             </method>
             <method name="UserId" signature="()" line-rate="1" branch-rate="1" complexity="NaN">
               <lines>
-                <line number="20" hits="10" branch="false" />
+                <line number="20" hits="18" branch="false" />
               </lines>
             </method>
             <method name="Biography" signature="()" line-rate="1" branch-rate="1" complexity="NaN">
               <lines>
-                <line number="22" hits="11" branch="false" />
+                <line number="22" hits="29" branch="false" />
               </lines>
             </method>
             <method name="ExperienceLevel" signature="()" line-rate="1" branch-rate="1" complexity="NaN">
               <lines>
-                <line number="24" hits="9" branch="false" />
+                <line number="24" hits="28" branch="false" />
               </lines>
             </method>
             <method name="PricePerHour" signature="()" line-rate="1" branch-rate="1" complexity="NaN">
               <lines>
-                <line number="26" hits="9" branch="false" />
+                <line number="26" hits="25" branch="false" />
               </lines>
             </method>
             <method name="UserSkills" signature="()" line-rate="1" branch-rate="1" complexity="NaN">
               <lines>
-                <line number="28" hits="13" branch="false" />
+                <line number="28" hits="25" branch="false" />
               </lines>
             </method>
             <method name="Website" signature="()" line-rate="0" branch-rate="1" complexity="NaN">
@@ -2693,26 +2693,26 @@
             </method>
             <method name="SectorId" signature="()" line-rate="1" branch-rate="1" complexity="NaN">
               <lines>
-                <line number="32" hits="1" branch="false" />
+                <line number="32" hits="3" branch="false" />
               </lines>
             </method>
-            <method name="Sector" signature="()" line-rate="0" branch-rate="1" complexity="NaN">
+            <method name="Sector" signature="()" line-rate="1" branch-rate="1" complexity="NaN">
               <lines>
-                <line number="34" hits="0" branch="false" />
+                <line number="34" hits="2" branch="false" />
               </lines>
             </method>
           </methods>
           <lines>
-            <line number="15" hits="7" branch="false" />
+            <line number="15" hits="15" branch="false" />
             <line number="18" hits="0" branch="false" />
-            <line number="20" hits="10" branch="false" />
-            <line number="22" hits="11" branch="false" />
-            <line number="24" hits="9" branch="false" />
-            <line number="26" hits="9" branch="false" />
-            <line number="28" hits="13" branch="false" />
+            <line number="20" hits="18" branch="false" />
+            <line number="22" hits="29" branch="false" />
+            <line number="24" hits="28" branch="false" />
+            <line number="26" hits="25" branch="false" />
+            <line number="28" hits="25" branch="false" />
             <line number="30" hits="0" branch="false" />
-            <line number="32" hits="1" branch="false" />
-            <line number="34" hits="0" branch="false" />
+            <line number="32" hits="3" branch="false" />
+            <line number="34" hits="2" branch="false" />
           </lines>
         </class>
         <class name="FreelaMatchAPI.Models.Profile" filename="D:\TCC\FreelaMatch\freela-match-api\Models\Profile.cs" line-rate="0.5" branch-rate="1" complexity="NaN">
@@ -3325,18 +3325,18 @@
           <methods>
             <method name="SectorId" signature="()" line-rate="1" branch-rate="1" complexity="NaN">
               <lines>
-                <line number="131" hits="4" branch="false" />
+                <line number="131" hits="5" branch="false" />
               </lines>
             </method>
             <method name="Name" signature="()" line-rate="1" branch-rate="1" complexity="NaN">
               <lines>
-                <line number="132" hits="8" branch="false" />
+                <line number="132" hits="11" branch="false" />
               </lines>
             </method>
           </methods>
           <lines>
-            <line number="131" hits="4" branch="false" />
-            <line number="132" hits="8" branch="false" />
+            <line number="131" hits="5" branch="false" />
+            <line number="132" hits="11" branch="false" />
           </lines>
         </class>
         <class name="FreelaMatchAPI.Models.Sector" filename="D:\TCC\FreelaMatch\freela-match-api\Models\Profile.cs" line-rate="1" branch-rate="1" complexity="NaN">
@@ -3361,24 +3361,24 @@
           <methods>
             <method name="SkillId" signature="()" line-rate="1" branch-rate="1" complexity="NaN">
               <lines>
-                <line number="61" hits="12" branch="false" />
+                <line number="61" hits="18" branch="false" />
               </lines>
             </method>
             <method name="Name" signature="()" line-rate="1" branch-rate="1" complexity="NaN">
               <lines>
-                <line number="62" hits="26" branch="false" />
+                <line number="62" hits="39" branch="false" />
               </lines>
             </method>
             <method name="UserSkills" signature="()" line-rate="1" branch-rate="1" complexity="NaN">
               <lines>
-                <line number="65" hits="12" branch="false" />
+                <line number="65" hits="18" branch="false" />
               </lines>
             </method>
           </methods>
           <lines>
-            <line number="61" hits="12" branch="false" />
-            <line number="62" hits="26" branch="false" />
-            <line number="65" hits="12" branch="false" />
+            <line number="61" hits="18" branch="false" />
+            <line number="62" hits="39" branch="false" />
+            <line number="65" hits="18" branch="false" />
           </lines>
         </class>
         <class name="FreelaMatchAPI.Models.Skill" filename="D:\TCC\FreelaMatch\freela-match-api\Models\Profile.cs" line-rate="1" branch-rate="1" complexity="NaN">
@@ -3445,30 +3445,30 @@
           <methods>
             <method name="Biography" signature="()" line-rate="1" branch-rate="1" complexity="NaN">
               <lines>
-                <line number="50" hits="6" branch="false" />
+                <line number="50" hits="20" branch="false" />
               </lines>
             </method>
             <method name="ExperienceLevel" signature="()" line-rate="1" branch-rate="1" complexity="NaN">
               <lines>
-                <line number="52" hits="5" branch="false" />
+                <line number="52" hits="19" branch="false" />
               </lines>
             </method>
             <method name="PricePerHour" signature="()" line-rate="1" branch-rate="1" complexity="NaN">
               <lines>
-                <line number="54" hits="5" branch="false" />
+                <line number="54" hits="19" branch="false" />
               </lines>
             </method>
             <method name="UserSkills" signature="()" line-rate="1" branch-rate="1" complexity="NaN">
               <lines>
-                <line number="56" hits="11" branch="false" />
+                <line number="56" hits="32" branch="false" />
               </lines>
             </method>
           </methods>
           <lines>
-            <line number="50" hits="6" branch="false" />
-            <line number="52" hits="5" branch="false" />
-            <line number="54" hits="5" branch="false" />
-            <line number="56" hits="11" branch="false" />
+            <line number="50" hits="20" branch="false" />
+            <line number="52" hits="19" branch="false" />
+            <line number="54" hits="19" branch="false" />
+            <line number="56" hits="32" branch="false" />
           </lines>
         </class>
         <class name="FreelaMatchAPI.Models.UpdateProfile" filename="D:\TCC\FreelaMatch\freela-match-api\Models\Profile.cs" line-rate="1" branch-rate="1" complexity="NaN">
@@ -3541,22 +3541,22 @@
           <methods>
             <method name="Id" signature="()" line-rate="1" branch-rate="1" complexity="NaN">
               <lines>
-                <line number="7" hits="31" branch="false" />
+                <line number="7" hits="39" branch="false" />
               </lines>
             </method>
             <method name="Name" signature="()" line-rate="1" branch-rate="1" complexity="NaN">
               <lines>
-                <line number="8" hits="31" branch="false" />
+                <line number="8" hits="39" branch="false" />
               </lines>
             </method>
             <method name="Email" signature="()" line-rate="1" branch-rate="1" complexity="NaN">
               <lines>
-                <line number="9" hits="29" branch="false" />
+                <line number="9" hits="37" branch="false" />
               </lines>
             </method>
             <method name="Password" signature="()" line-rate="1" branch-rate="1" complexity="NaN">
               <lines>
-                <line number="10" hits="21" branch="false" />
+                <line number="10" hits="29" branch="false" />
               </lines>
             </method>
             <method name="Type" signature="()" line-rate="1" branch-rate="1" complexity="NaN">
@@ -3566,12 +3566,12 @@
             </method>
             <method name="Token" signature="()" line-rate="1" branch-rate="1" complexity="NaN">
               <lines>
-                <line number="12" hits="25" branch="false" />
+                <line number="12" hits="33" branch="false" />
               </lines>
             </method>
             <method name="Profile" signature="()" line-rate="1" branch-rate="1" complexity="NaN">
               <lines>
-                <line number="13" hits="16" branch="false" />
+                <line number="13" hits="38" branch="false" />
               </lines>
             </method>
             <method name="IsAvailable" signature="()" line-rate="1" branch-rate="1" complexity="NaN">
@@ -3581,20 +3581,20 @@
             </method>
             <method name="UserSkills" signature="()" line-rate="1" branch-rate="1" complexity="NaN">
               <lines>
-                <line number="16" hits="31" branch="false" />
+                <line number="16" hits="56" branch="false" />
               </lines>
             </method>
           </methods>
           <lines>
-            <line number="7" hits="31" branch="false" />
-            <line number="8" hits="31" branch="false" />
-            <line number="9" hits="29" branch="false" />
-            <line number="10" hits="21" branch="false" />
+            <line number="7" hits="39" branch="false" />
+            <line number="8" hits="39" branch="false" />
+            <line number="9" hits="37" branch="false" />
+            <line number="10" hits="29" branch="false" />
             <line number="11" hits="16" branch="false" />
-            <line number="12" hits="25" branch="false" />
-            <line number="13" hits="16" branch="false" />
+            <line number="12" hits="33" branch="false" />
+            <line number="13" hits="38" branch="false" />
             <line number="14" hits="9" branch="false" />
-            <line number="16" hits="31" branch="false" />
+            <line number="16" hits="56" branch="false" />
           </lines>
         </class>
         <class name="FreelaMatchAPI.Models.User" filename="D:\TCC\FreelaMatch\freela-match-api\Models\User.cs" line-rate="0.8888888888888888" branch-rate="1" complexity="NaN">
@@ -3834,12 +3834,12 @@
             </method>
             <method name="UserId" signature="()" line-rate="1" branch-rate="1" complexity="NaN">
               <lines>
-                <line number="72" hits="4" branch="false" />
+                <line number="72" hits="9" branch="false" />
               </lines>
             </method>
             <method name="ProfileId" signature="()" line-rate="1" branch-rate="1" complexity="NaN">
               <lines>
-                <line number="74" hits="4" branch="false" />
+                <line number="74" hits="9" branch="false" />
               </lines>
             </method>
             <method name="Profile" signature="()" line-rate="0" branch-rate="1" complexity="NaN">
@@ -3854,29 +3854,29 @@
             </method>
             <method name="SkillId" signature="()" line-rate="1" branch-rate="1" complexity="NaN">
               <lines>
-                <line number="82" hits="13" branch="false" />
+                <line number="82" hits="28" branch="false" />
               </lines>
             </method>
             <method name="Skill" signature="()" line-rate="1" branch-rate="1" complexity="NaN">
               <lines>
-                <line number="84" hits="3" branch="false" />
+                <line number="84" hits="5" branch="false" />
               </lines>
             </method>
             <method name="IsActive" signature="()" line-rate="1" branch-rate="1" complexity="NaN">
               <lines>
-                <line number="86" hits="4" branch="false" />
+                <line number="86" hits="21" branch="false" />
               </lines>
             </method>
           </methods>
           <lines>
             <line number="70" hits="0" branch="false" />
-            <line number="72" hits="4" branch="false" />
-            <line number="74" hits="4" branch="false" />
+            <line number="72" hits="9" branch="false" />
+            <line number="74" hits="9" branch="false" />
             <line number="77" hits="0" branch="false" />
             <line number="80" hits="0" branch="false" />
-            <line number="82" hits="13" branch="false" />
-            <line number="84" hits="3" branch="false" />
-            <line number="86" hits="4" branch="false" />
+            <line number="82" hits="28" branch="false" />
+            <line number="84" hits="5" branch="false" />
+            <line number="86" hits="21" branch="false" />
           </lines>
         </class>
         <class name="FreelaMatchAPI.Models.UserSkill" filename="D:\TCC\FreelaMatch\freela-match-api\Models\Profile.cs" line-rate="0" branch-rate="1" complexity="NaN">
@@ -4365,14 +4365,14 @@
             <line number="52" hits="1" branch="false" />
           </lines>
         </class>
-        <class name="ProfileService" filename="/home/runner/work/freelamatch-api/freelamatch-api/freela-match-api/Services/ProfileService.cs" line-rate="0.95" branch-rate="0.75" complexity="27">
+        <class name="ProfileService" filename="/home/runner/work/freelamatch-api/freelamatch-api/freela-match-api/Services/ProfileService.cs" line-rate="1" branch-rate="1" complexity="27">
           <methods>
             <method name=".ctor" signature="(FreelaMatchAPI.Data.AppDbContext,Microsoft.Extensions.Configuration.IConfiguration)" line-rate="1" branch-rate="1" complexity="1">
               <lines>
-                <line number="18" hits="8" branch="false" />
-                <line number="20" hits="8" branch="false" />
-                <line number="21" hits="8" branch="false" />
-                <line number="22" hits="8" branch="false" />
+                <line number="18" hits="17" branch="false" />
+                <line number="20" hits="17" branch="false" />
+                <line number="21" hits="17" branch="false" />
+                <line number="22" hits="17" branch="false" />
               </lines>
             </method>
             <method name="CreateProfileAsync" signature="()" line-rate="1" branch-rate="1" complexity="4">
@@ -4401,37 +4401,37 @@
             </method>
             <method name="GetProfileByUserIdAsync" signature="()" line-rate="1" branch-rate="1" complexity="1">
               <lines>
-                <line number="26" hits="2" branch="false" />
-                <line number="27" hits="2" branch="false" />
-                <line number="28" hits="2" branch="false" />
-                <line number="29" hits="2" branch="false" />
+                <line number="26" hits="5" branch="false" />
+                <line number="27" hits="5" branch="false" />
+                <line number="28" hits="5" branch="false" />
+                <line number="29" hits="5" branch="false" />
               </lines>
             </method>
             <method name="GetSkills" signature="()" line-rate="1" branch-rate="1" complexity="1">
               <lines>
-                <line number="33" hits="1" branch="false" />
-                <line number="34" hits="1" branch="false" />
+                <line number="33" hits="2" branch="false" />
+                <line number="34" hits="2" branch="false" />
               </lines>
             </method>
-            <method name="UpdateProfileAsync" signature="()" line-rate="0.9" branch-rate="0.7" complexity="20">
+            <method name="UpdateProfileAsync" signature="()" line-rate="1" branch-rate="1" complexity="20">
               <lines>
-                <line number="67" hits="2" branch="false" />
-                <line number="68" hits="2" branch="false" />
-                <line number="69" hits="2" branch="false" />
-                <line number="70" hits="2" branch="false" />
-                <line number="71" hits="2" branch="false" />
-                <line number="73" hits="2" branch="true" condition-coverage="100% (4/4)" />
+                <line number="67" hits="9" branch="false" />
+                <line number="68" hits="9" branch="false" />
+                <line number="69" hits="9" branch="false" />
+                <line number="70" hits="9" branch="false" />
+                <line number="71" hits="9" branch="false" />
+                <line number="73" hits="9" branch="true" condition-coverage="100% (4/4)" />
                 <line number="74" hits="1" branch="false" />
-                <line number="76" hits="1" branch="false" />
-                <line number="78" hits="1" branch="false" />
-                <line number="79" hits="1" branch="false" />
-                <line number="80" hits="1" branch="false" />
-                <line number="82" hits="3" branch="true" condition-coverage="50% (2/4)" />
-                <line number="84" hits="6" branch="true" condition-coverage="100% (2/2)" />
-                <line number="86" hits="3" branch="false" />
-                <line number="88" hits="2" branch="true" condition-coverage="50% (1/2)" />
-                <line number="90" hits="0" branch="true" condition-coverage="50% (1/2)" />
-                <line number="92" hits="0" branch="false" />
+                <line number="76" hits="8" branch="false" />
+                <line number="78" hits="8" branch="false" />
+                <line number="79" hits="8" branch="false" />
+                <line number="80" hits="8" branch="false" />
+                <line number="82" hits="12" branch="true" condition-coverage="100% (4/4)" />
+                <line number="84" hits="24" branch="true" condition-coverage="100% (2/2)" />
+                <line number="86" hits="7" branch="false" />
+                <line number="88" hits="4" branch="true" condition-coverage="100% (2/2)" />
+                <line number="90" hits="2" branch="true" condition-coverage="100% (2/2)" />
+                <line number="92" hits="1" branch="false" />
                 <line number="97" hits="2" branch="false" />
                 <line number="98" hits="2" branch="false" />
                 <line number="99" hits="2" branch="false" />
@@ -4439,26 +4439,26 @@
                 <line number="101" hits="2" branch="false" />
                 <line number="102" hits="2" branch="false" />
                 <line number="103" hits="2" branch="false" />
-                <line number="107" hits="6" branch="true" condition-coverage="100% (2/2)" />
-                <line number="109" hits="2" branch="true" condition-coverage="50% (2/4)" />
-                <line number="111" hits="0" branch="false" />
-                <line number="115" hits="1" branch="false" />
-                <line number="117" hits="1" branch="false" />
-                <line number="118" hits="2" branch="false" />
+                <line number="107" hits="28" branch="true" condition-coverage="100% (2/2)" />
+                <line number="109" hits="6" branch="true" condition-coverage="100% (4/4)" />
+                <line number="111" hits="2" branch="false" />
+                <line number="115" hits="8" branch="false" />
+                <line number="117" hits="8" branch="false" />
+                <line number="118" hits="9" branch="false" />
               </lines>
             </method>
           </methods>
           <lines>
-            <line number="18" hits="8" branch="false" />
-            <line number="20" hits="8" branch="false" />
-            <line number="21" hits="8" branch="false" />
-            <line number="22" hits="8" branch="false" />
-            <line number="26" hits="2" branch="false" />
-            <line number="27" hits="2" branch="false" />
-            <line number="28" hits="2" branch="false" />
-            <line number="29" hits="2" branch="false" />
-            <line number="33" hits="1" branch="false" />
-            <line number="34" hits="1" branch="false" />
+            <line number="18" hits="17" branch="false" />
+            <line number="20" hits="17" branch="false" />
+            <line number="21" hits="17" branch="false" />
+            <line number="22" hits="17" branch="false" />
+            <line number="26" hits="5" branch="false" />
+            <line number="27" hits="5" branch="false" />
+            <line number="28" hits="5" branch="false" />
+            <line number="29" hits="5" branch="false" />
+            <line number="33" hits="2" branch="false" />
+            <line number="34" hits="2" branch="false" />
             <line number="38" hits="3" branch="false" />
             <line number="39" hits="3" branch="false" />
             <line number="40" hits="3" branch="false" />
@@ -4479,23 +4479,23 @@
             <line number="60" hits="1" branch="false" />
             <line number="62" hits="1" branch="false" />
             <line number="63" hits="3" branch="false" />
-            <line number="67" hits="2" branch="false" />
-            <line number="68" hits="2" branch="false" />
-            <line number="69" hits="2" branch="false" />
-            <line number="70" hits="2" branch="false" />
-            <line number="71" hits="2" branch="false" />
-            <line number="73" hits="2" branch="true" condition-coverage="100% (4/4)" />
+            <line number="67" hits="9" branch="false" />
+            <line number="68" hits="9" branch="false" />
+            <line number="69" hits="9" branch="false" />
+            <line number="70" hits="9" branch="false" />
+            <line number="71" hits="9" branch="false" />
+            <line number="73" hits="9" branch="true" condition-coverage="100% (4/4)" />
             <line number="74" hits="1" branch="false" />
-            <line number="76" hits="1" branch="false" />
-            <line number="78" hits="1" branch="false" />
-            <line number="79" hits="1" branch="false" />
-            <line number="80" hits="1" branch="false" />
-            <line number="82" hits="3" branch="true" condition-coverage="50% (2/4)" />
-            <line number="84" hits="6" branch="true" condition-coverage="100% (2/2)" />
-            <line number="86" hits="3" branch="false" />
-            <line number="88" hits="2" branch="true" condition-coverage="50% (1/2)" />
-            <line number="90" hits="0" branch="true" condition-coverage="50% (1/2)" />
-            <line number="92" hits="0" branch="false" />
+            <line number="76" hits="8" branch="false" />
+            <line number="78" hits="8" branch="false" />
+            <line number="79" hits="8" branch="false" />
+            <line number="80" hits="8" branch="false" />
+            <line number="82" hits="12" branch="true" condition-coverage="100% (4/4)" />
+            <line number="84" hits="24" branch="true" condition-coverage="100% (2/2)" />
+            <line number="86" hits="7" branch="false" />
+            <line number="88" hits="4" branch="true" condition-coverage="100% (2/2)" />
+            <line number="90" hits="2" branch="true" condition-coverage="100% (2/2)" />
+            <line number="92" hits="1" branch="false" />
             <line number="97" hits="2" branch="false" />
             <line number="98" hits="2" branch="false" />
             <line number="99" hits="2" branch="false" />
@@ -4503,12 +4503,12 @@
             <line number="101" hits="2" branch="false" />
             <line number="102" hits="2" branch="false" />
             <line number="103" hits="2" branch="false" />
-            <line number="107" hits="6" branch="true" condition-coverage="100% (2/2)" />
-            <line number="109" hits="2" branch="true" condition-coverage="50% (2/4)" />
-            <line number="111" hits="0" branch="false" />
-            <line number="115" hits="1" branch="false" />
-            <line number="117" hits="1" branch="false" />
-            <line number="118" hits="2" branch="false" />
+            <line number="107" hits="28" branch="true" condition-coverage="100% (2/2)" />
+            <line number="109" hits="6" branch="true" condition-coverage="100% (4/4)" />
+            <line number="111" hits="2" branch="false" />
+            <line number="115" hits="8" branch="false" />
+            <line number="117" hits="8" branch="false" />
+            <line number="118" hits="9" branch="false" />
           </lines>
         </class>
         <class name="ProfileService" filename="D:\TCC\FreelaMatch\freela-match-api\Services\ProfileService.cs" line-rate="0" branch-rate="0" complexity="27">
