@@ -45,6 +45,8 @@ namespace freela_match_api_test
                 Id = 10,
                 Name = "Anna",
                 Email = "anna@test.com",
+                Password = "hash123",
+                Token = "token123",
                 Profile = new Profile
                 {
                     ProfileId = 5,
@@ -112,6 +114,9 @@ namespace freela_match_api_test
             {
                 Id = 20,
                 Name = "Old Name",
+                Email = "old@test.com",
+                Password = "pass123",
+                Token = "token123",
                 IsAvailable = false,
                 Profile = new Profile
                 {
