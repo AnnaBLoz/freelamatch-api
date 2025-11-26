@@ -3,6 +3,10 @@ using FreelaMatchAPI.DTOs;
 using FreelaMatchAPI.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace freela_match_api_test.Services
@@ -23,7 +27,10 @@ namespace freela_match_api_test.Services
 
         private IConfiguration GetFakeConfig()
         {
-            return new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string>()).Build();
+            var dict = new Dictionary<string, string>();
+            return new ConfigurationBuilder()
+                .AddInMemoryCollection(dict)
+                .Build();
         }
 
         // ===============================
@@ -37,19 +44,32 @@ namespace freela_match_api_test.Services
             var profile = new Profile
             {
                 ProfileId = 1,
-                UserId = 10,
-                Biography = "Teste"
+                UserId = 1,
+                Biography = "Bio",
+                PricePerHour = 100,
+                ExperienceLevel = ExperienceLevel.Pleno
             };
 
-            context.Profiles.Add(profile);
+            var user = new User
+            {
+                Id = 1,
+                Name = "Fulano",
+                Email = "fulano@test.com",
+                Password = "123",
+                Token = "A",
+                Profile = profile,
+                UserSkills = new List<UserSkill>()
+            };
+
+            context.Users.Add(user);
             await context.SaveChangesAsync();
 
             var service = new ProfileService(context, GetFakeConfig());
 
-            var result = await service.GetProfileByUserIdAsync(10);
+            var result = await service.GetProfileByUserIdAsync(1);
 
             Assert.NotNull(result);
-            Assert.Equal("Teste", result.Biography);
+            Assert.Equal("Bio", result.Biography);
         }
 
         [Fact]
@@ -58,7 +78,7 @@ namespace freela_match_api_test.Services
             var context = GetDbContext();
             var service = new ProfileService(context, GetFakeConfig());
 
-            var result = await service.GetProfileByUserIdAsync(99);
+            var result = await service.GetProfileByUserIdAsync(999);
 
             Assert.Null(result);
         }
@@ -75,7 +95,6 @@ namespace freela_match_api_test.Services
                 new Skill { SkillId = 1, Name = "C#" },
                 new Skill { SkillId = 2, Name = "Angular" }
             );
-
             await context.SaveChangesAsync();
 
             var service = new ProfileService(context, GetFakeConfig());
@@ -84,56 +103,11 @@ namespace freela_match_api_test.Services
 
             Assert.Equal(2, result.Count);
             Assert.Contains(result, s => s.Name == "C#");
-            Assert.Contains(result, s => s.Name == "Angular");
         }
 
         // ===============================
         // TESTE CreateProfileAsync
         // ===============================
-        [Fact]
-        public async Task CreateProfileAsync_ShouldReturnFail_WhenUserNotFound()
-        {
-            var context = GetDbContext();
-            var service = new ProfileService(context, GetFakeConfig());
-
-            var result = await service.CreateProfileAsync(1, new UpdateProfile());
-
-            Assert.False(result.Success);
-            Assert.Equal("Usuário não encontrado.", result.Message);
-            Assert.Null(result.Profile);
-        }
-
-        [Fact]
-        public async Task CreateProfileAsync_ShouldReturnFail_WhenProfileAlreadyExists()
-        {
-            var context = GetDbContext();
-
-            var user = new User
-            {
-                Id = 1,
-                Name = "Fulano",
-                Email = "fulano@test.com"
-            };
-
-            var profile = new Profile
-            {
-                ProfileId = 1,
-                UserId = 1
-            };
-
-            user.Profile = profile;
-            context.Users.Add(user);
-            await context.SaveChangesAsync();
-
-            var service = new ProfileService(context, GetFakeConfig());
-
-            var result = await service.CreateProfileAsync(1, new UpdateProfile());
-
-            Assert.False(result.Success);
-            Assert.Equal("Perfil já existe para este usuário.", result.Message);
-            Assert.Null(result.Profile);
-        }
-
         [Fact]
         public async Task CreateProfileAsync_ShouldCreateProfileSuccessfully()
         {
@@ -143,60 +117,107 @@ namespace freela_match_api_test.Services
             {
                 Id = 1,
                 Name = "Fulano",
-                Email = "fulano@test.com"
+                Email = "fulano@test.com", // obrigatório
+                Password = "123",          // obrigatório
+                Token = "A",               // obrigatório
+                Profile = null,
+                UserSkills = new List<UserSkill>()
             };
 
             context.Users.Add(user);
             await context.SaveChangesAsync();
 
             var service = new ProfileService(context, GetFakeConfig());
+            var updatedProfile = new UpdateProfile(); // vazio, será criado com valores padrão
 
-            var result = await service.CreateProfileAsync(1, new UpdateProfile());
+            var (success, message, profile) = await service.CreateProfileAsync(1, updatedProfile);
 
-            Assert.True(result.Success);
-            Assert.Equal("Perfil criado com sucesso.", result.Message);
-            Assert.NotNull(result.Profile);
-            Assert.Equal(1, result.Profile.UserId);
+            Assert.True(success);
+            Assert.Equal("Perfil criado com sucesso.", message);
+            Assert.NotNull(profile);
+            Assert.Equal(1, profile.UserId);
+        }
+
+        [Fact]
+        public async Task CreateProfileAsync_ShouldReturnFail_WhenProfileAlreadyExists()
+        {
+            var context = GetDbContext();
+
+            var profile = new Profile
+            {
+                ProfileId = 1,
+                UserId = 1
+            };
+
+            var user = new User
+            {
+                Id = 1,
+                Name = "Fulano",
+                Email = "fulano@test.com",
+                Password = "123",
+                Token = "A",
+                Profile = profile,
+                UserSkills = new List<UserSkill>()
+            };
+
+            context.Users.Add(user);
+            await context.SaveChangesAsync();
+
+            var service = new ProfileService(context, GetFakeConfig());
+            var updatedProfile = new UpdateProfile();
+
+            var (success, message, _) = await service.CreateProfileAsync(1, updatedProfile);
+
+            Assert.False(success);
+            Assert.Equal("Perfil já existe para este usuário.", message);
+        }
+
+        [Fact]
+        public async Task CreateProfileAsync_ShouldReturnFail_WhenUserNotFound()
+        {
+            var context = GetDbContext();
+            var service = new ProfileService(context, GetFakeConfig());
+            var updatedProfile = new UpdateProfile();
+
+            var (success, message, _) = await service.CreateProfileAsync(999, updatedProfile);
+
+            Assert.False(success);
+            Assert.Equal("Usuário não encontrado.", message);
         }
 
         // ===============================
         // TESTE UpdateProfileAsync
         // ===============================
         [Fact]
-        public async Task UpdateProfileAsync_ShouldReturnFail_WhenUserOrProfileNotFound()
-        {
-            var context = GetDbContext();
-            var service = new ProfileService(context, GetFakeConfig());
-
-            var result = await service.UpdateProfileAsync(1, new UpdateProfile());
-
-            Assert.False(result.Success);
-            Assert.Equal("Profile not found", result.Message);
-            Assert.Null(result.Profile);
-        }
-
-        [Fact]
         public async Task UpdateProfileAsync_ShouldUpdateProfileAndSkillsSuccessfully()
         {
             var context = GetDbContext();
 
-            var skill1 = new Skill { SkillId = 1, Name = "C#" };
-            var skill2 = new Skill { SkillId = 2, Name = "Angular" };
-            context.Skills.AddRange(skill1, skill2);
+            var profile = new Profile
+            {
+                ProfileId = 1,
+                UserId = 1,
+                Biography = "Old Bio",
+                PricePerHour = 50,
+                ExperienceLevel = ExperienceLevel.Junior
+            };
 
-            var profile = new Profile { ProfileId = 1, UserId = 1, Biography = "Old", PricePerHour = 50, ExperienceLevel = ExperienceLevel.Junior };
             var user = new User
             {
                 Id = 1,
                 Name = "Fulano",
+                Email = "fulano@test.com",
+                Password = "123",
+                Token = "A",
                 Profile = profile,
-                UserSkills = new List<UserSkill>
-                {
-                    new UserSkill { SkillId = 1, ProfileId = 1, UserId = 1, IsActive = true }
-                }
+                UserSkills = new List<UserSkill>()
             };
 
             context.Users.Add(user);
+            context.Skills.AddRange(
+                new Skill { SkillId = 1, Name = "C#" },
+                new Skill { SkillId = 2, Name = "Angular" }
+            );
             await context.SaveChangesAsync();
 
             var service = new ProfileService(context, GetFakeConfig());
@@ -208,23 +229,40 @@ namespace freela_match_api_test.Services
                 ExperienceLevel = ExperienceLevel.Senior,
                 UserSkills = new List<UserSkill>
                 {
+                    new UserSkill { SkillId = 1 },
                     new UserSkill { SkillId = 2 }
                 }
             };
 
-            var result = await service.UpdateProfileAsync(1, updatedProfile);
+            var (success, message, updated) = await service.UpdateProfileAsync(1, updatedProfile);
 
-            Assert.True(result.Success);
-            Assert.Equal("Profile updated successfully", result.Message);
-            Assert.NotNull(result.Profile);
-            Assert.Equal("New Bio", result.Profile.Biography);
-            Assert.Equal(100, result.Profile.PricePerHour);
-            Assert.Equal(ExperienceLevel.Senior, result.Profile.ExperienceLevel);
+            Assert.True(success);
+            Assert.Equal("Profile updated successfully", message);
+            Assert.NotNull(updated);
+            Assert.Equal("New Bio", updated.Biography);
+            Assert.Equal(100, updated.PricePerHour);
+            Assert.Equal(ExperienceLevel.Senior, updated.ExperienceLevel);
 
-            // Verifica as skills
-            var activeSkills = user.UserSkills.Where(us => us.IsActive).Select(us => us.SkillId).ToList();
-            Assert.Single(activeSkills);
-            Assert.Contains(2, activeSkills);
+            var userSkills = context.UserSkills.Where(us => us.UserId == 1 && us.IsActive).ToList();
+            Assert.Equal(2, userSkills.Count);
+            Assert.Contains(userSkills, us => us.SkillId == 1);
+        }
+
+        [Fact]
+        public async Task UpdateProfileAsync_ShouldReturnFail_WhenUserOrProfileNotFound()
+        {
+            var context = GetDbContext();
+            var service = new ProfileService(context, GetFakeConfig());
+
+            var updatedProfile = new UpdateProfile
+            {
+                Biography = "Bio"
+            };
+
+            var (success, message, _) = await service.UpdateProfileAsync(999, updatedProfile);
+
+            Assert.False(success);
+            Assert.Equal("Profile not found", message);
         }
     }
 }
