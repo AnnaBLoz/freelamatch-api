@@ -164,7 +164,8 @@ namespace freela_match_api_test.Services
         {
             var context = GetDbContext();
             var emailMock = new Mock<IEmailService>();
-            emailMock.Setup(e => e.SendNewCandidateEmailAsync(It.IsAny<int>(), It.IsAny<int>())).Returns(Task.CompletedTask);
+            emailMock.Setup(e => e.SendNewCandidateEmailAsync(It.IsAny<int>(), It.IsAny<int>()))
+                .Returns(Task.CompletedTask);
 
             var service = new ProposalService(context, emailMock.Object);
 
@@ -177,7 +178,6 @@ namespace freela_match_api_test.Services
                 Message = "Test"
             };
 
-            // Adiciona Proposal obrigatório
             context.Proposal.Add(new Proposal
             {
                 ProposalId = 5,
@@ -186,12 +186,14 @@ namespace freela_match_api_test.Services
                 Description = "Desc",
                 Price = 100
             });
+
             await context.SaveChangesAsync();
 
             var result = await service.Candidate(dto);
 
             Assert.NotNull(result);
             Assert.Equal(33, result.UserId);
+
             emailMock.Verify(e => e.SendNewCandidateEmailAsync(5, 33), Times.Once);
         }
 
@@ -203,7 +205,8 @@ namespace freela_match_api_test.Services
         {
             var context = GetDbContext();
             var emailMock = new Mock<IEmailService>();
-            emailMock.Setup(e => e.SendCounterProposalEmailAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>())).Returns(Task.CompletedTask);
+            emailMock.Setup(e => e.SendCounterProposalEmailAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>()))
+                     .Returns(Task.CompletedTask);
 
             var service = new ProposalService(context, emailMock.Object);
 
@@ -234,8 +237,11 @@ namespace freela_match_api_test.Services
             var result = await service.CounterProposal(dto);
 
             Assert.True(result.Success);
-            Assert.Single(context.CounterProposal.ToList());
-            emailMock.Verify(e => e.SendCounterProposalEmailAsync(7, 12, It.IsAny<int>()), Times.Once);
+            Assert.Single(context.CounterProposal);
+
+            emailMock.Verify(e =>
+                e.SendCounterProposalEmailAsync(7, 12, It.IsAny<int>()),
+                Times.Once);
         }
 
         // -----------------------------
@@ -352,10 +358,10 @@ namespace freela_match_api_test.Services
                 EstimatedDate = DateTime.UtcNow.AddDays(3).ToString(),
                 Message = "Test message",
                 Status = ProposalStatus.Pending,
-                Proposal = proposal // ✔️ associação essencial
+                Proposal = proposal
             };
 
-            proposal.Candidates = new List<Candidate> { candidate }; // ✔️ associação essencial
+            proposal.Candidates = new List<Candidate> { candidate };
 
             context.Proposal.Add(proposal);
             context.Candidate.Add(candidate);
