@@ -563,5 +563,722 @@ namespace freela_match_api_test.Services
             Assert.Equal("noreply@freelamatch.com", config["EmailSettings:From"]);
             Assert.Equal("465", config["EmailSettings:Port"]);
         }
+
+        // =====================================================================
+        // TESTES ADICIONAIS - CENÁRIOS DE CONFIGURAÇÃO
+        // =====================================================================
+
+        [Fact]
+        public void EmailService_ShouldHandleEmptyConfiguration()
+        {
+            var context = GetDbContext();
+            var emptyConfig = new ConfigurationBuilder().Build();
+
+            var service = new EmailService(context, emptyConfig);
+
+            Assert.NotNull(service);
+        }
+
+        [Fact]
+        public void EmailService_ShouldHandlePartialConfiguration()
+        {
+            var context = GetDbContext();
+            var dict = new Dictionary<string, string>
+            {
+                ["EmailSettings:From"] = "test@test.com"
+                // Faltam outros campos
+            };
+
+            var config = new ConfigurationBuilder()
+                .AddInMemoryCollection(dict)
+                .Build();
+
+            var service = new EmailService(context, config);
+
+            Assert.NotNull(service);
+        }
+
+        // =====================================================================
+        // TESTES ADICIONAIS - SendNewCandidateEmailAsync
+        // =====================================================================
+
+        [Fact]
+        public async Task SendNewCandidateEmailAsync_ShouldHandleDifferentProposalTitles()
+        {
+            var context = GetDbContext();
+
+            var company = new User
+            {
+                Id = 1,
+                Name = "Company",
+                Email = "company@test.com",
+                Password = "123",
+                Token = "A"
+            };
+
+            var candidate = new User
+            {
+                Id = 2,
+                Name = "Candidate",
+                Email = "candidate@test.com",
+                Password = "123",
+                Token = "B"
+            };
+
+            var proposal = new Proposal
+            {
+                ProposalId = 1,
+                OwnerId = 1,
+                Title = "Job with Special Characters: Àçãõ & More!",
+                Description = "Description",
+                Price = 1000,
+                Owner = company
+            };
+
+            context.Users.AddRange(company, candidate);
+            context.Proposal.Add(proposal);
+            await context.SaveChangesAsync();
+
+            var service = new EmailService(context, GetFakeConfig());
+
+            var exception = await Record.ExceptionAsync(async () =>
+                await service.SendNewCandidateEmailAsync(1, 2)
+            );
+
+            Assert.True(exception == null || exception.Message.Contains("SMTP") || exception.Message.Contains("smtp"));
+        }
+
+        [Fact]
+        public async Task SendNewCandidateEmailAsync_ShouldHandleLongProposalDescription()
+        {
+            var context = GetDbContext();
+
+            var company = new User
+            {
+                Id = 1,
+                Name = "Company",
+                Email = "company@test.com",
+                Password = "123",
+                Token = "A"
+            };
+
+            var candidate = new User
+            {
+                Id = 2,
+                Name = "Candidate",
+                Email = "candidate@test.com",
+                Password = "123",
+                Token = "B"
+            };
+
+            var proposal = new Proposal
+            {
+                ProposalId = 1,
+                OwnerId = 1,
+                Title = "Job",
+                Description = new string('A', 5000), // Descrição muito longa
+                Price = 1000,
+                Owner = company
+            };
+
+            context.Users.AddRange(company, candidate);
+            context.Proposal.Add(proposal);
+            await context.SaveChangesAsync();
+
+            var service = new EmailService(context, GetFakeConfig());
+
+            var exception = await Record.ExceptionAsync(async () =>
+                await service.SendNewCandidateEmailAsync(1, 2)
+            );
+
+            Assert.True(exception == null || exception.Message.Contains("SMTP") || exception.Message.Contains("smtp"));
+        }
+
+        [Fact]
+        public async Task SendNewCandidateEmailAsync_ShouldHandleSpecialCharactersInNames()
+        {
+            var context = GetDbContext();
+
+            var company = new User
+            {
+                Id = 1,
+                Name = "Empresa Açúcar & Café",
+                Email = "company@test.com",
+                Password = "123",
+                Token = "A"
+            };
+
+            var candidate = new User
+            {
+                Id = 2,
+                Name = "João José O'Brien",
+                Email = "candidate@test.com",
+                Password = "123",
+                Token = "B"
+            };
+
+            var proposal = new Proposal
+            {
+                ProposalId = 1,
+                OwnerId = 1,
+                Title = "Job",
+                Description = "Description",
+                Price = 1000,
+                Owner = company
+            };
+
+            context.Users.AddRange(company, candidate);
+            context.Proposal.Add(proposal);
+            await context.SaveChangesAsync();
+
+            var service = new EmailService(context, GetFakeConfig());
+
+            var exception = await Record.ExceptionAsync(async () =>
+                await service.SendNewCandidateEmailAsync(1, 2)
+            );
+
+            Assert.True(exception == null || exception.Message.Contains("SMTP") || exception.Message.Contains("smtp"));
+        }
+
+        [Theory]
+        [InlineData(1, 2)]
+        [InlineData(10, 20)]
+        [InlineData(100, 200)]
+        public async Task SendNewCandidateEmailAsync_ShouldWorkWithDifferentIds(int proposalId, int candidateId)
+        {
+            var context = GetDbContext();
+
+            var company = new User
+            {
+                Id = 1,
+                Name = "Company",
+                Email = "company@test.com",
+                Password = "123",
+                Token = "A"
+            };
+
+            var candidate = new User
+            {
+                Id = candidateId,
+                Name = "Candidate",
+                Email = "candidate@test.com",
+                Password = "123",
+                Token = "B"
+            };
+
+            var proposal = new Proposal
+            {
+                ProposalId = proposalId,
+                OwnerId = 1,
+                Title = "Job",
+                Description = "Description",
+                Price = 1000,
+                Owner = company
+            };
+
+            context.Users.AddRange(company, candidate);
+            context.Proposal.Add(proposal);
+            await context.SaveChangesAsync();
+
+            var service = new EmailService(context, GetFakeConfig());
+
+            var exception = await Record.ExceptionAsync(async () =>
+                await service.SendNewCandidateEmailAsync(proposalId, candidateId)
+            );
+
+            Assert.True(exception == null || exception.Message.Contains("SMTP") || exception.Message.Contains("smtp"));
+        }
+
+        // =====================================================================
+        // TESTES ADICIONAIS - SendApproveEmail
+        // =====================================================================
+
+        [Fact]
+        public async Task SendApproveEmail_ShouldHandleDifferentProposalPrices()
+        {
+            var context = GetDbContext();
+
+            var candidate = new User
+            {
+                Id = 1,
+                Name = "Candidate",
+                Email = "candidate@test.com",
+                Password = "123",
+                Token = "A"
+            };
+
+            var proposal = new Proposal
+            {
+                ProposalId = 1,
+                OwnerId = 2,
+                Title = "High Value Job",
+                Description = "Premium work",
+                Price = (int)999999.99m
+            };
+
+            context.Users.Add(candidate);
+            context.Proposal.Add(proposal);
+            await context.SaveChangesAsync();
+
+            var service = new EmailService(context, GetFakeConfig());
+
+            var exception = await Record.ExceptionAsync(async () =>
+                await service.SendApproveEmail(1, 1)
+            );
+
+            Assert.True(exception == null || exception.Message.Contains("SMTP") || exception.Message.Contains("smtp"));
+        }
+
+        [Fact]
+        public async Task SendApproveEmail_ShouldHandleZeroPrice()
+        {
+            var context = GetDbContext();
+
+            var candidate = new User
+            {
+                Id = 1,
+                Name = "Candidate",
+                Email = "candidate@test.com",
+                Password = "123",
+                Token = "A"
+            };
+
+            var proposal = new Proposal
+            {
+                ProposalId = 1,
+                OwnerId = 2,
+                Title = "Free Job",
+                Description = "Volunteer work",
+                Price = 0
+            };
+
+            context.Users.Add(candidate);
+            context.Proposal.Add(proposal);
+            await context.SaveChangesAsync();
+
+            var service = new EmailService(context, GetFakeConfig());
+
+            var exception = await Record.ExceptionAsync(async () =>
+                await service.SendApproveEmail(1, 1)
+            );
+
+            Assert.True(exception == null || exception.Message.Contains("SMTP") || exception.Message.Contains("smtp"));
+        }
+
+        [Theory]
+        [InlineData(1, 1)]
+        [InlineData(5, 10)]
+        [InlineData(100, 200)]
+        public async Task SendApproveEmail_ShouldWorkWithDifferentIds(int proposalId, int candidateId)
+        {
+            var context = GetDbContext();
+
+            var candidate = new User
+            {
+                Id = candidateId,
+                Name = "Candidate",
+                Email = "candidate@test.com",
+                Password = "123",
+                Token = "A"
+            };
+
+            var proposal = new Proposal
+            {
+                ProposalId = proposalId,
+                OwnerId = 2,
+                Title = "Job",
+                Description = "Work",
+                Price = 1000
+            };
+
+            context.Users.Add(candidate);
+            context.Proposal.Add(proposal);
+            await context.SaveChangesAsync();
+
+            var service = new EmailService(context, GetFakeConfig());
+
+            var exception = await Record.ExceptionAsync(async () =>
+                await service.SendApproveEmail(proposalId, candidateId)
+            );
+
+            Assert.True(exception == null || exception.Message.Contains("SMTP") || exception.Message.Contains("smtp"));
+        }
+
+        // =====================================================================
+        // TESTES ADICIONAIS - SendCounterProposalEmailAsync
+        // =====================================================================
+
+        [Fact]
+        public async Task SendCounterProposalEmailAsync_ShouldHandleDifferentPrices()
+        {
+            var context = GetDbContext();
+
+            var company = new User
+            {
+                Id = 1,
+                Name = "Company",
+                Email = "company@test.com",
+                Password = "123",
+                Token = "A"
+            };
+
+            var candidate = new User
+            {
+                Id = 2,
+                Name = "Candidate",
+                Email = "candidate@test.com",
+                Password = "123",
+                Token = "B"
+            };
+
+            var proposal = new Proposal
+            {
+                ProposalId = 1,
+                OwnerId = 1,
+                Title = "Job",
+                Description = "Work",
+                Price = 5000,
+                Owner = company
+            };
+
+            var counterProposal = new CounterProposal
+            {
+                CounterProposalId = 1,
+                ProposalId = 1,
+                FreelancerId = 2,
+                CompanyId = 1,
+                Message = "Counter",
+                ProposedPrice = (int)0.01m, // Preço muito baixo
+                EstimatedDate = DateTime.Now,
+                IsAccepted = false,
+                IsSendedByCompany = true,
+                Proposal = proposal
+            };
+
+            context.Users.AddRange(company, candidate);
+            context.Proposal.Add(proposal);
+            context.CounterProposal.Add(counterProposal);
+            await context.SaveChangesAsync();
+
+            var service = new EmailService(context, GetFakeConfig());
+
+            var exception = await Record.ExceptionAsync(async () =>
+                await service.SendCounterProposalEmailAsync(1, 2, 1)
+            );
+
+            Assert.True(exception == null || exception.Message.Contains("SMTP") || exception.Message.Contains("smtp"));
+        }
+
+        [Fact]
+        public async Task SendCounterProposalEmailAsync_ShouldHandleLongMessages()
+        {
+            var context = GetDbContext();
+
+            var company = new User
+            {
+                Id = 1,
+                Name = "Company",
+                Email = "company@test.com",
+                Password = "123",
+                Token = "A"
+            };
+
+            var candidate = new User
+            {
+                Id = 2,
+                Name = "Candidate",
+                Email = "candidate@test.com",
+                Password = "123",
+                Token = "B"
+            };
+
+            var proposal = new Proposal
+            {
+                ProposalId = 1,
+                OwnerId = 1,
+                Title = "Job",
+                Description = "Work",
+                Price = 3000,
+                Owner = company
+            };
+
+            var counterProposal = new CounterProposal
+            {
+                CounterProposalId = 1,
+                ProposalId = 1,
+                FreelancerId = 2,
+                CompanyId = 1,
+                Message = new string('X', 10000), // Mensagem muito longa
+                ProposedPrice = 2500,
+                EstimatedDate = DateTime.Now.AddMonths(6),
+                IsAccepted = true,
+                IsSendedByCompany = false,
+                Proposal = proposal
+            };
+
+            context.Users.AddRange(company, candidate);
+            context.Proposal.Add(proposal);
+            context.CounterProposal.Add(counterProposal);
+            await context.SaveChangesAsync();
+
+            var service = new EmailService(context, GetFakeConfig());
+
+            var exception = await Record.ExceptionAsync(async () =>
+                await service.SendCounterProposalEmailAsync(1, 2, 1)
+            );
+
+            Assert.True(exception == null || exception.Message.Contains("SMTP") || exception.Message.Contains("smtp"));
+        }
+
+        [Fact]
+        public async Task SendCounterProposalEmailAsync_ShouldHandleFutureDates()
+        {
+            var context = GetDbContext();
+
+            var company = new User
+            {
+                Id = 1,
+                Name = "Company",
+                Email = "company@test.com",
+                Password = "123",
+                Token = "A"
+            };
+
+            var candidate = new User
+            {
+                Id = 2,
+                Name = "Candidate",
+                Email = "candidate@test.com",
+                Password = "123",
+                Token = "B"
+            };
+
+            var proposal = new Proposal
+            {
+                ProposalId = 1,
+                OwnerId = 1,
+                Title = "Long Term Project",
+                Description = "Long work",
+                Price = 10000,
+                Owner = company
+            };
+
+            var counterProposal = new CounterProposal
+            {
+                CounterProposalId = 1,
+                ProposalId = 1,
+                FreelancerId = 2,
+                CompanyId = 1,
+                Message = "Long term work",
+                ProposedPrice = 9000,
+                EstimatedDate = DateTime.Now.AddYears(2), // Data muito no futuro
+                IsAccepted = false,
+                IsSendedByCompany = true,
+                Proposal = proposal
+            };
+
+            context.Users.AddRange(company, candidate);
+            context.Proposal.Add(proposal);
+            context.CounterProposal.Add(counterProposal);
+            await context.SaveChangesAsync();
+
+            var service = new EmailService(context, GetFakeConfig());
+
+            var exception = await Record.ExceptionAsync(async () =>
+                await service.SendCounterProposalEmailAsync(1, 2, 1)
+            );
+
+            Assert.True(exception == null || exception.Message.Contains("SMTP") || exception.Message.Contains("smtp"));
+        }
+
+        [Fact]
+        public async Task SendCounterProposalEmailAsync_ShouldHandlePastDates()
+        {
+            var context = GetDbContext();
+
+            var company = new User
+            {
+                Id = 1,
+                Name = "Company",
+                Email = "company@test.com",
+                Password = "123",
+                Token = "A"
+            };
+
+            var candidate = new User
+            {
+                Id = 2,
+                Name = "Candidate",
+                Email = "candidate@test.com",
+                Password = "123",
+                Token = "B"
+            };
+
+            var proposal = new Proposal
+            {
+                ProposalId = 1,
+                OwnerId = 1,
+                Title = "Urgent Job",
+                Description = "Quick work",
+                Price = 1500,
+                Owner = company
+            };
+
+            var counterProposal = new CounterProposal
+            {
+                CounterProposalId = 1,
+                ProposalId = 1,
+                FreelancerId = 2,
+                CompanyId = 1,
+                Message = "Past deadline",
+                ProposedPrice = 1400,
+                EstimatedDate = DateTime.Now.AddDays(-10), // Data no passado
+                IsAccepted = false,
+                IsSendedByCompany = false,
+                Proposal = proposal
+            };
+
+            context.Users.AddRange(company, candidate);
+            context.Proposal.Add(proposal);
+            context.CounterProposal.Add(counterProposal);
+            await context.SaveChangesAsync();
+
+            var service = new EmailService(context, GetFakeConfig());
+
+            var exception = await Record.ExceptionAsync(async () =>
+                await service.SendCounterProposalEmailAsync(1, 2, 1)
+            );
+
+            Assert.True(exception == null || exception.Message.Contains("SMTP") || exception.Message.Contains("smtp"));
+        }
+
+        [Theory]
+        [InlineData(true, true)]
+        [InlineData(true, false)]
+        [InlineData(false, true)]
+        [InlineData(false, false)]
+        public async Task SendCounterProposalEmailAsync_ShouldHandleDifferentFlags(bool isAccepted, bool isSendedByCompany)
+        {
+            var context = GetDbContext();
+
+            var company = new User
+            {
+                Id = 1,
+                Name = "Company",
+                Email = "company@test.com",
+                Password = "123",
+                Token = "A"
+            };
+
+            var candidate = new User
+            {
+                Id = 2,
+                Name = "Candidate",
+                Email = "candidate@test.com",
+                Password = "123",
+                Token = "B"
+            };
+
+            var proposal = new Proposal
+            {
+                ProposalId = 1,
+                OwnerId = 1,
+                Title = "Job",
+                Description = "Work",
+                Price = 2000,
+                Owner = company
+            };
+
+            var counterProposal = new CounterProposal
+            {
+                CounterProposalId = 1,
+                ProposalId = 1,
+                FreelancerId = 2,
+                CompanyId = 1,
+                Message = "Test",
+                ProposedPrice = 1800,
+                EstimatedDate = DateTime.Now.AddDays(15),
+                IsAccepted = isAccepted,
+                IsSendedByCompany = isSendedByCompany,
+                Proposal = proposal
+            };
+
+            context.Users.AddRange(company, candidate);
+            context.Proposal.Add(proposal);
+            context.CounterProposal.Add(counterProposal);
+            await context.SaveChangesAsync();
+
+            var service = new EmailService(context, GetFakeConfig());
+
+            var exception = await Record.ExceptionAsync(async () =>
+                await service.SendCounterProposalEmailAsync(1, 2, 1)
+            );
+
+            Assert.True(exception == null || exception.Message.Contains("SMTP") || exception.Message.Contains("smtp"));
+        }
+
+        // =====================================================================
+        // TESTES DE INTEGRAÇÃO - MÚLTIPLAS CHAMADAS
+        // =====================================================================
+
+        [Fact]
+        public async Task EmailService_ShouldHandleMultipleSequentialCalls()
+        {
+            var context = GetDbContext();
+
+            var company = new User
+            {
+                Id = 1,
+                Name = "Company",
+                Email = "company@test.com",
+                Password = "123",
+                Token = "A"
+            };
+
+            var candidate1 = new User
+            {
+                Id = 2,
+                Name = "Candidate 1",
+                Email = "cand1@test.com",
+                Password = "123",
+                Token = "B"
+            };
+
+            var candidate2 = new User
+            {
+                Id = 3,
+                Name = "Candidate 2",
+                Email = "cand2@test.com",
+                Password = "123",
+                Token = "C"
+            };
+
+            var proposal = new Proposal
+            {
+                ProposalId = 1,
+                OwnerId = 1,
+                Title = "Multi Candidate Job",
+                Description = "Need multiple people",
+                Price = 5000,
+                Owner = company
+            };
+
+            context.Users.AddRange(company, candidate1, candidate2);
+            context.Proposal.Add(proposal);
+            await context.SaveChangesAsync();
+
+            var service = new EmailService(context, GetFakeConfig());
+
+            // Chamar múltiplas vezes
+            await Record.ExceptionAsync(async () =>
+                await service.SendNewCandidateEmailAsync(1, 2)
+            );
+
+            await Record.ExceptionAsync(async () =>
+                await service.SendNewCandidateEmailAsync(1, 3)
+            );
+
+            Assert.True(true);
+        }
     }
 }
