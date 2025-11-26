@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Moq;
 using Microsoft.Extensions.Configuration;
 
-namespace freela_match_api_test
+namespace freela_match_api_test.Services
 {
     public class UserServiceTests
     {

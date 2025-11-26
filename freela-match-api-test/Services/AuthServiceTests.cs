@@ -9,7 +9,7 @@ using System;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace freela_match_api_test
+namespace freela_match_api_test.Services
 {
     public class AuthServiceTests
     {
