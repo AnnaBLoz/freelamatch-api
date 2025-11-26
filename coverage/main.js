@@ -255,7 +255,7 @@ var assemblies = [
       { "name": "PortfolioService", "rp": "freela_match_api_PortfolioService.html", "cl": 52, "ucl": 0, "cal": 52, "tl": 106, "cb": 4, "tb": 4, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "ProfileService", "rp": "freela_match_api_ProfileService.html", "cl": 60, "ucl": 60, "cal": 120, "tl": 239, "cb": 24, "tb": 48, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "ProposalController", "rp": "freela_match_api_ProposalController.html", "cl": 54, "ucl": 56, "cal": 110, "tl": 264, "cb": 10, "tb": 32, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
-      { "name": "ProposalService", "rp": "freela_match_api_ProposalService.html", "cl": 186, "ucl": 50, "cal": 236, "tl": 356, "cb": 21, "tb": 24, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "ProposalService", "rp": "freela_match_api_ProposalService.html", "cl": 197, "ucl": 39, "cal": 236, "tl": 356, "cb": 21, "tb": 24, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "ReviewsController", "rp": "freela_match_api_ReviewsController.html", "cl": 46, "ucl": 4, "cal": 50, "tl": 132, "cb": 16, "tb": 24, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "ReviewsService", "rp": "freela_match_api_ReviewsService.html", "cl": 31, "ucl": 31, "cal": 62, "tl": 110, "cb": 2, "tb": 4, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
     ]},
