@@ -336,7 +336,13 @@ namespace freela_match_api_test.Services
             var emailMock = new Mock<IEmailService>();
             var service = new ProposalService(context, emailMock.Object);
 
-            context.Proposal.Add(new Proposal { ProposalId = 1, OwnerId = 1, Title = "T", Description = "D" });
+            var proposal = new Proposal
+            {
+                ProposalId = 1,
+                OwnerId = 1,
+                Title = "T",
+                Description = "D"
+            };
 
             var candidate = new Candidate
             {
@@ -345,9 +351,13 @@ namespace freela_match_api_test.Services
                 ProposalId = 1,
                 EstimatedDate = DateTime.UtcNow.AddDays(3).ToString(),
                 Message = "Test message",
-                Status = ProposalStatus.Pending
+                Status = ProposalStatus.Pending,
+                Proposal = proposal // ✔️ associação essencial
             };
 
+            proposal.Candidates = new List<Candidate> { candidate }; // ✔️ associação essencial
+
+            context.Proposal.Add(proposal);
             context.Candidate.Add(candidate);
             await context.SaveChangesAsync();
 
