@@ -3,29 +3,29 @@
 
 |||
 |:---|:---|
-| Generated on: | 11/26/2025 - 02:46:24 |
+| Generated on: | 11/26/2025 - 03:02:55 |
 | Parser: | MultiReport (2x OpenCover) |
 | Assemblies: | 1 |
 | Classes: | 45 |
 | Files: | 44 |
-| **Line coverage:** | 55.6% (900 of 1618) |
-| Covered lines: | 900 |
-| Uncovered lines: | 718 |
+| **Line coverage:** | 57.1% (924 of 1618) |
+| Covered lines: | 924 |
+| Uncovered lines: | 694 |
 | Coverable lines: | 1618 |
 | Total lines: | 3325 |
-| **Branch coverage:** | 42.8% (132 of 308) |
-| Covered branches: | 132 |
+| **Branch coverage:** | 43.5% (134 of 308) |
+| Covered branches: | 134 |
 | Total branches: | 308 |
 | **Method coverage:** | [Feature is only available for sponsors](https://reportgenerator.io/pro) |
 
 </details>
 
 ## Coverage
-<details><summary>freela-match-api - 55.6%</summary>
+<details><summary>freela-match-api - 57.1%</summary>
 
 |**Name**|**Line**|**Branch**|
 |:---|---:|---:|
-|**freela-match-api**|**55.6%**|**42.8%**|
+|**freela-match-api**|**57.1%**|**43.5%**|
 |AuthService|100%|100%|
 |EmailService|0%|0%|
 |FreelaMatchAPI.Controllers.AuthController|100%|100%|
@@ -46,7 +46,7 @@
 |FreelaMatchAPI.Models.CreateProposal|100%||
 |FreelaMatchAPI.Models.Freelancer|0%||
 |FreelaMatchAPI.Models.Portfolio|80%||
-|FreelaMatchAPI.Models.Profile|50%||
+|FreelaMatchAPI.Models.Profile|55%||
 |FreelaMatchAPI.Models.ProfileResume|0%||
 |FreelaMatchAPI.Models.Proposal|90.9%||
 |FreelaMatchAPI.Models.ProposalSkill|50%||
@@ -58,13 +58,13 @@
 |FreelaMatchAPI.Models.UpdatePortfolio|100%||
 |FreelaMatchAPI.Models.UpdateProfile|100%||
 |FreelaMatchAPI.Models.UpdateUser|100%||
-|FreelaMatchAPI.Models.User|88.8%||
+|FreelaMatchAPI.Models.User|94.4%||
 |FreelaMatchAPI.Models.UserAuthResponseDto|100%||
 |FreelaMatchAPI.Models.UserResume|0%||
-|FreelaMatchAPI.Models.UserSkill|0%||
+|FreelaMatchAPI.Models.UserSkill|31.2%||
 |FreelaMatchAPI.Models.UserSkillResume|0%||
 |FreelaMatchAPI.Services.GeneralService|100%||
-|FreelaMatchAPI.Services.UserService|0%|0%|
+|FreelaMatchAPI.Services.UserService|50%|50%|
 |PortfolioService|100%|100%|
 |ProfileService|0%|0%|
 |ProposalController|49%|31.2%|
