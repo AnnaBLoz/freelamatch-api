@@ -495,5 +495,588 @@ namespace freela_match_api_test.Services
 
             Assert.NotEqual(result1.Id, result2.Id);
         }
+
+        // ============================================================
+        // CREATE REVIEW - CENÁRIOS COM CANDIDATE
+        // ============================================================
+
+        [Fact]
+        public async Task CreateReview_ShouldNotUpdateCandidate_WhenCandidateNotFound()
+        {
+            var context = GetDbContext();
+            var service = GetService(context);
+
+            // Não adiciona nenhum candidate
+
+            var dto = new ReviewCreate
+            {
+                ReviewerId = 1,
+                ReceiverId = 2,
+                ReviewText = "Test",
+                Rating = 5,
+                ProposalId = 99
+            };
+
+            var result = await service.CreateReview(dto);
+
+            Assert.NotNull(result);
+            var candidates = await context.Candidate.ToListAsync();
+            Assert.Empty(candidates);
+        }
+
+        [Fact]
+        public async Task CreateReview_ShouldNotUpdateCandidate_WhenUserIdDoesNotMatch()
+        {
+            var context = GetDbContext();
+
+            context.Candidate.Add(new Candidate
+            {
+                CandidateId = 50,
+                UserId = 999, // UserId diferente
+                ProposalId = 99,
+                Status = ProposalStatus.Accepted,
+                EstimatedDate = DateTime.UtcNow.ToString(),
+                Message = "Teste"
+            });
+            await context.SaveChangesAsync();
+
+            var service = GetService(context);
+
+            var dto = new ReviewCreate
+            {
+                ReviewerId = 1,
+                ReceiverId = 2, // ReceiverId diferente
+                ReviewText = "Test",
+                Rating = 5,
+                ProposalId = 99
+            };
+
+            await service.CreateReview(dto);
+
+            var candidate = await context.Candidate.FirstAsync();
+            Assert.Equal(ProposalStatus.Accepted, candidate.Status); // Não mudou
+        }
+
+        [Fact]
+        public async Task CreateReview_ShouldNotUpdateCandidate_WhenProposalIdDoesNotMatch()
+        {
+            var context = GetDbContext();
+
+            context.Candidate.Add(new Candidate
+            {
+                CandidateId = 50,
+                UserId = 2,
+                ProposalId = 100, // ProposalId diferente
+                Status = ProposalStatus.Accepted,
+                EstimatedDate = DateTime.UtcNow.ToString(),
+                Message = "Teste"
+            });
+            await context.SaveChangesAsync();
+
+            var service = GetService(context);
+
+            var dto = new ReviewCreate
+            {
+                ReviewerId = 1,
+                ReceiverId = 2,
+                ReviewText = "Test",
+                Rating = 5,
+                ProposalId = 99 // ProposalId diferente
+            };
+
+            await service.CreateReview(dto);
+
+            var candidate = await context.Candidate.FirstAsync();
+            Assert.Equal(ProposalStatus.Accepted, candidate.Status); // Não mudou
+        }
+
+        [Theory]
+        [InlineData(ProposalStatus.Pending)]
+        [InlineData(ProposalStatus.Rejected)]
+        [InlineData(ProposalStatus.Reviewed)]
+        public async Task CreateReview_ShouldNotUpdateCandidate_WhenStatusIsNotAccepted(ProposalStatus status)
+        {
+            var context = GetDbContext();
+
+            context.Candidate.Add(new Candidate
+            {
+                CandidateId = 50,
+                UserId = 2,
+                ProposalId = 99,
+                Status = status,
+                EstimatedDate = DateTime.UtcNow.ToString(),
+                Message = "Teste"
+            });
+            await context.SaveChangesAsync();
+
+            var service = GetService(context);
+
+            var dto = new ReviewCreate
+            {
+                ReviewerId = 1,
+                ReceiverId = 2,
+                ReviewText = "Test",
+                Rating = 5,
+                ProposalId = 99
+            };
+
+            await service.CreateReview(dto);
+
+            var candidate = await context.Candidate.FirstAsync();
+            Assert.Equal(status, candidate.Status); // Mantém o status original
+        }
+
+        [Fact]
+        public async Task CreateReview_ShouldUpdateOnlyMatchingCandidate_WhenMultipleCandidatesExist()
+        {
+            var context = GetDbContext();
+
+            context.Candidate.AddRange(
+                new Candidate
+                {
+                    CandidateId = 1,
+                    UserId = 2,
+                    ProposalId = 99,
+                    Status = ProposalStatus.Accepted,
+                    EstimatedDate = DateTime.UtcNow.ToString(),
+                    Message = "Teste 1"
+                },
+                new Candidate
+                {
+                    CandidateId = 2,
+                    UserId = 3,
+                    ProposalId = 99,
+                    Status = ProposalStatus.Accepted,
+                    EstimatedDate = DateTime.UtcNow.ToString(),
+                    Message = "Teste 2"
+                }
+            );
+            await context.SaveChangesAsync();
+
+            var service = GetService(context);
+
+            var dto = new ReviewCreate
+            {
+                ReviewerId = 1,
+                ReceiverId = 2, // Apenas o candidato com UserId = 2
+                ReviewText = "Test",
+                Rating = 5,
+                ProposalId = 99
+            };
+
+            await service.CreateReview(dto);
+
+            var candidate1 = await context.Candidate.FindAsync(1);
+            var candidate2 = await context.Candidate.FindAsync(2);
+
+            Assert.Equal(ProposalStatus.Reviewed, candidate1.Status); // Atualizado
+            Assert.Equal(ProposalStatus.Accepted, candidate2.Status);  // Não mudou
+        }
+
+        [Fact]
+        public async Task CreateReview_ShouldUpdateCandidateAndCreateReview_InTransaction()
+        {
+            var context = GetDbContext();
+
+            context.Candidate.Add(new Candidate
+            {
+                CandidateId = 50,
+                UserId = 2,
+                ProposalId = 99,
+                Status = ProposalStatus.Accepted,
+                EstimatedDate = DateTime.UtcNow.ToString(),
+                Message = "Teste"
+            });
+            await context.SaveChangesAsync();
+
+            var service = GetService(context);
+
+            var dto = new ReviewCreate
+            {
+                ReviewerId = 1,
+                ReceiverId = 2,
+                ReviewText = "Test",
+                Rating = 5,
+                ProposalId = 99
+            };
+
+            var result = await service.CreateReview(dto);
+
+            // Verificar que tanto a review foi criada quanto o candidate foi atualizado
+            var reviewInDb = await context.Reviews.FindAsync(result.Id);
+            var candidateInDb = await context.Candidate.FindAsync(50);
+
+            Assert.NotNull(reviewInDb);
+            Assert.Equal(ProposalStatus.Reviewed, candidateInDb.Status);
+        }
+
+        // ============================================================
+        // GET REVIEWS - CENÁRIOS ADICIONAIS
+        // ============================================================
+
+        [Fact]
+        public async Task GetReviews_ShouldReturnReviewsOrderedByCreatedAt()
+        {
+            var context = GetDbContext();
+
+            context.Users.AddRange(
+                new User { Id = 1, Name = "User 1", Email = "u1@test.com", Password = "123", Token = "A" },
+                new User { Id = 2, Name = "User 2", Email = "u2@test.com", Password = "123", Token = "A" }
+            );
+            await context.SaveChangesAsync();
+
+            // Adicionar reviews com diferentes CreatedAt
+            context.Reviews.AddRange(
+                new Reviews
+                {
+                    Id = 1,
+                    ReviewerId = 1,
+                    ReceiverId = 2,
+                    ReviewText = "First",
+                    Rating = 5,
+                    CreatedAt = DateTime.UtcNow.AddDays(-2)
+                },
+                new Reviews
+                {
+                    Id = 2,
+                    ReviewerId = 2,
+                    ReceiverId = 1,
+                    ReviewText = "Second",
+                    Rating = 4,
+                    CreatedAt = DateTime.UtcNow.AddDays(-1)
+                },
+                new Reviews
+                {
+                    Id = 3,
+                    ReviewerId = 1,
+                    ReceiverId = 2,
+                    ReviewText = "Third",
+                    Rating = 3,
+                    CreatedAt = DateTime.UtcNow
+                }
+            );
+            await context.SaveChangesAsync();
+
+            var service = GetService(context);
+            var result = await service.GetReviews(1);
+
+            Assert.Equal(3, result.Count);
+            // Verificar que contém todas as reviews esperadas
+            Assert.Contains(result, r => r.Id == 1);
+            Assert.Contains(result, r => r.Id == 2);
+            Assert.Contains(result, r => r.Id == 3);
+        }
+
+        [Fact]
+        public async Task GetReviews_ShouldReturnBothReceivedAndGivenReviews()
+        {
+            var context = GetDbContext();
+
+            context.Users.AddRange(
+                new User { Id = 1, Name = "User 1", Email = "u1@test.com", Password = "123", Token = "A" },
+                new User { Id = 2, Name = "User 2", Email = "u2@test.com", Password = "123", Token = "A" },
+                new User { Id = 3, Name = "User 3", Email = "u3@test.com", Password = "123", Token = "A" }
+            );
+            await context.SaveChangesAsync();
+
+            context.Reviews.AddRange(
+                new Reviews
+                {
+                    Id = 1,
+                    ReviewerId = 1, // User 1 como reviewer
+                    ReceiverId = 2,
+                    ReviewText = "Given",
+                    Rating = 5
+                },
+                new Reviews
+                {
+                    Id = 2,
+                    ReviewerId = 3,
+                    ReceiverId = 1, // User 1 como receiver
+                    ReviewText = "Received",
+                    Rating = 4
+                }
+            );
+            await context.SaveChangesAsync();
+
+            var service = GetService(context);
+            var result = await service.GetReviews(1);
+
+            Assert.Equal(2, result.Count);
+            Assert.Contains(result, r => r.ReviewerId == 1); // Como reviewer
+            Assert.Contains(result, r => r.ReceiverId == 1); // Como receiver
+        }
+
+        [Fact]
+        public async Task GetReviews_ShouldNotReturnReviewsForOtherUsers()
+        {
+            var context = GetDbContext();
+
+            context.Users.AddRange(
+                new User { Id = 1, Name = "User 1", Email = "u1@test.com", Password = "123", Token = "A" },
+                new User { Id = 2, Name = "User 2", Email = "u2@test.com", Password = "123", Token = "A" },
+                new User { Id = 3, Name = "User 3", Email = "u3@test.com", Password = "123", Token = "A" }
+            );
+            await context.SaveChangesAsync();
+
+            context.Reviews.AddRange(
+                new Reviews
+                {
+                    Id = 1,
+                    ReviewerId = 2,
+                    ReceiverId = 3, // Não envolve User 1
+                    ReviewText = "Test",
+                    Rating = 5
+                },
+                new Reviews
+                {
+                    Id = 2,
+                    ReviewerId = 3,
+                    ReceiverId = 2, // Não envolve User 1
+                    ReviewText = "Test2",
+                    Rating = 4
+                }
+            );
+            await context.SaveChangesAsync();
+
+            var service = GetService(context);
+            var result = await service.GetReviews(1); // Buscar reviews do User 1
+
+            Assert.Empty(result);
+        }
+
+        [Fact]
+        public async Task GetReviews_ShouldHandleMultipleReviewsBetweenSameUsers()
+        {
+            var context = GetDbContext();
+
+            context.Users.AddRange(
+                new User { Id = 1, Name = "User 1", Email = "u1@test.com", Password = "123", Token = "A" },
+                new User { Id = 2, Name = "User 2", Email = "u2@test.com", Password = "123", Token = "A" }
+            );
+            await context.SaveChangesAsync();
+
+            // Múltiplas reviews do mesmo par de usuários
+            context.Reviews.AddRange(
+                new Reviews
+                {
+                    Id = 1,
+                    ReviewerId = 1,
+                    ReceiverId = 2,
+                    ReviewText = "First review",
+                    Rating = 5
+                },
+                new Reviews
+                {
+                    Id = 2,
+                    ReviewerId = 1,
+                    ReceiverId = 2,
+                    ReviewText = "Second review",
+                    Rating = 4
+                },
+                new Reviews
+                {
+                    Id = 3,
+                    ReviewerId = 2,
+                    ReceiverId = 1,
+                    ReviewText = "Response",
+                    Rating = 5
+                }
+            );
+            await context.SaveChangesAsync();
+
+            var service = GetService(context);
+            var result = await service.GetReviews(1);
+
+            Assert.Equal(3, result.Count);
+        }
+
+        // ============================================================
+        // CREATE REVIEW - CENÁRIOS DE PROPOSTA
+        // ============================================================
+
+        [Fact]
+        public async Task CreateReview_ShouldHandleDifferentProposalIds()
+        {
+            var context = GetDbContext();
+            var service = GetService(context);
+
+            var dto1 = new ReviewCreate
+            {
+                ReviewerId = 1,
+                ReceiverId = 2,
+                ReviewText = "Proposal 1",
+                Rating = 5,
+                ProposalId = 100
+            };
+
+            var dto2 = new ReviewCreate
+            {
+                ReviewerId = 1,
+                ReceiverId = 2,
+                ReviewText = "Proposal 2",
+                Rating = 4,
+                ProposalId = 200
+            };
+
+            var result1 = await service.CreateReview(dto1);
+            var result2 = await service.CreateReview(dto2);
+
+            Assert.Equal(100, result1.ProposalId);
+            Assert.Equal(200, result2.ProposalId);
+        }
+
+        [Fact]
+        public async Task CreateReview_ShouldHandleSameProposalMultipleTimes()
+        {
+            var context = GetDbContext();
+            var service = GetService(context);
+
+            var dto1 = new ReviewCreate
+            {
+                ReviewerId = 1,
+                ReceiverId = 2,
+                ReviewText = "First review",
+                Rating = 5,
+                ProposalId = 99
+            };
+
+            var dto2 = new ReviewCreate
+            {
+                ReviewerId = 2,
+                ReceiverId = 1,
+                ReviewText = "Second review",
+                Rating = 4,
+                ProposalId = 99 // Mesma proposta
+            };
+
+            var result1 = await service.CreateReview(dto1);
+            var result2 = await service.CreateReview(dto2);
+
+            Assert.Equal(99, result1.ProposalId);
+            Assert.Equal(99, result2.ProposalId);
+            Assert.NotEqual(result1.Id, result2.Id);
+        }
+
+        // ============================================================
+        // CREATE REVIEW - VERIFICAR SALVAMENTO DUPLO
+        // ============================================================
+
+        [Fact]
+        public async Task CreateReview_ShouldCallSaveChangesCorrectly_WhenCandidateExists()
+        {
+            var context = GetDbContext();
+
+            context.Candidate.Add(new Candidate
+            {
+                CandidateId = 50,
+                UserId = 2,
+                ProposalId = 99,
+                Status = ProposalStatus.Accepted,
+                EstimatedDate = DateTime.UtcNow.ToString(),
+                Message = "Teste"
+            });
+            await context.SaveChangesAsync();
+
+            var service = GetService(context);
+
+            var dto = new ReviewCreate
+            {
+                ReviewerId = 1,
+                ReceiverId = 2,
+                ReviewText = "Test",
+                Rating = 5,
+                ProposalId = 99
+            };
+
+            var result = await service.CreateReview(dto);
+
+            // Verificar que a review foi salva
+            var reviewInDb = await context.Reviews.FindAsync(result.Id);
+            Assert.NotNull(reviewInDb);
+
+            // Verificar que o candidate foi atualizado
+            var candidateInDb = await context.Candidate.FindAsync(50);
+            Assert.Equal(ProposalStatus.Reviewed, candidateInDb.Status);
+        }
+
+        [Fact]
+        public async Task CreateReview_ShouldCallSaveChangesOnce_WhenNoCandidateExists()
+        {
+            var context = GetDbContext();
+            var service = GetService(context);
+
+            var dto = new ReviewCreate
+            {
+                ReviewerId = 1,
+                ReceiverId = 2,
+                ReviewText = "Test",
+                Rating = 5,
+                ProposalId = 99
+            };
+
+            var result = await service.CreateReview(dto);
+
+            // Verificar que apenas a review foi salva
+            var reviewInDb = await context.Reviews.FindAsync(result.Id);
+            Assert.NotNull(reviewInDb);
+
+            var candidates = await context.Candidate.ToListAsync();
+            Assert.Empty(candidates);
+        }
+
+        // ============================================================
+        // EDGE CASES
+        // ============================================================
+
+        [Fact]
+        public async Task CreateReview_ShouldHandleZeroRating()
+        {
+            var context = GetDbContext();
+            var service = GetService(context);
+
+            var dto = new ReviewCreate
+            {
+                ReviewerId = 1,
+                ReceiverId = 2,
+                ReviewText = "Test",
+                Rating = 0,
+                ProposalId = 99
+            };
+
+            var result = await service.CreateReview(dto);
+
+            Assert.Equal(0, result.Rating);
+        }
+
+        [Fact]
+        public async Task GetReviews_ShouldHandleUserWithNoNavigationProperties()
+        {
+            var context = GetDbContext();
+
+            context.Users.AddRange(
+                new User { Id = 1, Name = "User 1", Email = "u1@test.com", Password = "123", Token = "A" },
+                new User { Id = 2, Name = "User 2", Email = "u2@test.com", Password = "123", Token = "A" }
+            );
+            await context.SaveChangesAsync();
+
+            context.Reviews.Add(new Reviews
+            {
+                Id = 1,
+                ReviewerId = 1,
+                ReceiverId = 2,
+                ReviewText = "Test",
+                Rating = 5
+            });
+            await context.SaveChangesAsync();
+
+            var service = GetService(context);
+            var result = await service.GetReviews(1);
+
+            Assert.Single(result);
+            // Verificar que as navigation properties foram carregadas
+            Assert.NotNull(result[0].Reviewer);
+            Assert.NotNull(result[0].Receiver);
+        }
     }
 }
