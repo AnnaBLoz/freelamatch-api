@@ -1,27 +1,27 @@
 {
   "summary": {
-    "generatedon": "2025-11-26T04:55:53Z",
+    "generatedon": "2025-11-26T05:02:05Z",
     "parser": "MultiReport (2x OpenCover)",
     "assemblies": 1,
     "classes": 45,
     "files": 44,
-    "coveredlines": 1199,
-    "uncoveredlines": 419,
+    "coveredlines": 1203,
+    "uncoveredlines": 415,
     "coverablelines": 1618,
     "totallines": 3325,
-    "linecoverage": 74.1,
-    "coveredbranches": 202,
+    "linecoverage": 74.3,
+    "coveredbranches": 206,
     "totalbranches": 308,
-    "branchcoverage": 65.5,
-    "coveredmethods": 391,
-    "fullcoveredmethods": 369,
+    "branchcoverage": 66.8,
+    "coveredmethods": 393,
+    "fullcoveredmethods": 373,
     "totalmethods": 528,
-    "methodcoverage": 74,
-    "fullmethodcoverage": 69.8
+    "methodcoverage": 74.4,
+    "fullmethodcoverage": 70.6
  },
   "coverage": {
     "assemblies": [
-      { "name": "freela-match-api", "classes": 45, "coverage": 74.1, "coveredlines": 1199, "coverablelines": 1618, "totallines": 7554, "branchcoverage": 65.5, "coveredbranches": 202, "totalbranches": 308, "methodcoverage": 74, "fullmethodcoverage": 69.8, "coveredmethods": 391, "fullcoveredmethods": 369, "totalmethods": 528, "classesinassembly": [
+      { "name": "freela-match-api", "classes": 45, "coverage": 74.3, "coveredlines": 1203, "coverablelines": 1618, "totallines": 7554, "branchcoverage": 66.8, "coveredbranches": 206, "totalbranches": 308, "methodcoverage": 74.4, "fullmethodcoverage": 70.6, "coveredmethods": 393, "fullcoveredmethods": 373, "totalmethods": 528, "classesinassembly": [
         { "name": "AuthService", "coverage": 100, "coveredlines": 90, "coverablelines": 90, "totallines": 179, "branchcoverage": 100, "coveredbranches": 12, "totalbranches": 12, "methodcoverage": 100, "fullmethodcoverage": 100, "coveredmethods": 8, "fullcoveredmethods": 8, "totalmethods": 8 },
         { "name": "EmailService", "coverage": 47.8, "coveredlines": 110, "coverablelines": 230, "totallines": 356, "branchcoverage": 41.1, "coveredbranches": 28, "totalbranches": 68, "methodcoverage": 50, "fullmethodcoverage": 30, "coveredmethods": 5, "fullcoveredmethods": 3, "totalmethods": 10 },
         { "name": "FreelaMatchAPI.Controllers.AuthController", "coverage": 100, "coveredlines": 66, "coverablelines": 66, "totallines": 137, "branchcoverage": 100, "coveredbranches": 4, "totalbranches": 4, "methodcoverage": 100, "fullmethodcoverage": 100, "coveredmethods": 6, "fullcoveredmethods": 6, "totalmethods": 6 },
@@ -48,7 +48,7 @@
         { "name": "FreelaMatchAPI.Models.ProposalSkill", "coverage": 50, "coveredlines": 6, "coverablelines": 12, "totallines": 235, "branchcoverage": null, "coveredbranches": 0, "totalbranches": 0, "methodcoverage": 50, "fullmethodcoverage": 50, "coveredmethods": 6, "fullcoveredmethods": 6, "totalmethods": 12 },
         { "name": "FreelaMatchAPI.Models.ProposalSkillCreate", "coverage": 50, "coveredlines": 2, "coverablelines": 4, "totallines": 241, "branchcoverage": null, "coveredbranches": 0, "totalbranches": 0, "methodcoverage": 50, "fullmethodcoverage": 50, "coveredmethods": 2, "fullcoveredmethods": 2, "totalmethods": 4 },
         { "name": "FreelaMatchAPI.Models.ReviewCreate", "coverage": 100, "coveredlines": 12, "coverablelines": 12, "totallines": 103, "branchcoverage": null, "coveredbranches": 0, "totalbranches": 0, "methodcoverage": 100, "fullmethodcoverage": 100, "coveredmethods": 12, "fullcoveredmethods": 12, "totalmethods": 12 },
-        { "name": "FreelaMatchAPI.Models.Reviews", "coverage": 55, "coveredlines": 11, "coverablelines": 20, "totallines": 82, "branchcoverage": null, "coveredbranches": 0, "totalbranches": 0, "methodcoverage": 55, "fullmethodcoverage": 55, "coveredmethods": 11, "fullcoveredmethods": 11, "totalmethods": 20 },
+        { "name": "FreelaMatchAPI.Models.Reviews", "coverage": 65, "coveredlines": 13, "coverablelines": 20, "totallines": 82, "branchcoverage": null, "coveredbranches": 0, "totalbranches": 0, "methodcoverage": 65, "fullmethodcoverage": 65, "coveredmethods": 13, "fullcoveredmethods": 13, "totalmethods": 20 },
         { "name": "FreelaMatchAPI.Models.Sector", "coverage": 100, "coveredlines": 4, "coverablelines": 4, "totallines": 267, "branchcoverage": null, "coveredbranches": 0, "totalbranches": 0, "methodcoverage": 100, "fullmethodcoverage": 100, "coveredmethods": 4, "fullcoveredmethods": 4, "totalmethods": 4 },
         { "name": "FreelaMatchAPI.Models.Skill", "coverage": 100, "coveredlines": 6, "coverablelines": 6, "totallines": 200, "branchcoverage": null, "coveredbranches": 0, "totalbranches": 0, "methodcoverage": 100, "fullmethodcoverage": 100, "coveredmethods": 6, "fullcoveredmethods": 6, "totalmethods": 6 },
         { "name": "FreelaMatchAPI.Models.UpdatePortfolio", "coverage": 100, "coveredlines": 4, "coverablelines": 4, "totallines": 253, "branchcoverage": null, "coveredbranches": 0, "totalbranches": 0, "methodcoverage": 100, "fullmethodcoverage": 100, "coveredmethods": 4, "fullcoveredmethods": 4, "totalmethods": 4 },
@@ -65,7 +65,7 @@
         { "name": "ProfileService", "coverage": 50, "coveredlines": 60, "coverablelines": 120, "totallines": 239, "branchcoverage": 50, "coveredbranches": 24, "totalbranches": 48, "methodcoverage": 50, "fullmethodcoverage": 50, "coveredmethods": 5, "fullcoveredmethods": 5, "totalmethods": 10 },
         { "name": "ProposalController", "coverage": 74.5, "coveredlines": 82, "coverablelines": 110, "totallines": 264, "branchcoverage": 65.6, "coveredbranches": 21, "totalbranches": 32, "methodcoverage": 79.1, "fullmethodcoverage": 62.5, "coveredmethods": 19, "fullcoveredmethods": 15, "totalmethods": 24 },
         { "name": "ProposalService", "coverage": 83.4, "coveredlines": 197, "coverablelines": 236, "totallines": 356, "branchcoverage": 87.5, "coveredbranches": 21, "totalbranches": 24, "methodcoverage": 71.4, "fullmethodcoverage": 71.4, "coveredmethods": 20, "fullcoveredmethods": 20, "totalmethods": 28 },
-        { "name": "ReviewsController", "coverage": 92, "coveredlines": 46, "coverablelines": 50, "totallines": 132, "branchcoverage": 66.6, "coveredbranches": 16, "totalbranches": 24, "methodcoverage": 100, "fullmethodcoverage": 60, "coveredmethods": 10, "fullcoveredmethods": 6, "totalmethods": 10 },
+        { "name": "ReviewsController", "coverage": 96, "coveredlines": 48, "coverablelines": 50, "totallines": 132, "branchcoverage": 83.3, "coveredbranches": 20, "totalbranches": 24, "methodcoverage": 100, "fullmethodcoverage": 80, "coveredmethods": 10, "fullcoveredmethods": 8, "totalmethods": 10 },
         { "name": "ReviewsService", "coverage": 50, "coveredlines": 31, "coverablelines": 62, "totallines": 110, "branchcoverage": 50, "coveredbranches": 2, "totalbranches": 4, "methodcoverage": 50, "fullmethodcoverage": 50, "coveredmethods": 3, "fullcoveredmethods": 3, "totalmethods": 6 } ] } ]
   }
 }
