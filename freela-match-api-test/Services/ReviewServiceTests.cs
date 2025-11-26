@@ -28,6 +28,17 @@ namespace freela_match_api_test.Services
         {
             var context = GetDbContext();
 
+            // -------- CRIA USERS NECESSÁRIOS PARA OS INCLUDE --------
+            context.Users.AddRange(
+                new User { Id = 10, Name = "User 10" },
+                new User { Id = 20, Name = "User 20" },
+                new User { Id = 30, Name = "User 30" },
+                new User { Id = 77, Name = "User 77" },
+                new User { Id = 99, Name = "User 99" }
+            );
+            await context.SaveChangesAsync();
+
+            // -------- CRIA AS REVIEWS --------
             context.Reviews.Add(new Reviews
             {
                 Id = 1,
@@ -55,7 +66,7 @@ namespace freela_match_api_test.Services
 
             var result = await service.GetReviews(10);
 
-            Assert.Equal(2, result.Count);   // Somente os dois ligados ao usuário 10
+            Assert.Equal(2, result.Count);
             Assert.Contains(result, r => r.Id == 1);
             Assert.Contains(result, r => r.Id == 2);
         }
