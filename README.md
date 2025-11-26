@@ -7,7 +7,7 @@
 
 ## 📊 Code Coverage
 
-- **Current Coverage:** ~55%
+- **Current Coverage:**
 - [📈 View Detailed Coverage Report](https://annabloz.github.io/freelamatch-api/coverage/)
 
 ## 🚀 Tecnologias
