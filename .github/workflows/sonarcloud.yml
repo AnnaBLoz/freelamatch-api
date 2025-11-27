@@ -140,7 +140,7 @@ jobs:
 
   deploy:
     name: Deploy to Azure
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     needs: build-test-coverage
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     environment:
@@ -152,28 +152,9 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: dotnet-app
-          path: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
 
-      - name: Create deployment package
-        run: |
-          cd ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
-          zip -r ../deploy.zip .
-          cd ..
-
-      - name: Deploy to Azure Web App via Zip Deploy
-        env:
-          PUBLISH_PROFILE: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
-        run: |
-          # Extract credentials from publish profile
-          USERNAME=$(echo "$PUBLISH_PROFILE" | grep -oP 'publishMethod="ZipDeploy"[^>]*userName="[^"]*"' | grep -oP 'userName="\K[^"]*')
-          PASSWORD=$(echo "$PUBLISH_PROFILE" | grep -oP 'publishMethod="ZipDeploy"[^>]*userPWD="[^"]*"' | grep -oP 'userPWD="\K[^"]*')
-          PUBLISH_URL=$(echo "$PUBLISH_PROFILE" | grep -oP 'publishMethod="ZipDeploy"[^>]*publishUrl="[^"]*"' | grep -oP 'publishUrl="\K[^"]*' | sed 's/:443//')
-          
-          echo "Deploying to: $PUBLISH_URL"
-          
-          curl -X POST \
-            -u "$USERNAME:$PASSWORD" \
-            --data-binary @deploy.zip \
-            "https://$PUBLISH_URL/api/zipdeploy" \
-            -H "Content-Type: application/zip" \
-            -v
+      - name: Deploy to Azure Web App
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: freela-match-api-bgb3cdfgc0hpcrcn
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
