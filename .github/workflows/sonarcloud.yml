@@ -160,26 +160,20 @@ jobs:
           zip -r ../deploy.zip .
           cd ..
 
-      - name: Extract publish profile credentials
-        id: publishprofile
-        run: |
-          PUBLISH_PROFILE='${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}'
-          
-          # Extract username and password for Zip Deploy
-          USERNAME=$(echo "$PUBLISH_PROFILE" | grep -oP '(?<=userName=")[^"]*' | grep -v "\\$" | head -1)
-          PASSWORD=$(echo "$PUBLISH_PROFILE" | grep -oP 'userPWD="[^"]*"' | head -1 | sed 's/userPWD="//;s/"//')
-          PUBLISH_URL=$(echo "$PUBLISH_PROFILE" | grep -oP 'publishUrl="[^"]*scm[^"]*"' | head -1 | sed 's/publishUrl="//;s/":443"//')
-          
-          echo "username=$USERNAME" >> $GITHUB_OUTPUT
-          echo "::add-mask::$PASSWORD"
-          echo "password=$PASSWORD" >> $GITHUB_OUTPUT
-          echo "publishurl=$PUBLISH_URL" >> $GITHUB_OUTPUT
-
       - name: Deploy to Azure Web App via Zip Deploy
+        env:
+          PUBLISH_PROFILE: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
         run: |
+          # Extract credentials from publish profile
+          USERNAME=$(echo "$PUBLISH_PROFILE" | grep -oP 'publishMethod="ZipDeploy"[^>]*userName="[^"]*"' | grep -oP 'userName="\K[^"]*')
+          PASSWORD=$(echo "$PUBLISH_PROFILE" | grep -oP 'publishMethod="ZipDeploy"[^>]*userPWD="[^"]*"' | grep -oP 'userPWD="\K[^"]*')
+          PUBLISH_URL=$(echo "$PUBLISH_PROFILE" | grep -oP 'publishMethod="ZipDeploy"[^>]*publishUrl="[^"]*"' | grep -oP 'publishUrl="\K[^"]*' | sed 's/:443//')
+          
+          echo "Deploying to: $PUBLISH_URL"
+          
           curl -X POST \
-            -u "${{ steps.publishprofile.outputs.username }}:${{ steps.publishprofile.outputs.password }}" \
+            -u "$USERNAME:$PASSWORD" \
             --data-binary @deploy.zip \
-            https://${{ steps.publishprofile.outputs.publishurl }}/api/zipdeploy \
+            "https://$PUBLISH_URL/api/zipdeploy" \
             -H "Content-Type: application/zip" \
             -v
