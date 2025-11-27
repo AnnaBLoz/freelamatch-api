@@ -159,33 +159,21 @@ jobs:
           cd ./deploy
           zip -r ../app.zip .
           cd ..
-          ls -lh app.zip
-
-      - name: Extract deployment credentials
-        id: creds
-        env:
-          PUBLISH_PROFILE: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
-        run: |
-          # Extrair username do perfil Zip Deploy
-          USERNAME=$(echo "$PUBLISH_PROFILE" | sed -n 's/.*publishMethod="ZipDeploy".*userName="\([^"]*\)".*/\1/p')
-          # Extrair password do perfil Zip Deploy
-          PASSWORD=$(echo "$PUBLISH_PROFILE" | sed -n 's/.*publishMethod="ZipDeploy".*userPWD="\([^"]*\)".*/\1/p')
-          
-          echo "::add-mask::$USERNAME"
-          echo "::add-mask::$PASSWORD"
-          echo "username=$USERNAME" >> $GITHUB_OUTPUT
-          echo "password=$PASSWORD" >> $GITHUB_OUTPUT
+          echo "Package size: $(du -h app.zip | cut -f1)"
 
       - name: Deploy to Azure App Service
         run: |
+          echo "Starting deployment..."
+          
           STATUS_CODE=$(curl -X POST \
             "https://freela-match-api-bgb3cdfgc0hpcrcn.scm.canadacentral-01.azurewebsites.net/api/zipdeploy" \
-            -u "${{ steps.creds.outputs.username }}:${{ steps.creds.outputs.password }}" \
+            -u "${{ secrets.AZURE_WEBAPP_USERNAME }}:${{ secrets.AZURE_WEBAPP_PASSWORD }}" \
             -H "Content-Type: application/zip" \
             --data-binary @app.zip \
             --write-out "%{http_code}" \
             --silent \
-            --output /dev/null)
+            --output /dev/null \
+            --max-time 600)
           
           echo "Deploy status code: $STATUS_CODE"
           
@@ -199,13 +187,15 @@ jobs:
       - name: Verify deployment
         run: |
           echo "Waiting for application to start..."
-          sleep 30
+          sleep 45
           
           RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" https://freela-match-api-bgb3cdfgc0hpcrcn.canadacentral-01.azurewebsites.net)
           echo "Application response code: $RESPONSE"
           
-          if [ "$RESPONSE" -eq 200 ]; then
-            echo "Application is running!"
+          if [ "$RESPONSE" -eq 200 ] || [ "$RESPONSE" -eq 404 ]; then
+            echo "Application is responding!"
+            echo "Check Swagger at: https://freela-match-api-bgb3cdfgc0hpcrcn.canadacentral-01.azurewebsites.net/swagger"
           else
             echo "Application returned status code: $RESPONSE"
+            echo "Check Azure Portal logs for details"
           fi
