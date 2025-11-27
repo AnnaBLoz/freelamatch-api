@@ -126,11 +126,36 @@ jobs:
       # Publicar aplicação para deploy
       - name: Publish application
         run: |
+          # Limpar saída anterior
+          rm -rf ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
+          
+          # Publicar APENAS o projeto principal
           dotnet publish freela-match-api/freela-match-api.csproj \
             --configuration Release \
             --no-build \
             --output ${{ env.AZURE_WEBAPP_PACKAGE_PATH }} \
-            --no-self-contained
+            /p:PublishProfile=DefaultContainer
+          
+          # Remover arquivos de teste que possam ter sido incluídos
+          find ${{ env.AZURE_WEBAPP_PACKAGE_PATH }} -type f \( \
+            -name "*Test*" -o \
+            -name "*test*" -o \
+            -name "xunit*" -o \
+            -name "coverlet*" -o \
+            -name "testhost*" -o \
+            -name "*CodeCoverage*" -o \
+            -name "Moq*" -o \
+            -name "FluentAssertions*" \
+          \) -delete
+          
+          # Remover diretórios de teste
+          find ${{ env.AZURE_WEBAPP_PACKAGE_PATH }} -type d \( \
+            -name "CodeCoverage" -o \
+            -name "*Test*" \
+          \) -exec rm -rf {} + 2>/dev/null || true
+          
+          echo "Files to deploy:"
+          ls -la ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
 
       - name: Upload artifact for deployment
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
@@ -165,11 +190,35 @@ jobs:
         run: |
           echo "Starting FTP deployment..."
           
+          # Criar arquivo app_offline.htm para parar a aplicação durante deploy
+          echo '<!DOCTYPE html><html><head><title>App Offline</title></head><body><h1>Application is updating...</h1></body></html>' > app_offline.htm
+          
+          # Upload app_offline.htm primeiro para parar a aplicação
           lftp -c "
           set ssl:verify-certificate no
           set ftp:use-site-chmod no
           open -u $FTP_USERNAME,$FTP_PASSWORD ftps://waws-prod-yt1-003.ftp.azurewebsites.windows.net
-          mirror --reverse --delete --verbose --exclude-glob CodeCoverage/ --exclude-glob *Test* ./deploy /site/wwwroot
+          put -O /site/wwwroot app_offline.htm
+          bye
+          " || true
+          
+          echo "Application stopped for deployment"
+          sleep 5
+          
+          # Fazer o deploy
+          lftp -c "
+          set ssl:verify-certificate no
+          set ftp:use-site-chmod no
+          open -u $FTP_USERNAME,$FTP_PASSWORD ftps://waws-prod-yt1-003.ftp.azurewebsites.windows.net
+          mirror --reverse --delete --verbose --only-newer ./deploy /site/wwwroot
+          bye
+          " || true
+          
+          # Remover app_offline.htm para iniciar a aplicação
+          lftp -c "
+          set ssl:verify-certificate no
+          open -u $FTP_USERNAME,$FTP_PASSWORD ftps://waws-prod-yt1-003.ftp.azurewebsites.windows.net
+          rm /site/wwwroot/app_offline.htm
           bye
           " || true
           
