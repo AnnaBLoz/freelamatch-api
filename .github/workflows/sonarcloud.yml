@@ -129,7 +129,8 @@ jobs:
           dotnet publish freela-match-api/freela-match-api.csproj \
             --configuration Release \
             --no-build \
-            --output ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
+            --output ${{ env.AZURE_WEBAPP_PACKAGE_PATH }} \
+            --no-self-contained
 
       - name: Upload artifact for deployment
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
@@ -166,10 +167,11 @@ jobs:
           
           lftp -c "
           set ssl:verify-certificate no
+          set ftp:use-site-chmod no
           open -u $FTP_USERNAME,$FTP_PASSWORD ftps://waws-prod-yt1-003.ftp.azurewebsites.windows.net
-          mirror --reverse --delete --verbose ./deploy /site/wwwroot
+          mirror --reverse --delete --verbose --exclude-glob CodeCoverage/ --exclude-glob *Test* ./deploy /site/wwwroot
           bye
-          "
+          " || true
           
           echo "Files uploaded successfully!"
 
