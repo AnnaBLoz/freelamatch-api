@@ -163,15 +163,20 @@ jobs:
 
       - name: Deploy to Azure App Service (v2)
         env:
-          DEPLOY_USERNAME: ${{ secrets.AZURE_WEBAPP_USERNAME }}
-          DEPLOY_PASSWORD: ${{ secrets.AZURE_WEBAPP_PASSWORD }}
+          PUBLISH_PROFILE: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
         run: |
-          echo "Starting deployment v2..."
+          echo "Starting deployment v3..."
           echo "Package info: $(ls -lh app.zip)"
+          
+          # Extrair credenciais do publish profile (método Web Deploy)
+          USERNAME=$(echo "$PUBLISH_PROFILE" | grep -oP 'publishMethod="MSDeploy"[^>]*userName="[^"]*"' | grep -oP 'userName="\K[^"]*')
+          PASSWORD=$(echo "$PUBLISH_PROFILE" | grep -oP 'publishMethod="MSDeploy"[^>]*userPWD="[^"]*"' | grep -oP 'userPWD="\K[^"]*')
+          
+          echo "Attempting deployment with extracted credentials..."
           
           STATUS_CODE=$(curl -X POST \
             "https://freela-match-api-bgb3cdfgc0hpcrcn.scm.canadacentral-01.azurewebsites.net/api/zipdeploy" \
-            -u "${DEPLOY_USERNAME}:${DEPLOY_PASSWORD}" \
+            -u "${USERNAME}:${PASSWORD}" \
             -H "Content-Type: application/zip" \
             --data-binary @app.zip \
             --write-out "%{http_code}" \
@@ -185,7 +190,28 @@ jobs:
             echo "Deploy successful!"
           else
             echo "Deploy failed with status code: $STATUS_CODE"
-            exit 1
+            echo ""
+            echo "Trying alternative: using deployment API directly..."
+            
+            # Tentar método alternativo via kudu api
+            STATUS_CODE_ALT=$(curl -X POST \
+              "https://freela-match-api-bgb3cdfgc0hpcrcn.scm.canadacentral-01.azurewebsites.net/api/publish" \
+              -u "${USERNAME}:${PASSWORD}" \
+              -H "Content-Type: application/zip" \
+              --data-binary @app.zip \
+              --write-out "%{http_code}" \
+              --silent \
+              --output /dev/null \
+              --max-time 600)
+            
+            echo "Alternative API status code: $STATUS_CODE_ALT"
+            
+            if [ "$STATUS_CODE_ALT" -eq 200 ] || [ "$STATUS_CODE_ALT" -eq 202 ]; then
+              echo "Deploy successful via alternative API!"
+            else
+              echo "Both methods failed. Status codes: $STATUS_CODE, $STATUS_CODE_ALT"
+              exit 1
+            fi
           fi
 
       - name: Verify deployment
