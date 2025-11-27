@@ -154,85 +154,29 @@ jobs:
           name: dotnet-app
           path: ./deploy
 
-      - name: Create ZIP package
-        run: |
-          cd ./deploy
-          zip -r ../app.zip .
-          cd ..
-          echo "Package size: $(du -h app.zip | cut -f1)"
+      - name: Install lftp
+        run: sudo apt-get update && sudo apt-get install -y lftp
 
-      - name: Deploy to Azure App Service (v2)
+      - name: Deploy via FTP
         env:
-          PUBLISH_PROFILE: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+          FTP_USERNAME: ${{ secrets.AZURE_WEBAPP_USERNAME }}
+          FTP_PASSWORD: ${{ secrets.AZURE_WEBAPP_PASSWORD }}
         run: |
-          echo "Starting deployment v4 - DEBUG MODE..."
-          echo "Package info: $(ls -lh app.zip)"
+          echo "Starting FTP deployment..."
           
-          # Debug: Verificar se o publish profile foi carregado
-          if [ -z "$PUBLISH_PROFILE" ]; then
-            echo "ERROR: PUBLISH_PROFILE is empty!"
-            exit 1
-          fi
+          lftp -c "
+          set ssl:verify-certificate no
+          open -u $FTP_USERNAME,$FTP_PASSWORD ftps://waws-prod-yt1-003.ftp.azurewebsites.windows.net
+          mirror --reverse --delete --verbose ./deploy /site/wwwroot
+          bye
+          "
           
-          echo "Publish profile loaded"
-          
-          # Extrair credenciais do publish profile (método Web Deploy)
-          USERNAME=$(echo "$PUBLISH_PROFILE" | grep -oP 'publishMethod="MSDeploy"[^>]*userName="[^"]*"' | grep -oP 'userName="\K[^"]*')
-          PASSWORD=$(echo "$PUBLISH_PROFILE" | grep -oP 'publishMethod="MSDeploy"[^>]*userPWD="[^"]*"' | grep -oP 'userPWD="\K[^"]*')
-          
-          # Debug: verificar se extraiu as credenciais
-          if [ -z "$USERNAME" ] || [ -z "$PASSWORD" ]; then
-            echo "ERROR: Failed to extract credentials from publish profile"
-            echo "Username length: ${#USERNAME}"
-            echo "Password length: ${#PASSWORD}"
-            
-            # Tentar extrair do perfil FTP como fallback
-            echo "Trying FTP credentials..."
-            USERNAME=$(echo "$PUBLISH_PROFILE" | grep -oP 'publishMethod="FTP"[^>]*userName="[^"]*"' | grep -oP 'userName="\K[^"]*' | head -1)
-            PASSWORD=$(echo "$PUBLISH_PROFILE" | grep -oP 'publishMethod="FTP"[^>]*userPWD="[^"]*"' | grep -oP 'userPWD="\K[^"]*' | head -1)
-            
-            echo "FTP Username length: ${#USERNAME}"
-            echo "FTP Password length: ${#PASSWORD}"
-          else
-            echo "Credentials extracted successfully"
-            echo "Username length: ${#USERNAME}"
-            echo "Password length: ${#PASSWORD}"
-          fi
-          
-          if [ -z "$USERNAME" ] || [ -z "$PASSWORD" ]; then
-            echo "Could not extract any valid credentials"
-            exit 1
-          fi
-          
-          echo "Attempting deployment..."
-          
-          STATUS_CODE=$(curl -X POST \
-            "https://freela-match-api-bgb3cdfgc0hpcrcn.scm.canadacentral-01.azurewebsites.net/api/zipdeploy" \
-            -u "${USERNAME}:${PASSWORD}" \
-            -H "Content-Type: application/zip" \
-            --data-binary @app.zip \
-            --write-out "%{http_code}" \
-            --output response.txt \
-            --max-time 600)
-          
-          echo "Deploy status code: $STATUS_CODE"
-          
-          if [ "$STATUS_CODE" -ne 200 ] && [ "$STATUS_CODE" -ne 202 ]; then
-            echo "Response body:"
-            cat response.txt
-          fi
-          
-          if [ "$STATUS_CODE" -eq 200 ] || [ "$STATUS_CODE" -eq 202 ]; then
-            echo "Deploy successful!"
-          else
-            echo "Deploy failed with status code: $STATUS_CODE"
-            exit 1
-          fi
+          echo "Files uploaded successfully!"
 
       - name: Verify deployment
         run: |
-          echo "Waiting for application to start..."
-          sleep 45
+          echo "Waiting for application to restart..."
+          sleep 30
           
           RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" https://freela-match-api-bgb3cdfgc0hpcrcn.canadacentral-01.azurewebsites.net)
           echo "Application response code: $RESPONSE"
@@ -242,5 +186,4 @@ jobs:
             echo "Check Swagger at: https://freela-match-api-bgb3cdfgc0hpcrcn.canadacentral-01.azurewebsites.net/swagger"
           else
             echo "Application returned status code: $RESPONSE"
-            echo "Check Azure Portal logs for details"
           fi
