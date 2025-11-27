@@ -145,7 +145,7 @@ jobs:
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     environment:
       name: 'Production'
-      url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
+      url: https://freela-match-api-bgb3cdfgc0hpcrcn.canadacentral-01.azurewebsites.net
     
     steps:
       - name: Download artifact
@@ -154,10 +154,32 @@ jobs:
           name: dotnet-app
           path: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
 
-      - name: Deploy to Azure Web App
-        id: deploy-to-webapp
-        uses: azure/webapps-deploy@v3
-        with:
-          app-name: ${{ env.AZURE_WEBAPP_NAME }}
-          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
-          package: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
+      - name: Create deployment package
+        run: |
+          cd ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
+          zip -r ../deploy.zip .
+          cd ..
+
+      - name: Extract publish profile credentials
+        id: publishprofile
+        run: |
+          PUBLISH_PROFILE='${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}'
+          
+          # Extract username and password for Zip Deploy
+          USERNAME=$(echo "$PUBLISH_PROFILE" | grep -oP '(?<=userName=")[^"]*' | grep -v "\\$" | head -1)
+          PASSWORD=$(echo "$PUBLISH_PROFILE" | grep -oP 'userPWD="[^"]*"' | head -1 | sed 's/userPWD="//;s/"//')
+          PUBLISH_URL=$(echo "$PUBLISH_PROFILE" | grep -oP 'publishUrl="[^"]*scm[^"]*"' | head -1 | sed 's/publishUrl="//;s/":443"//')
+          
+          echo "username=$USERNAME" >> $GITHUB_OUTPUT
+          echo "::add-mask::$PASSWORD"
+          echo "password=$PASSWORD" >> $GITHUB_OUTPUT
+          echo "publishurl=$PUBLISH_URL" >> $GITHUB_OUTPUT
+
+      - name: Deploy to Azure Web App via Zip Deploy
+        run: |
+          curl -X POST \
+            -u "${{ steps.publishprofile.outputs.username }}:${{ steps.publishprofile.outputs.password }}" \
+            --data-binary @deploy.zip \
+            https://${{ steps.publishprofile.outputs.publishurl }}/api/zipdeploy \
+            -H "Content-Type: application/zip" \
+            -v
