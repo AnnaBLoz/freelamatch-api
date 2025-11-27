@@ -2,6 +2,7 @@ using FreelaMatchAPI.Data;
 using FreelaMatchAPI.Interfaces;
 using FreelaMatchAPI.Models;
 using FreelaMatchAPI.Services;
+using FreelaMatchAPI.Services.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -48,6 +49,13 @@ builder.Services.AddScoped<ReviewsService>();
 builder.Services.AddScoped<EmailService>();
 
 builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IGeneralService, GeneralService>();
+builder.Services.AddScoped<IPortfolioService, PortfolioService>();
+builder.Services.AddScoped<IProfileService, ProfileService>();
+builder.Services.AddScoped<IProposalService, ProposalService>();
+builder.Services.AddScoped<IReviewsService, ReviewsService>();
+builder.Services.AddScoped<IUserService, UserService>();
 
 // ----------------------------
 // CONTROLLERS + SWAGGER
