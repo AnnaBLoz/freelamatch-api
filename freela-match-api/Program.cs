@@ -94,20 +94,18 @@ var app = builder.Build();
 // ----------------------------
 
 app.UseCors("AllowAll");
-app.UseHttpsRedirection();
 
-if (app.Environment.IsDevelopment())
+// Habilitar Swagger em todos os ambientes
+app.UseSwagger();
+app.UseSwaggerUI(c =>
 {
-    app.UseSwagger();
-    app.UseSwaggerUI(c =>
-    {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "API V1");
-    });
-}
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "API V1");
+    c.RoutePrefix = "swagger"; // Acessa via /swagger
+});
 
+app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
-
 app.MapControllers();
 
 app.Run();
