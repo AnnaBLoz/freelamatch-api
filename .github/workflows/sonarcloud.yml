@@ -165,6 +165,8 @@ jobs:
         run: |
           echo "Starting deployment..."
           
+          # Tentar com o username exatamente como está
+          echo "Attempting deployment (attempt 1/2)..."
           STATUS_CODE=$(curl -X POST \
             "https://freela-match-api-bgb3cdfgc0hpcrcn.scm.canadacentral-01.azurewebsites.net/api/zipdeploy" \
             -u "${{ secrets.AZURE_WEBAPP_USERNAME }}:${{ secrets.AZURE_WEBAPP_PASSWORD }}" \
@@ -175,12 +177,34 @@ jobs:
             --output /dev/null \
             --max-time 600)
           
-          echo "Deploy status code: $STATUS_CODE"
+          echo "Attempt 1 status code: $STATUS_CODE"
+          
+          # Se falhou, tentar com $ no início
+          if [ "$STATUS_CODE" -eq 401 ]; then
+            echo "Attempting deployment with \$ prefix (attempt 2/2)..."
+            STATUS_CODE=$(curl -X POST \
+              "https://freela-match-api-bgb3cdfgc0hpcrcn.scm.canadacentral-01.azurewebsites.net/api/zipdeploy" \
+              -u "\${{ secrets.AZURE_WEBAPP_USERNAME }}:${{ secrets.AZURE_WEBAPP_PASSWORD }}" \
+              -H "Content-Type: application/zip" \
+              --data-binary @app.zip \
+              --write-out "%{http_code}" \
+              --silent \
+              --output /dev/null \
+              --max-time 600)
+            
+            echo "Attempt 2 status code: $STATUS_CODE"
+          fi
           
           if [ "$STATUS_CODE" -eq 200 ] || [ "$STATUS_CODE" -eq 202 ]; then
             echo "Deploy successful!"
           else
             echo "Deploy failed with status code: $STATUS_CODE"
+            echo ""
+            echo "Please verify your credentials:"
+            echo "1. Go to Azure Portal > App Service > Deployment Center"
+            echo "2. Click on 'FTPS credentials' or 'Local Git/FTPS credentials'"
+            echo "3. Copy the EXACT username (including any $ or \\ characters)"
+            echo "4. Update the AZURE_WEBAPP_USERNAME secret in GitHub"
             exit 1
           fi
 
