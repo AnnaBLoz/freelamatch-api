@@ -8,40 +8,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
-using OpenTelemetry.Trace;
-using OpenTelemetry.Metrics;
-using OpenTelemetry.Resources;
 
 var builder = WebApplication.CreateBuilder(args);
-
-// ----------------------------
-// OPEN TELEMETRY NEW RELIC
-// ----------------------------
-builder.Services.AddOpenTelemetry()
-    .ConfigureResource(res =>
-        res.AddService("FreelaMatchAPI"))
-    .WithTracing(tracer =>
-    {
-        tracer.AddAspNetCoreInstrumentation()
-              .AddHttpClientInstrumentation()
-              .AddEntityFrameworkCoreInstrumentation()
-              .AddOtlpExporter(o =>
-              {
-                  o.Endpoint = new Uri("https://otlp.nr-data.net:4317");
-                  o.Headers = "api-key=SUA_LICENSE_KEY_AQUI";
-              });
-    })
-    .WithMetrics(metrics =>
-    {
-        metrics.AddAspNetCoreInstrumentation()
-               .AddRuntimeInstrumentation()
-               .AddHttpClientInstrumentation()
-               .AddOtlpExporter(o =>
-               {
-                   o.Endpoint = new Uri("https://otlp.nr-data.net:4317");
-                   o.Headers = "api-key=SUA_LICENSE_KEY_AQUI";
-               });
-    });
 
 // ----------------------------
 // CORS
@@ -135,11 +103,12 @@ var app = builder.Build();
 
 app.UseCors("AllowAll");
 
+// Habilitar Swagger em todos os ambientes
 app.UseSwagger();
 app.UseSwaggerUI(c =>
 {
     c.SwaggerEndpoint("/swagger/v1/swagger.json", "API V1");
-    c.RoutePrefix = "swagger";
+    c.RoutePrefix = "swagger"; // Acessa via /swagger
 });
 
 app.UseHttpsRedirection();
