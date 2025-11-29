@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE coverage SYSTEM "http://cobertura.sourceforge.net/xml/coverage-04.dtd">
-<coverage line-rate="0.7601977750309024" branch-rate="0.6753246753246753" lines-covered="1230" lines-valid="1618" branches-covered="208" branches-valid="308" complexity="394" version="0" timestamp="1764391846">
+<coverage line-rate="0.7601977750309024" branch-rate="0.6753246753246753" lines-covered="1230" lines-valid="1618" branches-covered="208" branches-valid="308" complexity="394" version="0" timestamp="1764392531">
   <sources />
   <packages>
     <package name="freela-match-api" line-rate="0.7601977750309024" branch-rate="0.6753246753246753" complexity="394">
