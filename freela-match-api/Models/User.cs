@@ -10,6 +10,7 @@ namespace FreelaMatchAPI.Models
         public string Password { get; set; }
         public UserType Type { get; set; }
         public string Token { get; set; }
+        public int ProfileId { get; set; }
         public Profile? Profile { get; set; }
         public bool IsAvailable { get; set; }
 

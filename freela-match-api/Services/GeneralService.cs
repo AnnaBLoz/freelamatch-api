@@ -21,7 +21,7 @@ namespace FreelaMatchAPI.Services
         {
             return _context.Users
                 .Where(f => f.Type == UserType.Freelancer)
-                //.Include(f => f.Profile).ThenInclude(f => f.UserSkills).ThenInclude(f => f.Skill)
+                .Include(f => f.Profile).ThenInclude(f => f.UserSkills).ThenInclude(f => f.Skill)
                 .ToListAsync();
         }
 
