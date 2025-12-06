@@ -3,16 +3,16 @@
 
 |||
 |:---|:---|
-| Generated on: | 12/06/2025 - 01:58:39 |
+| Generated on: | 12/06/2025 - 04:56:16 |
 | Parser: | MultiReport (2x OpenCover) |
 | Assemblies: | 1 |
 | Classes: | 45 |
 | Files: | 44 |
-| **Line coverage:** | 76% (1230 of 1618) |
+| **Line coverage:** | 75.9% (1230 of 1619) |
 | Covered lines: | 1230 |
-| Uncovered lines: | 388 |
-| Coverable lines: | 1618 |
-| Total lines: | 3325 |
+| Uncovered lines: | 389 |
+| Coverable lines: | 1619 |
+| Total lines: | 3328 |
 | **Branch coverage:** | 67.5% (208 of 308) |
 | Covered branches: | 208 |
 | Total branches: | 308 |
@@ -21,11 +21,11 @@
 </details>
 
 ## Coverage
-<details><summary>freela-match-api - 76%</summary>
+<details><summary>freela-match-api - 75.9%</summary>
 
 |**Name**|**Line**|**Branch**|
 |:---|---:|---:|
-|**freela-match-api**|**76%**|**67.5%**|
+|**freela-match-api**|**75.9%**|**67.5%**|
 |AuthService|100%|100%|
 |EmailService|48.6%|44.1%|
 |FreelaMatchAPI.Controllers.AuthController|100%|100%|
@@ -58,7 +58,7 @@
 |FreelaMatchAPI.Models.UpdatePortfolio|100%||
 |FreelaMatchAPI.Models.UpdateProfile|100%||
 |FreelaMatchAPI.Models.UpdateUser|100%||
-|FreelaMatchAPI.Models.User|94.4%||
+|FreelaMatchAPI.Models.User|89.4%||
 |FreelaMatchAPI.Models.UserAuthResponseDto|100%||
 |FreelaMatchAPI.Models.UserResume|33.3%||
 |FreelaMatchAPI.Models.UserSkill|43.7%||
