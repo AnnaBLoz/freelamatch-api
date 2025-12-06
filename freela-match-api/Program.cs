@@ -93,7 +93,10 @@ builder.Services.AddAuthentication(options =>
 // ----------------------------
 // CUSTOM URLS
 // ----------------------------
-builder.WebHost.UseUrls("https://localhost:5000", "http://localhost:5001");
+if (builder.Environment.IsDevelopment())
+{
+    builder.WebHost.UseUrls("https://localhost:5000", "http://localhost:5001");
+}
 
 var app = builder.Build();
 
