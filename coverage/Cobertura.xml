@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE coverage SYSTEM "http://cobertura.sourceforge.net/xml/coverage-04.dtd">
-<coverage line-rate="0.7597282273008029" branch-rate="0.6753246753246753" lines-covered="1230" lines-valid="1619" branches-covered="208" branches-valid="308" complexity="394" version="0" timestamp="1764996976">
+<coverage line-rate="0.7334525939177102" branch-rate="0.6582278481012658" lines-covered="1230" lines-valid="1677" branches-covered="208" branches-valid="316" complexity="400" version="0" timestamp="1764999926">
   <sources />
   <packages>
-    <package name="freela-match-api" line-rate="0.7597282273008029" branch-rate="0.6753246753246753" complexity="394">
+    <package name="freela-match-api" line-rate="0.7334525939177102" branch-rate="0.6582278481012658" complexity="400">
       <classes>
         <class name="AuthService" filename="/home/runner/work/freelamatch-api/freelamatch-api/freela-match-api/Services/AuthService.cs" line-rate="1" branch-rate="1" complexity="8">
           <methods>
@@ -909,7 +909,7 @@
             <line number="67" hits="2" branch="false" />
           </lines>
         </class>
-        <class name="FreelaMatchAPI.Controllers.GeneralController" filename="/home/runner/work/freelamatch-api/freelamatch-api/freela-match-api/Controllers/GeneralController.cs" line-rate="0.9166666666666666" branch-rate="0.75" complexity="17">
+        <class name="FreelaMatchAPI.Controllers.GeneralController" filename="/home/runner/work/freelamatch-api/freelamatch-api/freela-match-api/Controllers/GeneralController.cs" line-rate="0.7586206896551724" branch-rate="0.6" complexity="21">
           <methods>
             <method name=".ctor" signature="(FreelaMatchAPI.Interfaces.IGeneralService,FreelaMatchAPI.Interfaces.IUserService)" line-rate="1" branch-rate="1" complexity="1">
               <lines>
@@ -955,6 +955,15 @@
                 <line number="57" hits="1" branch="false" />
               </lines>
             </method>
+            <method name="Match" signature="()" line-rate="0" branch-rate="0" complexity="4">
+              <lines>
+                <line number="73" hits="0" branch="false" />
+                <line number="75" hits="0" branch="true" condition-coverage="0% (0/4)" />
+                <line number="76" hits="0" branch="false" />
+                <line number="78" hits="0" branch="false" />
+                <line number="79" hits="0" branch="false" />
+              </lines>
+            </method>
           </methods>
           <lines>
             <line number="20" hits="6" branch="false" />
@@ -981,6 +990,11 @@
             <line number="65" hits="1" branch="false" />
             <line number="67" hits="1" branch="false" />
             <line number="68" hits="2" branch="false" />
+            <line number="73" hits="0" branch="false" />
+            <line number="75" hits="0" branch="true" condition-coverage="0% (0/4)" />
+            <line number="76" hits="0" branch="false" />
+            <line number="78" hits="0" branch="false" />
+            <line number="79" hits="0" branch="false" />
           </lines>
         </class>
         <class name="FreelaMatchAPI.Controllers.GeneralController" filename="D:\TCC\FreelaMatch\freela-match-api\Controllers\GeneralController.cs" line-rate="0.9166666666666666" branch-rate="0.75" complexity="17">
@@ -4011,7 +4025,7 @@
             <line number="98" hits="0" branch="false" />
           </lines>
         </class>
-        <class name="FreelaMatchAPI.Services.GeneralService" filename="/home/runner/work/freelamatch-api/freelamatch-api/freela-match-api/Services/GeneralService.cs" line-rate="1" branch-rate="1" complexity="5">
+        <class name="FreelaMatchAPI.Services.GeneralService" filename="/home/runner/work/freelamatch-api/freelamatch-api/freela-match-api/Services/GeneralService.cs" line-rate="0.208955223880597" branch-rate="0" complexity="7">
           <methods>
             <method name="GetFreelancers" signature="()" line-rate="1" branch-rate="1" complexity="1">
               <lines>
@@ -4047,6 +4061,63 @@
                 <line number="18" hits="4" branch="false" />
               </lines>
             </method>
+            <method name="Match" signature="()" line-rate="0" branch-rate="0" complexity="2">
+              <lines>
+                <line number="50" hits="0" branch="false" />
+                <line number="51" hits="0" branch="false" />
+                <line number="52" hits="0" branch="false" />
+                <line number="53" hits="0" branch="false" />
+                <line number="54" hits="0" branch="false" />
+                <line number="56" hits="0" branch="true" condition-coverage="0% (0/2)" />
+                <line number="57" hits="0" branch="false" />
+                <line number="60" hits="0" branch="false" />
+                <line number="61" hits="0" branch="false" />
+                <line number="62" hits="0" branch="false" />
+                <line number="63" hits="0" branch="false" />
+                <line number="64" hits="0" branch="false" />
+                <line number="65" hits="0" branch="false" />
+                <line number="66" hits="0" branch="false" />
+                <line number="67" hits="0" branch="false" />
+                <line number="68" hits="0" branch="false" />
+                <line number="69" hits="0" branch="false" />
+                <line number="70" hits="0" branch="false" />
+                <line number="71" hits="0" branch="false" />
+                <line number="72" hits="0" branch="false" />
+                <line number="73" hits="0" branch="false" />
+                <line number="74" hits="0" branch="false" />
+                <line number="77" hits="0" branch="false" />
+                <line number="78" hits="0" branch="false" />
+                <line number="79" hits="0" branch="false" />
+                <line number="80" hits="0" branch="false" />
+                <line number="81" hits="0" branch="false" />
+                <line number="82" hits="0" branch="false" />
+                <line number="85" hits="0" branch="true" condition-coverage="0% (0/2)" />
+                <line number="86" hits="0" branch="false" />
+                <line number="87" hits="0" branch="false" />
+                <line number="88" hits="0" branch="false" />
+                <line number="89" hits="0" branch="false" />
+                <line number="90" hits="0" branch="false" />
+                <line number="91" hits="0" branch="false" />
+                <line number="92" hits="0" branch="false" />
+                <line number="93" hits="0" branch="false" />
+                <line number="94" hits="0" branch="false" />
+                <line number="95" hits="0" branch="false" />
+                <line number="96" hits="0" branch="false" />
+                <line number="97" hits="0" branch="false" />
+                <line number="98" hits="0" branch="false" />
+                <line number="99" hits="0" branch="false" />
+                <line number="100" hits="0" branch="false" />
+                <line number="101" hits="0" branch="false" />
+                <line number="102" hits="0" branch="false" />
+                <line number="103" hits="0" branch="false" />
+                <line number="104" hits="0" branch="false" />
+                <line number="105" hits="0" branch="false" />
+                <line number="106" hits="0" branch="false" />
+                <line number="107" hits="0" branch="false" />
+                <line number="109" hits="0" branch="false" />
+                <line number="110" hits="0" branch="false" />
+              </lines>
+            </method>
           </methods>
           <lines>
             <line number="15" hits="4" branch="false" />
@@ -4063,6 +4134,59 @@
             <line number="42" hits="1" branch="false" />
             <line number="43" hits="1" branch="false" />
             <line number="44" hits="1" branch="false" />
+            <line number="50" hits="0" branch="false" />
+            <line number="51" hits="0" branch="false" />
+            <line number="52" hits="0" branch="false" />
+            <line number="53" hits="0" branch="false" />
+            <line number="54" hits="0" branch="false" />
+            <line number="56" hits="0" branch="true" condition-coverage="0% (0/2)" />
+            <line number="57" hits="0" branch="false" />
+            <line number="60" hits="0" branch="false" />
+            <line number="61" hits="0" branch="false" />
+            <line number="62" hits="0" branch="false" />
+            <line number="63" hits="0" branch="false" />
+            <line number="64" hits="0" branch="false" />
+            <line number="65" hits="0" branch="false" />
+            <line number="66" hits="0" branch="false" />
+            <line number="67" hits="0" branch="false" />
+            <line number="68" hits="0" branch="false" />
+            <line number="69" hits="0" branch="false" />
+            <line number="70" hits="0" branch="false" />
+            <line number="71" hits="0" branch="false" />
+            <line number="72" hits="0" branch="false" />
+            <line number="73" hits="0" branch="false" />
+            <line number="74" hits="0" branch="false" />
+            <line number="77" hits="0" branch="false" />
+            <line number="78" hits="0" branch="false" />
+            <line number="79" hits="0" branch="false" />
+            <line number="80" hits="0" branch="false" />
+            <line number="81" hits="0" branch="false" />
+            <line number="82" hits="0" branch="false" />
+            <line number="85" hits="0" branch="true" condition-coverage="0% (0/2)" />
+            <line number="86" hits="0" branch="false" />
+            <line number="87" hits="0" branch="false" />
+            <line number="88" hits="0" branch="false" />
+            <line number="89" hits="0" branch="false" />
+            <line number="90" hits="0" branch="false" />
+            <line number="91" hits="0" branch="false" />
+            <line number="92" hits="0" branch="false" />
+            <line number="93" hits="0" branch="false" />
+            <line number="94" hits="0" branch="false" />
+            <line number="95" hits="0" branch="false" />
+            <line number="96" hits="0" branch="false" />
+            <line number="97" hits="0" branch="false" />
+            <line number="98" hits="0" branch="false" />
+            <line number="99" hits="0" branch="false" />
+            <line number="100" hits="0" branch="false" />
+            <line number="101" hits="0" branch="false" />
+            <line number="102" hits="0" branch="false" />
+            <line number="103" hits="0" branch="false" />
+            <line number="104" hits="0" branch="false" />
+            <line number="105" hits="0" branch="false" />
+            <line number="106" hits="0" branch="false" />
+            <line number="107" hits="0" branch="false" />
+            <line number="109" hits="0" branch="false" />
+            <line number="110" hits="0" branch="false" />
           </lines>
         </class>
         <class name="FreelaMatchAPI.Services.GeneralService" filename="D:\TCC\FreelaMatch\freela-match-api\Services\GeneralService.cs" line-rate="1" branch-rate="1" complexity="5">
