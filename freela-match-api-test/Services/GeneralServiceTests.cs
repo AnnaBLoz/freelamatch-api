@@ -63,21 +63,50 @@ namespace freela_match_api_test.Services
         {
             var context = GetDbContext();
 
-            var user = new User { Id = 1, Name = "Ana", Type = UserType.Freelancer, Email = "a@mail.com", Password = "123", Token = "t1" };
-            var profile = new Profile { ProfileId = 1, UserId = 1, Biography = "Bio", ExperienceLevel = ExperienceLevel.Senior, PricePerHour = 50 };
+            var user = new User
+            {
+                Id = 1,
+                Name = "Ana",
+                Type = UserType.Freelancer,
+                Email = "a@mail.com",
+                Password = "123",
+                Token = "t1"
+            };
+
             var skill = new Skill { SkillId = 1, Name = "C#" };
-            var userSkill = new UserSkill { UserSkillId = 1, UserId = 1, SkillId = 1 };
+
+            var profile = new Profile
+            {
+                ProfileId = 1,
+                UserId = 1,
+                Biography = "Bio",
+                ExperienceLevel = ExperienceLevel.Senior,
+                PricePerHour = 50,
+                User = user  
+            };
+
+            var userSkill = new UserSkill
+            {
+                UserSkillId = 1,
+                UserId = 1,
+                SkillId = 1,
+                User = user,  
+                Skill = skill  
+            };
 
             context.Users.Add(user);
-            context.Profiles.Add(profile);
             context.Skills.Add(skill);
+            context.Profiles.Add(profile);
             context.UserSkills.Add(userSkill);
             await context.SaveChangesAsync();
+
+            context.ChangeTracker.Clear();
 
             var service = new GeneralService(context);
             var result = await service.GetFreelancers();
 
             Assert.Single(result);
+            Assert.NotNull(result[0]);
             Assert.NotNull(result[0]!.Profile);
             Assert.NotNull(result[0]!.Profile!.UserSkills);
             Assert.Single(result[0]!.Profile!.UserSkills);
