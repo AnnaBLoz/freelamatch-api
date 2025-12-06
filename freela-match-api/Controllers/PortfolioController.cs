@@ -32,7 +32,7 @@ namespace FreelaMatchAPI.Controllers
         // ==========================================
         // POST /api/portfolio
         // ==========================================
-        [HttpPost]
+        [HttpPost("")]
         public async Task<IActionResult> CreatePortfolio([FromBody] CreatePortfolio createPortfolio)
         {
             var portfolio = await _portfolioService.CreatePortfolio(createPortfolio);
