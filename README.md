@@ -1,6 +1,5 @@
 # FreelaMatch API
 
-[![.NET 8 CI](https://github.com/AnnaBLoz/freelamatch-api/actions/workflows/sonarcloud.yml/badge.svg)](https://github.com/AnnaBLoz/freelamatch-api/actions/workflows/sonarcloud.yml)
 [![Coverage Report](https://img.shields.io/badge/coverage-view%20report-brightgreen)](https://annabloz.github.io/freelamatch-api/coverage/)
 
 > API RESTful para gerenciamento da plataforma FreelaMatch - Conexão entre Freelancers e Empresas
@@ -37,7 +36,7 @@ A API oferece endpoints para:
 - **.NET 8** - Framework principal
 - **ASP.NET Core Web API** - Desenvolvimento da API RESTful
 - **Entity Framework Core** - ORM para acesso a dados
-- **SQL Server** - Banco de dados relacional
+- **MySQL Workbench** - Banco de dados relacional
 - **Identity** - Gerenciamento de autenticação e autorização
 - **JWT** - Autenticação via tokens
 
@@ -49,13 +48,13 @@ A API oferece endpoints para:
 
 ### Ferramentas
 - **GitHub Actions** - CI/CD
-- **SonarCloud** - Análise de qualidade de código
+- **DeepSource** - Análise de qualidade de código
 - **ReportGenerator** - Geração de relatórios de cobertura
 
 ## 📋 Pré-requisitos
 
 - .NET SDK 8.0 ou superior
-- SQL Server (LocalDB, Express ou Developer Edition)
+- MySQL Workbench
 - Visual Studio 2022 ou VS Code
 
 ## 🛠️ Instalação e Configuração
@@ -159,7 +158,7 @@ O projeto utiliza **GitHub Actions** para automação:
 
 - ✅ **Build automático** em cada push/PR
 - ✅ **Execução de testes unitários** com relatórios
-- ✅ **Análise de qualidade** via SonarCloud
+- ✅ **Análise de qualidade** via DeepSource
 - ✅ **Geração de cobertura de código**
 - ✅ **Comentários automáticos** em PRs com métricas
 - ✅ **Deploy do relatório** de cobertura no GitHub Pages
@@ -176,27 +175,7 @@ A API implementa as seguintes práticas de segurança:
 - **Rate Limiting** para prevenção de abusos
 - **HTTPS** obrigatório em produção
 
-## 📡 Principais Endpoints
-
-### Autenticação
-- `POST /api/auth/register` - Cadastro de novo usuário
-- `POST /api/auth/login` - Login e geração de token
-- `POST /api/auth/refresh` - Renovação de token
-
-### Usuários
-- `GET /api/users/{id}` - Buscar usuário por ID
-- `PUT /api/users/{id}` - Atualizar perfil
-- `GET /api/users/search` - Busca avançada com filtros
-
-### Propostas
-- `POST /api/proposals` - Criar nova proposta
-- `GET /api/proposals/{id}` - Buscar proposta
-- `PUT /api/proposals/{id}/status` - Atualizar status
-- `GET /api/proposals/user/{userId}` - Listar propostas do usuário
-
-### Match
-- `GET /api/match/recommendations/{userId}` - Obter recomendações
-- `POST /api/match/calculate` - Calcular compatibilidade
+## 📡 Endpoints
 
 > **Nota**: Documentação completa da API disponível via Swagger em `/swagger`
 
@@ -220,25 +199,6 @@ A API segue os princípios de **Clean Architecture** e utiliza:
 - **Injeção de Dependência** nativa do .NET
 - **Separação de responsabilidades** em camadas
 - **DTOs** para contratos de API
-- **AutoMapper** para mapeamento de objetos
-- **Validações com FluentValidation**
-
-## 👥 Contribuindo
-
-1. Fork o projeto
-2. Crie uma branch para sua feature (`git checkout -b feature/MinhaFeature`)
-3. Commit suas mudanças (`git commit -m 'Add: nova feature'`)
-4. Push para a branch (`git push origin feature/MinhaFeature`)
-5. Abra um Pull Request
-
-### Padrão de Commits
-
-- `Add:` Nova funcionalidade
-- `Fix:` Correção de bug
-- `Update:` Atualização de código existente
-- `Refactor:` Refatoração de código
-- `Test:` Adição ou modificação de testes
-- `Docs:` Documentação
 
 ## 📖 Documentação Adicional
 
