@@ -3,29 +3,29 @@
 
 |||
 |:---|:---|
-| Generated on: | 12/06/2025 - 05:45:26 |
+| Generated on: | 12/06/2025 - 06:46:51 |
 | Parser: | MultiReport (2x OpenCover) |
 | Assemblies: | 1 |
 | Classes: | 45 |
 | Files: | 44 |
-| **Line coverage:** | 73.3% (1230 of 1677) |
-| Covered lines: | 1230 |
-| Uncovered lines: | 447 |
+| **Line coverage:** | 76.7% (1287 of 1677) |
+| Covered lines: | 1287 |
+| Uncovered lines: | 390 |
 | Coverable lines: | 1677 |
 | Total lines: | 3402 |
-| **Branch coverage:** | 65.8% (208 of 316) |
-| Covered branches: | 208 |
+| **Branch coverage:** | 67% (212 of 316) |
+| Covered branches: | 212 |
 | Total branches: | 316 |
 | **Method coverage:** | [Feature is only available for sponsors](https://reportgenerator.io/pro) |
 
 </details>
 
 ## Coverage
-<details><summary>freela-match-api - 73.3%</summary>
+<details><summary>freela-match-api - 76.7%</summary>
 
 |**Name**|**Line**|**Branch**|
 |:---|---:|---:|
-|**freela-match-api**|**73.3%**|**65.8%**|
+|**freela-match-api**|**76.7%**|**67%**|
 |AuthService|100%|100%|
 |EmailService|48.6%|44.1%|
 |FreelaMatchAPI.Controllers.AuthController|100%|100%|
@@ -49,7 +49,7 @@
 |FreelaMatchAPI.Models.Profile|70%||
 |FreelaMatchAPI.Models.ProfileResume|50%||
 |FreelaMatchAPI.Models.Proposal|95.4%||
-|FreelaMatchAPI.Models.ProposalSkill|66.6%||
+|FreelaMatchAPI.Models.ProposalSkill|75%||
 |FreelaMatchAPI.Models.ProposalSkillCreate|50%||
 |FreelaMatchAPI.Models.ReviewCreate|100%||
 |FreelaMatchAPI.Models.Reviews|65%||
@@ -60,10 +60,10 @@
 |FreelaMatchAPI.Models.UpdateUser|100%||
 |FreelaMatchAPI.Models.User|89.4%||
 |FreelaMatchAPI.Models.UserAuthResponseDto|100%||
-|FreelaMatchAPI.Models.UserResume|33.3%||
-|FreelaMatchAPI.Models.UserSkill|43.7%||
+|FreelaMatchAPI.Models.UserResume|50%||
+|FreelaMatchAPI.Models.UserSkill|50%||
 |FreelaMatchAPI.Models.UserSkillResume|30%||
-|FreelaMatchAPI.Services.GeneralService|34.5%|0%|
+|FreelaMatchAPI.Services.GeneralService|100%|100%|
 |FreelaMatchAPI.Services.UserService|50%|50%|
 |PortfolioService|100%|100%|
 |ProfileService|50%|50%|
