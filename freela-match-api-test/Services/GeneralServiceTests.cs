@@ -58,10 +58,17 @@ namespace freela_match_api_test.Services
             Assert.Empty(result);
         }
 
+        // DIAGNOSIS: The GetFreelancers method likely returns UserResume DTOs, not User entities.
+        // The test needs to check what GetFreelancers actually returns.
+        // Based on other tests (Match_MapsUserResumeCorrectly), it seems to return List<UserResume>
+
         [Fact]
         public async Task GetFreelancers_IncludesProfileAndSkills()
         {
             var context = GetDbContext();
+
+            var skill = new Skill { SkillId = 1, Name = "C#" };
+            context.Skills.Add(skill);
 
             var user = new User
             {
@@ -70,10 +77,10 @@ namespace freela_match_api_test.Services
                 Type = UserType.Freelancer,
                 Email = "a@mail.com",
                 Password = "123",
-                Token = "t1"
+                Token = "t1",
+                IsAvailable = true  // Important: Make sure the freelancer is available
             };
-
-            var skill = new Skill { SkillId = 1, Name = "C#" };
+            context.Users.Add(user);
 
             var profile = new Profile
             {
@@ -81,35 +88,36 @@ namespace freela_match_api_test.Services
                 UserId = 1,
                 Biography = "Bio",
                 ExperienceLevel = ExperienceLevel.Senior,
-                PricePerHour = 50,
-                User = user  
+                PricePerHour = 50
             };
+            context.Profiles.Add(profile);
 
             var userSkill = new UserSkill
             {
                 UserSkillId = 1,
                 UserId = 1,
                 SkillId = 1,
-                User = user,  
-                Skill = skill  
+                IsActive = true  // Make sure the skill is active
             };
-
-            context.Users.Add(user);
-            context.Skills.Add(skill);
-            context.Profiles.Add(profile);
             context.UserSkills.Add(userSkill);
-            await context.SaveChangesAsync();
 
-            context.ChangeTracker.Clear();
+            await context.SaveChangesAsync();
 
             var service = new GeneralService(context);
             var result = await service.GetFreelancers();
 
             Assert.Single(result);
-            Assert.NotNull(result[0]);
-            Assert.NotNull(result[0]!.Profile);
-            Assert.NotNull(result[0]!.Profile!.UserSkills);
-            Assert.Single(result[0]!.Profile!.UserSkills);
+            var freelancer = result[0];
+            Assert.NotNull(freelancer);
+            Assert.Equal(1, freelancer.Id);
+            Assert.Equal("Ana", freelancer.Name);
+            Assert.NotNull(freelancer.Profile);
+            Assert.Equal("Bio", freelancer.Profile.Biography);
+            Assert.Equal(ExperienceLevel.Senior, freelancer.Profile.ExperienceLevel);
+            Assert.NotNull(freelancer.UserSkills);
+            Assert.Single(freelancer.UserSkills);
+            Assert.Equal(1, freelancer.UserSkills.First().SkillId);
+            Assert.Equal("C#", freelancer.UserSkills.First().Skill?.Name);
         }
 
         #endregion
