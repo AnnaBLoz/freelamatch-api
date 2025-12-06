@@ -67,6 +67,15 @@ namespace FreelaMatchAPI.Controllers
             return Ok(completed);
         }
 
+        [HttpGet("Match")]
+        public async Task<ActionResult<List<UserResume>>> Match([FromQuery] int userId)
+        {
+            var match = await _generalService.Match(userId);
 
+            if (match == null || !match.Any())
+                return NotFound(new { message = "Match not found" });
+
+            return Ok(match);
+        }
     }
 }

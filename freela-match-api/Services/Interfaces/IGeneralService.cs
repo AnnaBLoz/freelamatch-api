@@ -10,5 +10,6 @@ namespace FreelaMatchAPI.Interfaces
         Task<List<Sector?>> GetSectors();
         Task<List<Skill?>> GetSkills();
         Task<List<Candidate?>> CompletedProjects(int userId);
+        Task<List<UserResume>> Match(int companyUserId);
     }
 }
