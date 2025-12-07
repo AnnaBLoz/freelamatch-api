@@ -4,50 +4,53 @@ using FreelaMatchAPI.Models;
 using FreelaMatchAPI.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
-public class PortfolioService : IPortfolioService
+namespace FreelaMatchAPI.Services
 {
-    private readonly AppDbContext _context;
-
-    public PortfolioService(AppDbContext context)
+    public class PortfolioService : IPortfolioService
     {
-        _context = context;
-    }
+        private readonly AppDbContext _context;
 
-    public async Task<List<Portfolio>> GetPortfolioByUserIdAsync(int userId)
-    {
-        return await _context.Portfolio
-            .Where(p => p.UserId == userId && p.IsActive)
-            .ToListAsync();
-    }
-
-    public async Task<(bool Success, string Message, Portfolio? Portfolio)> UpdatePortfolioAsync(int portfolioId, UpdatePortfolio updatedPortfolio)
-    {
-        var portfolio = await _context.Portfolio
-            .FirstOrDefaultAsync(u => u.PortfolioId == portfolioId);
-
-        if (portfolio == null)
-            return (false, "Portfolio not found", null);
-
-        portfolio.URL = updatedPortfolio.URL;
-        portfolio.IsActive = updatedPortfolio.IsActive;
-
-        await _context.SaveChangesAsync();
-
-        return (true, "Portfolio updated successfully", portfolio);
-    }
-
-    public async Task<Portfolio> CreatePortfolio(CreatePortfolio portfolioCreated)
-    {
-        var portfolio = new Portfolio
+        public PortfolioService(AppDbContext context)
         {
-            URL = portfolioCreated.URL,
-            IsActive = portfolioCreated.IsActive,
-            UserId = portfolioCreated.UserId
-        };
+            _context = context;
+        }
 
-        _context.Portfolio.Add(portfolio);
-        await _context.SaveChangesAsync();
+        public async Task<List<Portfolio>> GetPortfolioByUserIdAsync(int userId)
+        {
+            return await _context.Portfolio
+                .Where(p => p.UserId == userId && p.IsActive)
+                .ToListAsync();
+        }
 
-        return portfolio;
+        public async Task<(bool Success, string Message, Portfolio? Portfolio)> UpdatePortfolioAsync(int portfolioId, UpdatePortfolio updatedPortfolio)
+        {
+            var portfolio = await _context.Portfolio
+                .FirstOrDefaultAsync(u => u.PortfolioId == portfolioId);
+
+            if (portfolio == null)
+                return (false, "Portfolio not found", null);
+
+            portfolio.URL = updatedPortfolio.URL;
+            portfolio.IsActive = updatedPortfolio.IsActive;
+
+            await _context.SaveChangesAsync();
+
+            return (true, "Portfolio updated successfully", portfolio);
+        }
+
+        public async Task<Portfolio> CreatePortfolio(CreatePortfolio portfolioCreated)
+        {
+            var portfolio = new Portfolio
+            {
+                URL = portfolioCreated.URL,
+                IsActive = portfolioCreated.IsActive,
+                UserId = portfolioCreated.UserId
+            };
+
+            _context.Portfolio.Add(portfolio);
+            await _context.SaveChangesAsync();
+
+            return portfolio;
+        }
     }
 }

@@ -2,120 +2,117 @@
 using FreelaMatchAPI.DTOs;
 using FreelaMatchAPI.Interfaces;
 using FreelaMatchAPI.Models;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
-public class ProfileService : IProfileService
+namespace FreelaMatchAPI.Services
 {
-    private readonly AppDbContext _context;
-    private readonly IConfiguration _config;
-
-    public ProfileService(AppDbContext context, IConfiguration config)
+    public class ProfileService : IProfileService
     {
-        _context = context;
-        _config = config;
-    }
+        private readonly AppDbContext _context;
+        private readonly IConfiguration _config;
 
-    public async Task<Profile?> GetProfileByUserIdAsync(int userId)
-    {
-        return await _context.Profiles
-            .Include(p => p.UserSkills.Where(us => us.IsActive)).ThenInclude(us => us.Skill).Include(p => p.Sector)
-            .FirstOrDefaultAsync(p => p.UserId == userId);
-    }
-
-    public async Task<List<Skill>> GetSkills()
-    {
-        return await _context.Skills.ToListAsync();
-    }
-
-    public async Task<(bool Success, string Message, Profile? Profile)> CreateProfileAsync(int userId, UpdateProfile updatedProfile)
-    {
-        var user = await _context.Users
-            .Include(u => u.Profile)
-            .FirstOrDefaultAsync(u => u.Id == userId);
-
-        if (user == null)
-            return (false, "Usuário não encontrado.", null);
-
-        if (user.Profile != null)
-            return (false, "Perfil já existe para este usuário.", null);
-
-        // Cria o perfil com valores vazios ou nulos
-        var profile = new Profile
+        public ProfileService(AppDbContext context, IConfiguration config)
         {
-            UserId = userId,
-            Biography = "",
-            PricePerHour = 0,
-            ExperienceLevel = ExperienceLevel.Junior,
-            SectorId = null,
-            UserSkills = new List<UserSkill>()
-        };
+            _context = context;
+            _config = config;
+        }
 
-        _context.Profiles.Add(profile);
-        await _context.SaveChangesAsync();
-
-        return (true, "Perfil criado com sucesso.", profile);
-    }
-
-    public async Task<(bool Success, string Message, Profile? Profile)> UpdateProfileAsync(int userId, UpdateProfile updatedProfile)
-    {
-        var user = await _context.Users
-            .Include(u => u.Profile)
-            .Include(u => u.UserSkills)
-            .ThenInclude(u => u.Skill)
-            .FirstOrDefaultAsync(u => u.Id == userId);
-
-        if (user == null || user.Profile == null)
-            return (false, "Profile not found", null);
-
-        var profile = user.Profile;
-
-        profile.Biography = updatedProfile.Biography;
-        profile.PricePerHour = updatedProfile.PricePerHour;
-        profile.ExperienceLevel = updatedProfile.ExperienceLevel;
-        profile.Website = updatedProfile.Website;
-
-        var updatedSkillIds = updatedProfile.UserSkills?.Select(us => us.SkillId).ToList() ?? new List<int>();
-
-        foreach (var skillId in updatedSkillIds)
+        public async Task<Profile?> GetProfileByUserIdAsync(int userId)
         {
-            var existingUserSkill = user.UserSkills.FirstOrDefault(us => us.SkillId == skillId);
+            return await _context.Profiles
+                .Include(p => p.UserSkills.Where(us => us.IsActive)).ThenInclude(us => us.Skill).Include(p => p.Sector)
+                .FirstOrDefaultAsync(p => p.UserId == userId);
+        }
 
-            if (existingUserSkill != null)
+        public async Task<List<Skill>> GetSkills()
+        {
+            return await _context.Skills.ToListAsync();
+        }
+
+        public async Task<(bool Success, string Message, Profile? Profile)> CreateProfileAsync(int userId, UpdateProfile updatedProfile)
+        {
+            var user = await _context.Users
+                .Include(u => u.Profile)
+                .FirstOrDefaultAsync(u => u.Id == userId);
+
+            if (user == null)
+                return (false, "Usuário não encontrado.", null);
+
+            if (user.Profile != null)
+                return (false, "Perfil já existe para este usuário.", null);
+
+            // Cria o perfil com valores vazios ou nulos
+            var profile = new Profile
             {
-                if (!existingUserSkill.IsActive)
+                UserId = userId,
+                Biography = "",
+                PricePerHour = 0,
+                ExperienceLevel = ExperienceLevel.Junior,
+                SectorId = null,
+                UserSkills = new List<UserSkill>()
+            };
+
+            _context.Profiles.Add(profile);
+            await _context.SaveChangesAsync();
+
+            return (true, "Perfil criado com sucesso.", profile);
+        }
+
+        public async Task<(bool Success, string Message, Profile? Profile)> UpdateProfileAsync(int userId, UpdateProfile updatedProfile)
+        {
+            var user = await _context.Users
+                .Include(u => u.Profile)
+                .Include(u => u.UserSkills)
+                .ThenInclude(u => u.Skill)
+                .FirstOrDefaultAsync(u => u.Id == userId);
+
+            if (user == null || user.Profile == null)
+                return (false, "Profile not found", null);
+
+            var profile = user.Profile;
+
+            profile.Biography = updatedProfile.Biography;
+            profile.PricePerHour = updatedProfile.PricePerHour;
+            profile.ExperienceLevel = updatedProfile.ExperienceLevel;
+            profile.Website = updatedProfile.Website;
+
+            var updatedSkillIds = updatedProfile.UserSkills?.Select(us => us.SkillId).ToList() ?? new List<int>();
+
+            foreach (var skillId in updatedSkillIds)
+            {
+                var existingUserSkill = user.UserSkills.FirstOrDefault(us => us.SkillId == skillId);
+
+                if (existingUserSkill != null)
                 {
-                    existingUserSkill.IsActive = true;
+                    if (!existingUserSkill.IsActive)
+                    {
+                        existingUserSkill.IsActive = true;
+                    }
+                }
+                else
+                {
+                    _context.UserSkills.Add(new UserSkill
+                    {
+                        UserId = userId,
+                        SkillId = skillId,
+                        ProfileId = user.Profile.ProfileId,
+                        IsActive = true
+                    });
                 }
             }
-            else
+
+            foreach (var userSkill in user.UserSkills)
             {
-                _context.UserSkills.Add(new UserSkill
+                if (!updatedSkillIds.Contains(userSkill.SkillId) && userSkill.IsActive)
                 {
-                    UserId = userId,
-                    SkillId = skillId,
-                    ProfileId = user.Profile.ProfileId,
-                    IsActive = true
-                });
+                    userSkill.IsActive = false;
+                }
             }
+
+            await _context.SaveChangesAsync();
+
+            return (true, "Profile updated successfully", profile);
         }
-
-        foreach (var userSkill in user.UserSkills)
-        {
-            if (!updatedSkillIds.Contains(userSkill.SkillId) && userSkill.IsActive)
-            {
-                userSkill.IsActive = false;
-            }
-        }
-
-        await _context.SaveChangesAsync();
-
-        return (true, "Profile updated successfully", profile);
     }
 
 }
