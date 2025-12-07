@@ -3,7 +3,7 @@
 
 |||
 |:---|:---|
-| Generated on: | 12/07/2025 - 03:16:49 |
+| Generated on: | 12/07/2025 - 03:22:07 |
 | Parser: | MultiReport (2x OpenCover) |
 | Assemblies: | 1 |
 | Classes: | 53 |
