@@ -213,12 +213,14 @@ var assemblies = [
   {
     "name": "freela-match-api",
     "classes": [
-      { "name": "AuthService", "rp": "freela_match_api_AuthService.html", "cl": 90, "ucl": 0, "cal": 90, "tl": 179, "cb": 12, "tb": 12, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
-      { "name": "EmailService", "rp": "freela_match_api_EmailService.html", "cl": 112, "ucl": 118, "cal": 230, "tl": 356, "cb": 30, "tb": 68, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "AuthService", "rp": "freela_match_api_AuthService.html", "cl": 45, "ucl": 0, "cal": 45, "tl": 89, "cb": 6, "tb": 6, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "EmailService", "rp": "freela_match_api_EmailService.html", "cl": 0, "ucl": 115, "cal": 115, "tl": 178, "cb": 0, "tb": 34, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "FreelaMatchAPI.Controllers.AuthController", "rp": "freela_match_api_AuthController.html", "cl": 66, "ucl": 0, "cal": 66, "tl": 137, "cb": 4, "tb": 4, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "FreelaMatchAPI.Controllers.GeneralController", "rp": "freela_match_api_GeneralController.html", "cl": 44, "ucl": 9, "cal": 53, "tl": 150, "cb": 24, "tb": 36, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "FreelaMatchAPI.Controllers.PortfolioController", "rp": "freela_match_api_PortfolioController.html", "cl": 34, "ucl": 2, "cal": 36, "tl": 119, "cb": 14, "tb": 16, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "FreelaMatchAPI.Controllers.ProfileController", "rp": "freela_match_api_ProfileController.html", "cl": 42, "ucl": 4, "cal": 46, "tl": 145, "cb": 20, "tb": 24, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "FreelaMatchAPI.Controllers.ProposalController", "rp": "freela_match_api_ProposalController.html", "cl": 55, "ucl": 0, "cal": 55, "tl": 135, "cb": 16, "tb": 16, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "FreelaMatchAPI.Controllers.ReviewsController", "rp": "freela_match_api_ReviewsController.html", "cl": 25, "ucl": 0, "cal": 25, "tl": 69, "cb": 12, "tb": 12, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "FreelaMatchAPI.Controllers.UserController", "rp": "freela_match_api_UserController.html", "cl": 28, "ucl": 2, "cal": 30, "tl": 91, "cb": 10, "tb": 12, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "FreelaMatchAPI.Data.AppDbContext", "rp": "freela_match_api_AppDbContext.html", "cl": 40, "ucl": 0, "cal": 40, "tl": 75, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "FreelaMatchAPI.DTOs.LoginDto", "rp": "freela_match_api_LoginDto.html", "cl": 4, "ucl": 0, "cal": 4, "tl": 15, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
@@ -250,14 +252,20 @@ var assemblies = [
       { "name": "FreelaMatchAPI.Models.UserResume", "rp": "freela_match_api_UserResume.html", "cl": 6, "ucl": 6, "cal": 12, "tl": 93, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "FreelaMatchAPI.Models.UserSkill", "rp": "freela_match_api_UserSkill.html", "cl": 8, "ucl": 8, "cal": 16, "tl": 223, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "FreelaMatchAPI.Models.UserSkillResume", "rp": "freela_match_api_UserSkillResume.html", "cl": 3, "ucl": 7, "cal": 10, "tl": 235, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "FreelaMatchAPI.Services.AuthService", "rp": "freela_match_api_AuthService.2.html", "cl": 45, "ucl": 0, "cal": 45, "tl": 93, "cb": 6, "tb": 6, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "FreelaMatchAPI.Services.EmailService", "rp": "freela_match_api_EmailService.2.html", "cl": 112, "ucl": 3, "cal": 115, "tl": 182, "cb": 30, "tb": 34, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "FreelaMatchAPI.Services.GeneralService", "rp": "freela_match_api_GeneralService.html", "cl": 81, "ucl": 0, "cal": 81, "tl": 157, "cb": 4, "tb": 4, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "FreelaMatchAPI.Services.PortfolioService", "rp": "freela_match_api_PortfolioService.html", "cl": 26, "ucl": 0, "cal": 26, "tl": 56, "cb": 2, "tb": 2, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "FreelaMatchAPI.Services.ProfileService", "rp": "freela_match_api_ProfileService.html", "cl": 61, "ucl": 0, "cal": 61, "tl": 118, "cb": 24, "tb": 24, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "FreelaMatchAPI.Services.ProposalService", "rp": "freela_match_api_ProposalService.html", "cl": 118, "ucl": 0, "cal": 118, "tl": 180, "cb": 12, "tb": 12, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "FreelaMatchAPI.Services.ReviewsService", "rp": "freela_match_api_ReviewsService.html", "cl": 31, "ucl": 0, "cal": 31, "tl": 57, "cb": 2, "tb": 2, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "FreelaMatchAPI.Services.UserService", "rp": "freela_match_api_UserService.html", "cl": 17, "ucl": 17, "cal": 34, "tl": 89, "cb": 2, "tb": 4, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
-      { "name": "PortfolioService", "rp": "freela_match_api_PortfolioService.html", "cl": 52, "ucl": 0, "cal": 52, "tl": 106, "cb": 4, "tb": 4, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
-      { "name": "ProfileService", "rp": "freela_match_api_ProfileService.html", "cl": 61, "ucl": 60, "cal": 121, "tl": 240, "cb": 24, "tb": 48, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
-      { "name": "ProposalController", "rp": "freela_match_api_ProposalController.html", "cl": 82, "ucl": 28, "cal": 110, "tl": 264, "cb": 21, "tb": 32, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
-      { "name": "ProposalService", "rp": "freela_match_api_ProposalService.html", "cl": 197, "ucl": 39, "cal": 236, "tl": 356, "cb": 21, "tb": 24, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
-      { "name": "ReviewsController", "rp": "freela_match_api_ReviewsController.html", "cl": 48, "ucl": 2, "cal": 50, "tl": 132, "cb": 20, "tb": 24, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
-      { "name": "ReviewsService", "rp": "freela_match_api_ReviewsService.html", "cl": 31, "ucl": 31, "cal": 62, "tl": 110, "cb": 2, "tb": 4, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "PortfolioService", "rp": "freela_match_api_PortfolioService.2.html", "cl": 26, "ucl": 0, "cal": 26, "tl": 53, "cb": 2, "tb": 2, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "ProfileService", "rp": "freela_match_api_ProfileService.2.html", "cl": 0, "ucl": 60, "cal": 60, "tl": 119, "cb": 0, "tb": 24, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "ProposalController", "rp": "freela_match_api_ProposalController.2.html", "cl": 27, "ucl": 28, "cal": 55, "tl": 132, "cb": 5, "tb": 16, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "ProposalService", "rp": "freela_match_api_ProposalService.2.html", "cl": 79, "ucl": 39, "cal": 118, "tl": 178, "cb": 9, "tb": 12, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "ReviewsController", "rp": "freela_match_api_ReviewsController.2.html", "cl": 23, "ucl": 2, "cal": 25, "tl": 66, "cb": 8, "tb": 12, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "ReviewsService", "rp": "freela_match_api_ReviewsService.2.html", "cl": 0, "ucl": 31, "cal": 31, "tl": 55, "cb": 0, "tb": 2, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
     ]},
 ];
 
@@ -278,19 +286,19 @@ var riskHotspots = [
       { "value": 24, "exceeded": false },
     ]},
   {
-    "assembly": "freela-match-api", "class": "EmailService", "reportPath": "freela_match_api_EmailService.html", "methodName": "SendCounterProposalEmailAsync()", "methodShortName": "SendCounterProposalEmailAsync()", "fileIndex": 1, "line": 88,
+    "assembly": "freela-match-api", "class": "FreelaMatchAPI.Services.EmailService", "reportPath": "freela_match_api_EmailService.2.html", "methodName": "SendCounterProposalEmailAsync()", "methodShortName": "SendCounterProposalEmailAsync()", "fileIndex": 0, "line": 90,
     "metrics": [
       { "value": 24, "exceeded": true },
       { "value": 24, "exceeded": false },
     ]},
   {
-    "assembly": "freela-match-api", "class": "ProfileService", "reportPath": "freela_match_api_ProfileService.html", "methodName": "UpdateProfileAsync()", "methodShortName": "UpdateProfileAsync()", "fileIndex": 0, "line": 67,
+    "assembly": "freela-match-api", "class": "FreelaMatchAPI.Services.ProfileService", "reportPath": "freela_match_api_ProfileService.html", "methodName": "UpdateProfileAsync()", "methodShortName": "UpdateProfileAsync()", "fileIndex": 0, "line": 63,
     "metrics": [
       { "value": 20, "exceeded": true },
       { "value": 20, "exceeded": false },
     ]},
   {
-    "assembly": "freela-match-api", "class": "ProfileService", "reportPath": "freela_match_api_ProfileService.html", "methodName": "UpdateProfileAsync()", "methodShortName": "UpdateProfileAsync()", "fileIndex": 1, "line": 67,
+    "assembly": "freela-match-api", "class": "ProfileService", "reportPath": "freela_match_api_ProfileService.2.html", "methodName": "UpdateProfileAsync()", "methodShortName": "UpdateProfileAsync()", "fileIndex": 0, "line": 67,
     "metrics": [
       { "value": 20, "exceeded": true },
       { "value": 20, "exceeded": false },
