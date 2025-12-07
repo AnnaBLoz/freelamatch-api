@@ -75,7 +75,7 @@ Você recebeu um novo candidato para a vaga: {proposal.Title}
 
 ➡ Nome do candidato: {candidate.Name}
 ➡ E-mail: {candidate.Email}
-➡ Data da candidatura: {DateTime.Now:dd/MM/yyyy HH:mm}
+➡ Data da candidatura: {DateTime.UtcNow:dd/MM/yyyy HH:mm}
 
 Acesse o FreelaMatch para visualizar os detalhes.
 

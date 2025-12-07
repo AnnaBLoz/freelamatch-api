@@ -505,7 +505,7 @@ namespace freela_match_api_test.Models
                 ReviewText = "Great work!",
                 Rating = 5,
                 ProposalId = 30,
-                CreatedAt = DateTime.Now
+                CreatedAt = DateTime.UtcNow
             };
 
             Assert.Equal(1, review.Id);

@@ -1,5 +1,6 @@
 ﻿using FreelaMatchAPI.Data;
 using FreelaMatchAPI.Models;
+using FreelaMatchAPI.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using System;
@@ -311,7 +312,7 @@ namespace freela_match_api_test.Services
                 CompanyId = 1,
                 Message = "I can do it for less",
                 ProposedPrice = 2500,
-                EstimatedDate = DateTime.Now.AddDays(30),
+                EstimatedDate = DateTime.UtcNow.AddDays(30),
                 IsAccepted = true,
                 IsSendedByCompany = false,
                 Proposal = proposal
@@ -372,7 +373,7 @@ namespace freela_match_api_test.Services
                 CompanyId = 1,
                 Message = "Counter offer",
                 ProposedPrice = 3500,
-                EstimatedDate = DateTime.Now.AddDays(20),
+                EstimatedDate = DateTime.UtcNow.AddDays(20),
                 IsAccepted = false,
                 IsSendedByCompany = true,
                 Proposal = proposal
@@ -438,7 +439,7 @@ namespace freela_match_api_test.Services
                 CompanyId = 1,
                 Message = "Test",
                 ProposedPrice = 1000,
-                EstimatedDate = DateTime.Now,
+                EstimatedDate = DateTime.UtcNow,
                 IsAccepted = false,
                 IsSendedByCompany = true
             };
@@ -486,7 +487,7 @@ namespace freela_match_api_test.Services
                 CompanyId = 999,
                 Message = "Test",
                 ProposedPrice = 1000,
-                EstimatedDate = DateTime.Now,
+                EstimatedDate = DateTime.UtcNow,
                 IsAccepted = false,
                 IsSendedByCompany = true
             };
@@ -949,7 +950,7 @@ namespace freela_match_api_test.Services
                 CompanyId = 1,
                 Message = "Counter",
                 ProposedPrice = (int)0.01m, // Preço muito baixo
-                EstimatedDate = DateTime.Now,
+                EstimatedDate = DateTime.UtcNow,
                 IsAccepted = false,
                 IsSendedByCompany = true,
                 Proposal = proposal
@@ -1010,7 +1011,7 @@ namespace freela_match_api_test.Services
                 CompanyId = 1,
                 Message = new string('X', 10000), // Mensagem muito longa
                 ProposedPrice = 2500,
-                EstimatedDate = DateTime.Now.AddMonths(6),
+                EstimatedDate = DateTime.UtcNow.AddMonths(6),
                 IsAccepted = true,
                 IsSendedByCompany = false,
                 Proposal = proposal
@@ -1071,7 +1072,7 @@ namespace freela_match_api_test.Services
                 CompanyId = 1,
                 Message = "Long term work",
                 ProposedPrice = 9000,
-                EstimatedDate = DateTime.Now.AddYears(2), // Data muito no futuro
+                EstimatedDate = DateTime.UtcNow.AddYears(2), // Data muito no futuro
                 IsAccepted = false,
                 IsSendedByCompany = true,
                 Proposal = proposal
@@ -1132,7 +1133,7 @@ namespace freela_match_api_test.Services
                 CompanyId = 1,
                 Message = "Past deadline",
                 ProposedPrice = 1400,
-                EstimatedDate = DateTime.Now.AddDays(-10), // Data no passado
+                EstimatedDate = DateTime.UtcNow.AddDays(-10), // Data no passado
                 IsAccepted = false,
                 IsSendedByCompany = false,
                 Proposal = proposal
@@ -1197,7 +1198,7 @@ namespace freela_match_api_test.Services
                 CompanyId = 1,
                 Message = "Test",
                 ProposedPrice = 1800,
-                EstimatedDate = DateTime.Now.AddDays(15),
+                EstimatedDate = DateTime.UtcNow.AddDays(15),
                 IsAccepted = isAccepted,
                 IsSendedByCompany = isSendedByCompany,
                 Proposal = proposal
