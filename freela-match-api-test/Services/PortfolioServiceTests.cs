@@ -1,5 +1,6 @@
 ﻿using FreelaMatchAPI.Data;
 using FreelaMatchAPI.Models;
+using FreelaMatchAPI.Services;
 using Microsoft.EntityFrameworkCore;
 
 namespace freela_match_api_test.Services

@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
+using FreelaMatchAPI.Services;
 
 namespace freela_match_api_test.Services
 {

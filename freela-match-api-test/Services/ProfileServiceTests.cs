@@ -1,6 +1,7 @@
 ﻿using FreelaMatchAPI.Data;
 using FreelaMatchAPI.DTOs;
 using FreelaMatchAPI.Models;
+using FreelaMatchAPI.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using System;

@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System;
 using System.Threading.Tasks;
 using Xunit;
+using FreelaMatchAPI.Services;
 
 namespace freela_match_api_test.Services
 {
