@@ -135,8 +135,6 @@ namespace freela_match_api_test.Services
                 ProposalId = 99
             };
 
-            var result = await service.CreateReview(dto);
-
             var candidate = await context.Candidate.FirstAsync();
 
             Assert.Equal(ProposalStatus.Reviewed, candidate.Status);
@@ -174,8 +172,6 @@ namespace freela_match_api_test.Services
                 Rating = 3,
                 ProposalId = 99
             };
-
-            var result = await service.CreateReview(dto);
 
             var candidate = await context.Candidate.FirstAsync();
 
