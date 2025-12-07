@@ -53,6 +53,8 @@ namespace FreelaMatchAPI.Models
 
         public int PricePerHour { get; set; }
 
+        public string? Website { get; set; }
+
         public ICollection<UserSkill> UserSkills { get; set; } = new List<UserSkill>();
     }
 

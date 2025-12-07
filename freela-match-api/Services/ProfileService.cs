@@ -78,6 +78,7 @@ public class ProfileService : IProfileService
         profile.Biography = updatedProfile.Biography;
         profile.PricePerHour = updatedProfile.PricePerHour;
         profile.ExperienceLevel = updatedProfile.ExperienceLevel;
+        profile.Website = updatedProfile.Website;
 
         var updatedSkillIds = updatedProfile.UserSkills?.Select(us => us.SkillId).ToList() ?? new List<int>();
 
