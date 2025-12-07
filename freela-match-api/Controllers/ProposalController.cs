@@ -4,129 +4,132 @@ using FreelaMatchAPI.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-[ApiController]
-[Route("api/[controller]")]
-[Authorize]
-public class ProposalController : ControllerBase
+namespace FreelaMatchAPI.Controllers
 {
-    private readonly IProposalService _proposalService;
-    private readonly IUserService _userService;
-
-    public ProposalController(IProposalService proposalService, IUserService userService)
+    [ApiController]
+    [Route("api/[controller]")]
+    [Authorize]
+    public class ProposalController : ControllerBase
     {
-        _proposalService = proposalService;
-        _userService = userService;
-    }
+        private readonly IProposalService _proposalService;
+        private readonly IUserService _userService;
 
-    [HttpGet("company/{companyId}")]
-    public async Task<ActionResult<List<Proposal>>> GetProposals(int companyId)
-    {
-        var proposals = await _proposalService.GetProposals(companyId);
-
-        if (proposals == null)
-            return NotFound(new { message = "Proposals not found" });
-
-        return Ok(proposals);
-    }
-
-    [HttpGet("all")]
-    public async Task<ActionResult<List<Proposal>>> GetAllProposals()
-    {
-        var proposals = await _proposalService.GetAllProposals();
-        return Ok(proposals);
-    }
-
-    [HttpGet("proposalId/{proposalId}")]
-    public async Task<ActionResult<Proposal>> GetProposalById(int proposalId)
-    {
-        var proposal = await _proposalService.GetProposalById(proposalId);
-        if (proposal == null)
-            return NotFound(new { message = "Proposal not found" });
-
-        return Ok(proposal);
-    }
-
-    [HttpGet("proposalId/{proposalId}/candidate/{candidateId}")]
-    public async Task<ActionResult<Proposal>> GetProposalByIdAndCandidate(int proposalId, int candidateId)
-    {
-        var proposal = await _proposalService.GetProposalByIdAndCandidate(proposalId, candidateId);
-        if (proposal == null)
-            return NotFound(new { message = "Proposal not found" });
-
-        return Ok(proposal);
-    }
-
-    [HttpPost("create")]
-    public async Task<IActionResult> Create([FromBody] CreateProposal proposalCreate)
-    {
-        try
+        public ProposalController(IProposalService proposalService, IUserService userService)
         {
-            var proposal = await _proposalService.CreateProposal(proposalCreate);
-            return Ok(new { proposal });
+            _proposalService = proposalService;
+            _userService = userService;
         }
-        catch (InvalidOperationException ex)
+
+        [HttpGet("company/{companyId}")]
+        public async Task<ActionResult<List<Proposal>>> GetProposals(int companyId)
         {
-            return BadRequest(new { message = ex.Message });
+            var proposals = await _proposalService.GetProposals(companyId);
+
+            if (proposals == null)
+                return NotFound(new { message = "Proposals not found" });
+
+            return Ok(proposals);
         }
-    }
 
-    [HttpPut("approve")]
-    public async Task<IActionResult> ApproveCandidate([FromBody] CandidateApprove candidateApprove)
-    {
-        var result = await _proposalService.ApproveCandidate(candidateApprove);
+        [HttpGet("all")]
+        public async Task<ActionResult<List<Proposal>>> GetAllProposals()
+        {
+            var proposals = await _proposalService.GetAllProposals();
+            return Ok(proposals);
+        }
 
-        if (!result.Success)
-            return BadRequest(new { message = result.Message });
+        [HttpGet("proposalId/{proposalId}")]
+        public async Task<ActionResult<Proposal>> GetProposalById(int proposalId)
+        {
+            var proposal = await _proposalService.GetProposalById(proposalId);
+            if (proposal == null)
+                return NotFound(new { message = "Proposal not found" });
 
-        return Ok(new { candidateApproved = result.Candidate });
-    }
+            return Ok(proposal);
+        }
 
-    [HttpPut("disapprove")]
-    public async Task<IActionResult> DisapproveCandidate([FromBody] CandidateApprove candidateDisapprove)
-    {
-        var result = await _proposalService.DisapproveCandidate(candidateDisapprove);
+        [HttpGet("proposalId/{proposalId}/candidate/{candidateId}")]
+        public async Task<ActionResult<Proposal>> GetProposalByIdAndCandidate(int proposalId, int candidateId)
+        {
+            var proposal = await _proposalService.GetProposalByIdAndCandidate(proposalId, candidateId);
+            if (proposal == null)
+                return NotFound(new { message = "Proposal not found" });
 
-        if (!result.Success)
-            return BadRequest(new { message = result.Message });
+            return Ok(proposal);
+        }
 
-        return Ok(new { candidateDisapproved = result.Candidate });
-    }
+        [HttpPost("create")]
+        public async Task<IActionResult> Create([FromBody] CreateProposal proposalCreate)
+        {
+            try
+            {
+                var proposal = await _proposalService.CreateProposal(proposalCreate);
+                return Ok(new { proposal });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
 
-    [HttpPost("candidate")]
-    public async Task<IActionResult> Candidate([FromBody] CandidateProposal proposalCreate)
-    {
-        var candidate = await _proposalService.Candidate(proposalCreate);
-        return Ok(new { candidate });
-    }
+        [HttpPut("approve")]
+        public async Task<IActionResult> ApproveCandidate([FromBody] CandidateApprove candidateApprove)
+        {
+            var result = await _proposalService.ApproveCandidate(candidateApprove);
 
-    [HttpPost("counterproposal")]
-    public async Task<IActionResult> CounterProposal([FromBody] CounterProposalCreate counterProposal)
-    {
-        var result = await _proposalService.CounterProposal(counterProposal);
+            if (!result.Success)
+                return BadRequest(new { message = result.Message });
 
-        if (!result.Success)
-            return BadRequest(new { success = false, message = result.Message });
+            return Ok(new { candidateApproved = result.Candidate });
+        }
 
-        return Ok(new { success = true, message = result.Message, proposal = result.Proposal });
-    }
+        [HttpPut("disapprove")]
+        public async Task<IActionResult> DisapproveCandidate([FromBody] CandidateApprove candidateDisapprove)
+        {
+            var result = await _proposalService.DisapproveCandidate(candidateDisapprove);
 
-    [HttpGet("counterproposal/proposalId/{proposalId}")]
-    public async Task<ActionResult<List<CounterProposal>>> GetCounterProposalByProposalId(int proposalId)
-    {
-        var counterProposals = await _proposalService.GetCounterProposalByProposalId(proposalId);
-        if (counterProposals == null)
-            return NotFound(new { message = "No counter proposals found" });
+            if (!result.Success)
+                return BadRequest(new { message = result.Message });
 
-        return Ok(counterProposals);
-    }
+            return Ok(new { candidateDisapproved = result.Candidate });
+        }
 
-    [HttpGet("candidate/userId/{userId}")]
-    public async Task<ActionResult<List<Proposal>>> GetProposalsByUserId(int userId)
-    {
-        var candidateProposals = await _proposalService.GetProposalsByUserId(userId);
-        if (candidateProposals == null)
-            return NotFound(new { message = "No candidate proposals found" });
+        [HttpPost("candidate")]
+        public async Task<IActionResult> Candidate([FromBody] CandidateProposal proposalCreate)
+        {
+            var candidate = await _proposalService.Candidate(proposalCreate);
+            return Ok(new { candidate });
+        }
 
-        return Ok(candidateProposals);
+        [HttpPost("counterproposal")]
+        public async Task<IActionResult> CounterProposal([FromBody] CounterProposalCreate counterProposal)
+        {
+            var result = await _proposalService.CounterProposal(counterProposal);
+
+            if (!result.Success)
+                return BadRequest(new { success = false, message = result.Message });
+
+            return Ok(new { success = true, message = result.Message, proposal = result.Proposal });
+        }
+
+        [HttpGet("counterproposal/proposalId/{proposalId}")]
+        public async Task<ActionResult<List<CounterProposal>>> GetCounterProposalByProposalId(int proposalId)
+        {
+            var counterProposals = await _proposalService.GetCounterProposalByProposalId(proposalId);
+            if (counterProposals == null)
+                return NotFound(new { message = "No counter proposals found" });
+
+            return Ok(counterProposals);
+        }
+
+        [HttpGet("candidate/userId/{userId}")]
+        public async Task<ActionResult<List<Proposal>>> GetProposalsByUserId(int userId)
+        {
+            var candidateProposals = await _proposalService.GetProposalsByUserId(userId);
+            if (candidateProposals == null)
+                return NotFound(new { message = "No candidate proposals found" });
+
+            return Ok(candidateProposals);
+        }
     }
 }
